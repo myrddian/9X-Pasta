@@ -67,6 +67,10 @@ public class Gelato {
         return executorService;
     }
 
+    public int threadCapacity() {
+        return Runtime.getRuntime().availableProcessors();
+    }
+
     private ExecutorService executorService;
     private GelatoTagManager tagManager = new GelatoTagManager();
     private GelatoDescriptorManager descriptorManager = new GelatoDescriptorManager();

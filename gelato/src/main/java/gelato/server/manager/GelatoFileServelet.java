@@ -16,5 +16,17 @@
 
 package gelato.server.manager;
 
-public class GelatoFileServelet {
+import gelato.*;
+import gelato.server.manager.implementation.*;
+import gelato.server.manager.requests.*;
+import protocol.*;
+
+public abstract class GelatoFileServelet extends IgnoreFlushRequests{
+
+    @Override
+    public void walkRequest(RequestConnection connection, String fileName, GelatoFileDescriptor newDescriptor) {
+
+    }
+
 }
+

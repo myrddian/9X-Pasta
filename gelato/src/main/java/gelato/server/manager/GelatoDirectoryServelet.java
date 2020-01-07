@@ -16,27 +16,15 @@
 
 package gelato.server.manager;
 
+import gelato.*;
+import gelato.server.manager.implementation.*;
+import gelato.server.manager.requests.*;
 import protocol.*;
 
-import java.util.*;
+public abstract class GelatoDirectoryServelet extends IgnoreFlushRequests {
 
-public class GelatoDirectoryServelet {
+    @Override
+    public void writeRequest(RequestConnection connection, GelatoFileDescriptor clientFileDescriptor, long offset, byte[] data) {
 
-    private String directoryName;
-    private StatStruct statStruct;
-    private QID directoryEntry;
-    private Map<String, GelatoFileServelet> fileServeletMap = new HashMap<>();
-    private Map<String, GelatoDirectoryServelet> directoryServeletMap = new HashMap<>();
-
-
-    public GelatoDirectoryServelet(QID qidValue) {
-        directoryEntry = qidValue;
     }
-
-
-
-
-
-
-
 }

@@ -33,7 +33,7 @@ public class GelatoFileServeletManager extends Thread {
     //private Map<Long, >
 
     private boolean shutdown = false;
-    final Logger logger = LoggerFactory.getLogger(GelatoFileServeletManager.class);
+    private final Logger logger = LoggerFactory.getLogger(GelatoFileServeletManager.class);
 
     @Override
     public void run(){

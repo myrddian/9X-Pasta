@@ -16,11 +16,27 @@
 
 package gelato;
 
+import protocol.*;
+
 import java.util.*;
 
 public class GelatoDescriptorManager {
     private Map<Integer, Boolean> usedFid = new HashMap<>();
+    private Map<Integer, GelatoFileDescriptor> qidMap = new HashMap<>();
+
     private Random generator = new Random();
+
+    public void mapQID(GelatoFileDescriptor descriptor, GelatoFileDescriptor serverResource) {
+        qidMap.put(descriptor.getDescriptorId(), serverResource);
+    }
+
+    public GelatoFileDescriptor getServerDescriptor(GelatoFileDescriptor clientDescriptor) {
+        return qidMap.get(clientDescriptor.getDescriptorId());
+    }
+
+    public void removeServerResourceMap(GelatoFileDescriptor clientDescriptor) {
+        qidMap.remove(clientDescriptor.getDescriptorId());
+    }
 
     public GelatoFileDescriptor generateDescriptor () {
         GelatoFileDescriptor newDescriptor = new GelatoFileDescriptor();
@@ -31,6 +47,13 @@ public class GelatoDescriptorManager {
         usedFid.put(val,true);
         newDescriptor.setFileId(val);
         return newDescriptor;
+    }
+
+    public boolean validDescriptor(GelatoFileDescriptor descriptor) {
+        if(usedFid.containsKey(descriptor.getDescriptorId())) {
+            return true;
+        }
+        return false;
     }
 
     public int size() {

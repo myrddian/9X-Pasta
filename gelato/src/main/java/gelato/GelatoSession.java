@@ -22,9 +22,11 @@ import protocol.messages.*;
 import protocol.messages.request.*;
 import protocol.messages.response.*;
 
+import java.util.*;
+
 public class GelatoSession {
 
-    final Logger logger = LoggerFactory.getLogger(GelatoSession.class);
+    private final Logger logger = LoggerFactory.getLogger(GelatoSession.class);
 
     private GelatoFileDescriptor authorisationDescriptor = null;
     private String userName;
@@ -33,7 +35,16 @@ public class GelatoSession {
     private GelatoConnection connection;
     private GelatoDescriptorManager manager = null;
     private GelatoTags tags;
+    private Map<String, Object> sessionVars = new HashMap<>();
 
+
+    public void setSessionVar(String varName, Object varValue) {
+        sessionVars.put(varName, varValue);
+    }
+
+    public Object getSessionVar(String varName) {
+        return sessionVars.get(varName);
+    }
 
     public int descriptorCount() { return manager.size(); }
 

@@ -16,12 +16,20 @@
 
 package protocol.messages.response;
 
-public class FlushResponse {
+import protocol.*;
+import protocol.messages.*;
+
+public class FlushResponse implements TransactionMessage {
 
     private int tag;
 
     public int getTag() {
         return tag;
+    }
+
+    @Override
+    public Message toMessage() {
+        return Encoder.encodeFlushResponse(this).toMessage();
     }
 
     public void setTag(int tag) {

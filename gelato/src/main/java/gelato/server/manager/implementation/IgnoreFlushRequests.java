@@ -14,16 +14,20 @@
  *    limitations under the License.
  */
 
-package gelato.server.manager;
+package gelato.server.manager.implementation;
 
 import gelato.*;
-import protocol.*;
+import gelato.server.manager.*;
+import protocol.messages.request.*;
+import protocol.messages.response.*;
 
-public interface GelatoQIDManager {
-
-    long generateQIDFieldID(String assetName);
-    QID generateAuthQID();
-    boolean mapResourceHandler(GelatoFileDescriptor id, GelatoResourceHandler handler);
-    GelatoResourceHandler getHandler(GelatoFileDescriptor id);
+public abstract class IgnoreFlushRequests extends GelatoResourceHandler {
+    @Override
+    public boolean processRequest(GelatoConnection connection, GelatoFileDescriptor descriptor, GelatoSession session, FlushRequest request) {
+        FlushResponse ret  = new FlushResponse();
+        ret.setTag(request.getTag());
+        connection.sendMessage(descriptor, ret.toMessage());
+        return true;
+    }
 
 }
