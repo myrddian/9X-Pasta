@@ -14,11 +14,31 @@
  *    limitations under the License.
  */
 
-package gelato.server.manager.requests;
+package protocol.messages.response;
 
-import gelato.*;
-import protocol.messages.request.*;
+import protocol.*;
+import protocol.messages.*;
 
-public interface RequestReadHandler {
-    boolean processRequest(GelatoConnection connection, GelatoFileDescriptor descriptor, GelatoSession session, ReadRequest request);
+public class RemoveResponse implements TransactionMessage {
+    private int tag;
+
+    @Override
+    public int getTag() {
+        return tag;
+    }
+
+    @Override
+    public Message toMessage() {
+        Message rtr = new Message();
+        rtr.tag  = tag;
+        rtr.messageType = P9Protocol.RREMOVE;
+        rtr.messageSize = P9Protocol.MIN_MSG_SIZE;
+        rtr.messageContent = null;
+        return rtr;
+    }
+
+    @Override
+    public void setTag(int tag) {
+        this.tag = tag;
+    }
 }

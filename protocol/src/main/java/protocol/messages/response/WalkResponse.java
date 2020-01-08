@@ -52,11 +52,11 @@ public class WalkResponse implements TransactionMessage {
         return numOfQid;
     }
 
-    public QID getNewQID() {
+    public QID getQID() {
         return newQID;
     }
 
-    public void setNewQID(QID newQID) {
+    public void setQID(QID newQID) {
         this.newQID = newQID;
     }
 }

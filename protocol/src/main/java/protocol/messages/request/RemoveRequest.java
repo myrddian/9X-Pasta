@@ -14,24 +14,43 @@
  *    limitations under the License.
  */
 
-package protocol.messages.response;
+package protocol.messages.request;
 
+import protocol.*;
 import protocol.messages.*;
 
-public class FlushResponse implements TransactionMessage {
+public class RemoveRequest implements TransactionMessage {
 
     private int tag;
+    private int fileDescriptor;
 
+
+    @Override
     public int getTag() {
         return tag;
     }
 
     @Override
     public Message toMessage() {
-        return Encoder.encodeFlushResponse(this).toMessage();
+        Message rtr =  new Message();
+        rtr.tag = tag;
+        rtr.messageType = P9Protocol.TREMOVE;
+        rtr.messageSize = P9Protocol.MIN_MSG_SIZE + P9Protocol.MSG_INT_SIZE;
+        rtr.messageContent = new byte [P9Protocol.MSG_INT_SIZE];
+        ByteEncoder.encodeInt(fileDescriptor, rtr.messageContent, 0);
+        return rtr;
     }
 
+    @Override
     public void setTag(int tag) {
         this.tag = tag;
+    }
+
+    public int getFileDescriptor() {
+        return fileDescriptor;
+    }
+
+    public void setFileDescriptor(int fileDescriptor) {
+        this.fileDescriptor = fileDescriptor;
     }
 }

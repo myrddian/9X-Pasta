@@ -26,27 +26,16 @@ public interface P9Protocol {
     public static final  long KILO_BYTE = 1024;
     public static final  long MEGA_BYTE = 1024 * KILO_BYTE;
     public static final  int DEFAULT_MSG_SIZE = 65535;
-    public static final  int MAX_MSG_CONTENT_SIZE = DEFAULT_MSG_SIZE - MessageRaw.minSize;
-    public static final  long DEFAULT_BUFF_SIZE = 4 * MEGA_BYTE;
+    public static final  int MIN_MSG_SIZE  = P9Protocol.MSG_SIZE_HEADER + P9Protocol.MSG_TYPE_SIZE + P9Protocol.MSG_TAG_SIZE;
+    public static final  int MAX_MSG_CONTENT_SIZE = DEFAULT_MSG_SIZE - MIN_MSG_SIZE;
     public static final  int MSG_TYPE_SIZE  = 1;
     public static final  int MSG_SIZE_HEADER = 4;
     public static final  int MSG_TAG_SIZE = 2;
     public static final  int MSG_FID_SIZE = 4;
     public static final  int MSG_QID_SIZE = 13;
     public static final  int MSG_INT_SIZE = 4;
-    public static  enum OPERATIONS {
-        VERSION,
-        AUTH,
-        ERROR,
-        ATTACH,
-        WALK,
-        OPEN,
-        READ,
-        WRITE,
-        CLUNK,
-        REMOVE,
-        STAT
-    }
+    public static final  int MSG_LONG_SIZE = 8;
+    public static final  int MSG_SHORT_SIZE = 2;
     public static final byte TVERSION = 100;
     public static final byte RVERSION = TVERSION +  1;
     public static final byte TAUTH = RVERSION + 1;
@@ -72,6 +61,35 @@ public interface P9Protocol {
     public static final byte TREMOVE = RCLUNK + 1;
     public static final byte RREMOVE = TREMOVE + 1;
     public static final byte TSTAT = RREMOVE +1;
-    public static final byte TWSTAT = TSTAT + 1;
+    public static final byte RSTAT = TSTAT +1;
+    public static final byte TWSTAT = RSTAT + 1;
     public static final byte RWSTAT = TWSTAT + 1;
+    public static final byte TCLOSE = TCLUNK;
+    public static final byte RCLOSE = RCLUNK;
+    public static final byte TMNT = RWSTAT + 1;
+    public static final byte RMNT = TMNT + 1;
+    public static final byte TBND = (byte) (RMNT + 1);
+    public static final byte RBND = TBND + 1;
+    public static final int QID_DIR = 0x80;
+    public static final int QID_APPEND = 0x40;
+    public static final int QID_EXCLUSIVE = 0x20;
+    public static final int QID_MOUNT = 0x10;
+    public static final int QID_AUTH = 0x08;
+    public static final int QID_TMP = 0x04;
+    public static final int QID_FILE = 0x00;
+    public static final int QID_AUTH_NOT_REQUIRED = 0x18;
+    public static final int MODE_DMDIR = 0x80000000;
+    public static final int MODE_DMAPPEND = 0x40000000;
+    public static final int MODE_DMEXCL = 0x20000000;
+    public static final int MODE_DMMOUNT = 0x10000000;
+    public static final int MODE_DMAUTH = 0x08000000;
+    public static final int MODE_DMTMP = 0x04000000;
+    public static final int OPEN_MODE_OREAD   = 0;
+    public static final int OPEN_MODE_OWRITE  = 1;
+    public static final int OPEN_MODE_ORDWR   = 2;
+    public static final int OPEN_MODE_OEXEC   = 3;
+    public static final int OPEN_MODE_OTRUNC  = 16;
+    public static final int OPEN_MODE_OCEXEC  = 32;
+    public static final int OPEN_MODE_ORCLOSE = 64;
+
 }

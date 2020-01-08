@@ -79,7 +79,7 @@ public class GelatoSessionHandler {
         logger.info("User: " + authRequest.getUserName() + " authenticated against FID: " + Integer.toString(authRequest.getAuthFileID())
                 + " Connection: " + Integer.toString(descriptor.getDescriptorId()));
         //send response
-        AuthRequestResponse response = new AuthRequestResponse();
+        AuthResponse response = new AuthResponse();
         response.setTag(message.tag);
         response.setQid(authQID);
         connection.sendMessage(descriptor,response.toMessage());

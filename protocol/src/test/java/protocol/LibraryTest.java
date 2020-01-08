@@ -46,16 +46,16 @@ class LibraryTest {
         AuthRequest recodedAuth = Decoder.decodeAuthRequest(decodedMessage);
         System.out.println(recodedAuth.getUserAuth());
 
-        AuthRequestResponse authRequestResponse = new AuthRequestResponse();
-        authRequestResponse.setTag(1);
+        AuthResponse authResponse = new AuthResponse();
+        authResponse.setTag(1);
         QID testQid = new QID();
         testQid.setLongFileId(12345678);
-        authRequestResponse.setQid(testQid);
-        rawAuth = Encoder.encodeAuthResponse(authRequestResponse);
+        authResponse.setQid(testQid);
+        rawAuth = Encoder.encodeAuthResponse(authResponse);
         rawByte = Encoder.messageToBytes(rawAuth);
         bytesRaw = Decoder.decodeBytesToRaw(rawByte);
         decodedMessage = Decoder.decodeToMessage(bytesRaw);
-        AuthRequestResponse decodedAuthRsp = Decoder.decodeAuthResponse(decodedMessage);
+        AuthResponse decodedAuthRsp = Decoder.decodeAuthResponse(decodedMessage);
         System.out.println(decodedAuthRsp.getTag());
 
     }

@@ -19,47 +19,49 @@ package protocol.messages.response;
 import protocol.*;
 import protocol.messages.*;
 
-public class OpenResponse  implements TransactionMessage {
-    private int tag;
-    private QID fileQID;
-    private int sizeIO = P9Protocol.MAX_MSG_CONTENT_SIZE;
+public class CreateResponse implements TransactionMessage {
 
+    private int tag;
+    private QID serverResource;
+    private int ioSize;
+
+    @Override
     public int getTag() {
         return tag;
     }
 
     @Override
     public Message toMessage() {
-        Message retMessage = new Message();
-        int contentSize =  P9Protocol.MSG_QID_SIZE + P9Protocol.MSG_INT_SIZE;
-        retMessage.tag = tag;
-        retMessage.messageType = P9Protocol.ROPEN;
-        retMessage.messageSize = contentSize + MessageRaw.minSize;
-        retMessage.messageContent = new byte[contentSize];
+        Message rtr = new Message();
+        rtr.messageType = P9Protocol.RCREATE;
+        rtr.tag = tag;
+        int size = P9Protocol.MSG_INT_SIZE +  P9Protocol.MSG_QID_SIZE;
         int ptr = 0;
-        ByteEncoder.encodeQID(fileQID, retMessage.messageContent, ptr);
-        ptr += P9Protocol.MSG_QID_SIZE;
-        ByteEncoder.encodeInt(sizeIO, retMessage.messageContent, ptr);
-        return retMessage;
+        rtr.messageContent = new byte[size];
+        ByteEncoder.encodeQID(serverResource, rtr.messageContent, 0);
+        ByteEncoder.encodeInt(ioSize, rtr.messageContent, P9Protocol.MSG_QID_SIZE);
+        rtr.messageSize = size + P9Protocol.MIN_MSG_SIZE;
+        return rtr;
     }
 
+    @Override
     public void setTag(int tag) {
         this.tag = tag;
     }
 
-    public QID getFileQID() {
-        return fileQID;
+    public QID getServerResource() {
+        return serverResource;
     }
 
-    public void setFileQID(QID fileQID) {
-        this.fileQID = fileQID;
+    public void setServerResource(QID serverResource) {
+        this.serverResource = serverResource;
     }
 
-    public int getSizeIO() {
-        return sizeIO;
+    public int getIoSize() {
+        return ioSize;
     }
 
-    public void setSizeIO(int sizeIO) {
-        this.sizeIO = sizeIO;
+    public void setIoSize(int ioSize) {
+        this.ioSize = ioSize;
     }
 }

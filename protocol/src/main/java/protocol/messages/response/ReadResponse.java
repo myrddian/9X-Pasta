@@ -16,22 +16,42 @@
 
 package protocol.messages.response;
 
+import protocol.*;
 import protocol.messages.*;
 
-public class FlushResponse implements TransactionMessage {
+public class ReadResponse implements TransactionMessage {
 
     private int tag;
+    private byte[] data;
 
+    @Override
     public int getTag() {
         return tag;
     }
 
     @Override
     public Message toMessage() {
-        return Encoder.encodeFlushResponse(this).toMessage();
+        Message rtr = new Message();
+        rtr.tag  = tag;
+        rtr.messageType = P9Protocol.RREAD;
+        int totalSize = P9Protocol.MSG_INT_SIZE + data.length;
+        rtr.messageContent = new byte[totalSize];
+        rtr.messageSize = P9Protocol.MIN_MSG_SIZE + totalSize;
+        ByteEncoder.encodeInt(data.length, rtr.messageContent, 0);
+        ByteEncoder.copyBytesTo(data, rtr.messageContent, P9Protocol.MSG_INT_SIZE, data.length);
+        return rtr;
     }
 
+    @Override
     public void setTag(int tag) {
         this.tag = tag;
+    }
+
+    public byte[] getData() {
+        return data;
+    }
+
+    public void setData(byte[] data) {
+        this.data = data;
     }
 }

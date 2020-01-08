@@ -16,5 +16,9 @@
 
 package gelato.server.manager.requests;
 
+import gelato.*;
+import protocol.messages.request.*;
+
 public interface RequestWriteHandler {
+    boolean processRequest(GelatoConnection connection, GelatoFileDescriptor descriptor, GelatoSession session, WriteRequest request);
 }

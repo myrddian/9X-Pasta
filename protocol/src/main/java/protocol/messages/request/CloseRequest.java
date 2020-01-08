@@ -14,24 +14,43 @@
  *    limitations under the License.
  */
 
-package protocol.messages.response;
+package protocol.messages.request;
 
+import protocol.*;
 import protocol.messages.*;
 
-public class FlushResponse implements TransactionMessage {
+public class CloseRequest implements TransactionMessage {
 
     private int tag;
+    private int fileID;
 
+    @Override
     public int getTag() {
         return tag;
     }
 
     @Override
-    public Message toMessage() {
-        return Encoder.encodeFlushResponse(this).toMessage();
-    }
-
     public void setTag(int tag) {
         this.tag = tag;
+    }
+
+
+    @Override
+    public Message toMessage() {
+        Message rtr = new Message();
+        rtr.messageType = P9Protocol.TCLOSE;
+        rtr.tag = tag;
+        rtr.messageSize = MessageRaw.minSize + P9Protocol.MSG_INT_SIZE;
+        rtr.messageContent = new byte[P9Protocol.MSG_INT_SIZE];
+        ByteEncoder.encodeInt(fileID, rtr.messageContent, 0);
+        return rtr;
+    }
+
+    public int getFileID() {
+        return fileID;
+    }
+
+    public void setFileID(int fileID) {
+        this.fileID = fileID;
     }
 }

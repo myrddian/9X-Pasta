@@ -117,7 +117,7 @@ public class GelatoSession {
             logger.error("Invalid Message received while initialising session - Expected RAUTH");
             throw new RuntimeException("INVALID RSP received");
         }
-        AuthRequestResponse authResponse = Decoder.decodeAuthResponse(resp);
+        AuthResponse authResponse = Decoder.decodeAuthResponse(resp);
         authorisationDescriptor.setQid(authResponse.getQid());
         if(authResponse.getQid().getType() == QID.QID_AUTH_NOT_REQUIRED) {
             logger.info("Server requires no authorisation");

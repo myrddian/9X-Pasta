@@ -16,7 +16,6 @@
 
 package protocol.messages.request;
 
-import protocol.*;
 import protocol.messages.*;
 
 public class AuthRequest implements TransactionMessage {

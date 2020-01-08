@@ -16,7 +16,6 @@
 
 package gelato.transport;
 
-import gelato.*;
 import org.slf4j.*;
 import protocol.*;
 import protocol.messages.*;

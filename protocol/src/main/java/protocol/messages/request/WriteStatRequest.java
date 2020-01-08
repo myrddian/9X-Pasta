@@ -19,9 +19,11 @@ package protocol.messages.request;
 import protocol.*;
 import protocol.messages.*;
 
-public class FlushRequest implements TransactionMessage {
+public class WriteStatRequest implements TransactionMessage {
     private int tag;
-    private int oldtag;
+    private int fileDescriptor;
+    private StatStruct statStruct;
+
 
     @Override
     public int getTag() {
@@ -35,21 +37,33 @@ public class FlushRequest implements TransactionMessage {
 
     @Override
     public Message toMessage() {
+
         Message rtr = new Message();
+        rtr.messageType = P9Protocol.TWSTAT;
         rtr.tag = tag;
-        rtr.messageType = P9Protocol.TFLUSH;
-        rtr.messageContent = new byte[P9Protocol.MSG_TAG_SIZE];
-        rtr.messageSize = MessageRaw.minSize + P9Protocol.MSG_TAG_SIZE;
-        ByteEncoder.encodeShort(oldtag, rtr.messageContent, 0);
+        byte [] encodedState = statStruct.EncodeStat();
+        int size = encodedState.length + P9Protocol.MSG_INT_SIZE;
+        rtr.messageContent = new byte[size];
+        rtr.messageSize = P9Protocol.MIN_MSG_SIZE + size;
+        ByteEncoder.encodeInt(fileDescriptor, rtr.messageContent, 0);
+        ByteEncoder.copyBytesTo(encodedState, rtr.messageContent, P9Protocol.MSG_INT_SIZE, encodedState.length);
 
         return rtr;
     }
 
-    public int getOldtag() {
-        return oldtag;
+    public int getFileDescriptor() {
+        return fileDescriptor;
     }
 
-    public void setOldtag(int oldtag) {
-        this.oldtag = oldtag;
+    public void setFileDescriptor(int fileDescriptor) {
+        this.fileDescriptor = fileDescriptor;
+    }
+
+    public StatStruct getStatStruct() {
+        return statStruct;
+    }
+
+    public void setStatStruct(StatStruct statStruct) {
+        this.statStruct = statStruct;
     }
 }

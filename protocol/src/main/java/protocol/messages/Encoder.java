@@ -14,9 +14,9 @@
  *    limitations under the License.
  */
 
-package protocol;
+package protocol.messages;
 
-import protocol.messages.*;
+import protocol.*;
 import protocol.messages.request.*;
 import protocol.messages.response.*;
 
@@ -71,7 +71,7 @@ public class Encoder {
         return rawMessage;
     }
 
-    public static MessageRaw encodeAuthResponse(AuthRequestResponse response) {
+    public static MessageRaw encodeAuthResponse(AuthResponse response) {
         MessageRaw raw = new MessageRaw();
         raw.type = P9Protocol.RAUTH;
         int size = MessageRaw.minSize + P9Protocol.MSG_QID_SIZE;

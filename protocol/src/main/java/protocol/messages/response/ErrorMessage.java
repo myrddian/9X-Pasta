@@ -16,12 +16,19 @@
 
 package protocol.messages.response;
 
-public class ErrorMessage {
+import protocol.messages.*;
+
+public class ErrorMessage  implements TransactionMessage {
     private int tag;
     private String errorMessage;
 
     public int getTag() {
         return tag;
+    }
+
+    @Override
+    public Message toMessage() {
+        return Encoder.encodeError(this).toMessage();
     }
 
     public void setTag(int tag) {

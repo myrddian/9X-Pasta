@@ -27,7 +27,7 @@ public abstract class GelatoResourceHandler implements GenericRequestHandler,
         RequestCreateHandler,
         RequestFlushHandler,
         RequestWalkHandler,
-        RequestClunkHandler,
+        RequestCloseHandler,
         RequestOpenHandler,
         RequestReadHandler,
         RequestRemoveHandler,
@@ -51,16 +51,6 @@ public abstract class GelatoResourceHandler implements GenericRequestHandler,
         return false;
     }
 
-    public abstract void  openRequest(RequestConnection connection, GelatoFileDescriptor clientFileDescriptor, byte mode);
-    public abstract void  readRequest(RequestConnection connection, GelatoFileDescriptor clientFileDescriptor, long offset, int numberOfBytes);
-    public abstract void  walkRequest(RequestConnection connection, String fileName, GelatoFileDescriptor newDescriptor);
-    public abstract void  createRequest(RequestConnection connection, String fileName, int permission, byte mode);
-    public abstract void  removeRequest(RequestConnection connection, GelatoFileDescriptor clientFileDescriptor);
-    public abstract void  closeRequest(RequestConnection connection, GelatoFileDescriptor clientFileDescriptor);
-    public abstract void  statRequest(RequestConnection connection, GelatoFileDescriptor clientFileDescriptor);
-    public abstract void  writeStatRequest(RequestConnection connection, GelatoFileDescriptor clientFileDescriptor, StatStruct newStruct);
-    public abstract void  writeRequest(RequestConnection connection, GelatoFileDescriptor clientFileDescriptor, long offset, byte []data);
-
     @Override
     public boolean processRequest(GelatoConnection connection, GelatoFileDescriptor descriptor, GelatoSession session, OpenRequest request) {
         return false;
@@ -70,6 +60,56 @@ public abstract class GelatoResourceHandler implements GenericRequestHandler,
     public boolean processRequest(GelatoConnection connection, GelatoFileDescriptor descriptor, GelatoSession session, WalkRequest request) {
         return false;
     }
+
+    @Override
+    public boolean processRequest(GelatoConnection connection, GelatoFileDescriptor descriptor, GelatoSession session, CloseRequest request) {
+        return false;
+    }
+
+    @Override
+    public boolean processRequest(GelatoConnection connection, GelatoFileDescriptor descriptor, GelatoSession session, CreateRequest request) {
+        return false;
+    }
+
+    @Override
+    public boolean processRequest(GelatoConnection connection, GelatoFileDescriptor descriptor, GelatoSession session, FlushRequest request) {
+        return false;
+    }
+
+    @Override
+    public boolean processRequest(GelatoConnection connection, GelatoFileDescriptor descriptor, GelatoSession session, ReadRequest request) {
+        return false;
+    }
+
+    @Override
+    public boolean processRequest(GelatoConnection connection, GelatoFileDescriptor descriptor, GelatoSession session, RemoveRequest request) {
+        return false;
+    }
+
+    @Override
+    public boolean processRequest(GelatoConnection connection, GelatoFileDescriptor descriptor, GelatoSession session, StatRequest request) {
+        return false;
+    }
+
+    @Override
+    public boolean processRequest(GelatoConnection connection, GelatoFileDescriptor descriptor, GelatoSession session, WriteStatRequest request) {
+        return false;
+    }
+
+    @Override
+    public boolean processRequest(GelatoConnection connection, GelatoFileDescriptor descriptor, GelatoSession session, WriteRequest request) {
+        return false;
+    }
+
+    public abstract void  openRequest(RequestConnection connection, GelatoFileDescriptor clientFileDescriptor, byte mode);
+    public abstract void  readRequest(RequestConnection connection, GelatoFileDescriptor clientFileDescriptor, long offset, int numberOfBytes);
+    public abstract void  walkRequest(RequestConnection connection, String fileName, GelatoFileDescriptor newDescriptor);
+    public abstract void  createRequest(RequestConnection connection, String fileName, int permission, byte mode);
+    public abstract void  removeRequest(RequestConnection connection, GelatoFileDescriptor clientFileDescriptor);
+    public abstract void  closeRequest(RequestConnection connection, GelatoFileDescriptor clientFileDescriptor);
+    public abstract void  statRequest(RequestConnection connection, GelatoFileDescriptor clientFileDescriptor);
+    public abstract void  writeStatRequest(RequestConnection connection, GelatoFileDescriptor clientFileDescriptor, StatStruct newStruct);
+    public abstract void  writeRequest(RequestConnection connection, GelatoFileDescriptor clientFileDescriptor, long offset, byte []data);
 
 
     public void setQID(QID value) {
@@ -97,5 +137,6 @@ public abstract class GelatoResourceHandler implements GenericRequestHandler,
     private GelatoFileDescriptor fileDescriptor;
     private String directoryName = "";
     private StatStruct resourceStat;
+
 
 }

@@ -71,7 +71,7 @@ public class AttachRequest implements TransactionMessage {
     @Override
     public Message toMessage() {
         Message retVal = new Message();
-        retVal.messageType = P9Protocol.RATTACH;
+        retVal.messageType = P9Protocol.TATTACH;
         retVal.tag = tag;
         byte [] userName = ByteEncoder.encodeStringToBuffer(username);
         byte [] userAuth = ByteEncoder.encodeStringToBuffer(namespace);

@@ -19,10 +19,7 @@ package protocol.messages.response;
 import protocol.*;
 import protocol.messages.*;
 
-import java.math.*;
-
-public class AuthRequestResponse implements TransactionMessage {
-    private QID qid;
+public class CloseResponse implements TransactionMessage {
     private int tag;
 
     @Override
@@ -31,20 +28,17 @@ public class AuthRequestResponse implements TransactionMessage {
     }
 
     @Override
-    public void setTag(int tag) {
-        this.tag = tag;
-    }
-
-    public QID getQid() {
-        return qid;
-    }
-
-    public void setQid(QID qid) {
-        this.qid = qid;
+    public Message toMessage() {
+        Message rtr = new Message();
+        rtr.tag  = tag;
+        rtr.messageType = P9Protocol.RCLOSE;
+        rtr.messageSize = P9Protocol.MIN_MSG_SIZE;
+        rtr.messageContent = null;
+        return rtr;
     }
 
     @Override
-    public Message toMessage() {
-        return Encoder.encodeAuthResponse(this).toMessage();
+    public void setTag(int tag) {
+        this.tag = tag;
     }
 }

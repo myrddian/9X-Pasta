@@ -14,11 +14,35 @@
  *    limitations under the License.
  */
 
-package gelato.server.manager.requests;
+package protocol.messages.response;
 
-import gelato.*;
-import protocol.messages.request.*;
+import protocol.*;
+import protocol.messages.*;
 
-public interface RequestReadHandler {
-    boolean processRequest(GelatoConnection connection, GelatoFileDescriptor descriptor, GelatoSession session, ReadRequest request);
+public class AuthResponse implements TransactionMessage {
+    private QID qid;
+    private int tag;
+
+    @Override
+    public int getTag() {
+        return tag;
+    }
+
+    @Override
+    public void setTag(int tag) {
+        this.tag = tag;
+    }
+
+    public QID getQid() {
+        return qid;
+    }
+
+    public void setQid(QID qid) {
+        this.qid = qid;
+    }
+
+    @Override
+    public Message toMessage() {
+        return Encoder.encodeAuthResponse(this).toMessage();
+    }
 }
