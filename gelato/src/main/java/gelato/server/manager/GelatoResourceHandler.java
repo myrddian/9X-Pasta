@@ -44,61 +44,119 @@ public abstract class GelatoResourceHandler implements GenericRequestHandler,
         } else if (request.messageType == P9Protocol.TWALK) {
             return processRequest(connection,descriptor,session, Decoder.decodeWalkRequest(request));
         } else if (request.messageType == P9Protocol.TFLUSH) {
-            return false;
+            return processRequest(connection, descriptor, session, Decoder.decodeFlushRequest(request));
+        } else if (request.messageType == P9Protocol.TREMOVE) {
+            return processRequest(connection, descriptor, session, Decoder.decodeRemoveRequest(request));
+        } else if (request.messageType == P9Protocol.TWSTAT) {
+            return processRequest(connection, descriptor, session, Decoder.decodeStatWriteRequest(request));
+        } else if (request.messageType == P9Protocol.TWRITE) {
+            return processRequest(connection, descriptor, session, Decoder.decodeWriteRequest(request));
+        } else if (request.messageType == P9Protocol.TCLOSE) {
+            return processRequest(connection, descriptor, session, Decoder.decodeCloseRequest(request));
+        } else if (request.messageType == P9Protocol.TREAD) {
+            return processRequest(connection, descriptor, session, Decoder.decodeReadRequest(request));
+        } else if(request.messageType == P9Protocol.TSTAT) {
+            return processRequest(connection, descriptor, session, Decoder.decodeStatRequest(request));
+        } else if (request.messageType == P9Protocol.TCREATE) {
+            return processRequest(connection, descriptor, session, Decoder.decodeCreateRequest(request));
         }
-
         logger.error("Unable to Process Request");
         return false;
     }
 
     @Override
     public boolean processRequest(GelatoConnection connection, GelatoFileDescriptor descriptor, GelatoSession session, OpenRequest request) {
-        return false;
+        RequestConnection con = createConnection(connection, descriptor,session);
+        GelatoFileDescriptor clientDescriptor = new GelatoFileDescriptor();
+        clientDescriptor.setQid(getQID());
+        clientDescriptor.setFileId(request.getFileDescriptor());
+        openRequest(con, clientDescriptor, request.getMode());
+        return true;
     }
 
     @Override
     public boolean processRequest(GelatoConnection connection, GelatoFileDescriptor descriptor, GelatoSession session, WalkRequest request) {
-        return false;
+        RequestConnection con = createConnection(connection, descriptor,session);
+        GelatoFileDescriptor clientDescriptor = new GelatoFileDescriptor();
+        clientDescriptor.setQid(getQID());
+        clientDescriptor.setFileId(request.getNewDecriptor());
+        walkRequest(con, request.getTargetFile(), clientDescriptor);
+        return true;
     }
 
     @Override
     public boolean processRequest(GelatoConnection connection, GelatoFileDescriptor descriptor, GelatoSession session, CloseRequest request) {
-        return false;
+        RequestConnection con = createConnection(connection, descriptor,session);
+        GelatoFileDescriptor clientDescriptor = new GelatoFileDescriptor();
+        clientDescriptor.setQid(getQID());
+        clientDescriptor.setFileId(request.getFileID());
+        closeRequest(con,clientDescriptor);
+        return true;
     }
 
     @Override
     public boolean processRequest(GelatoConnection connection, GelatoFileDescriptor descriptor, GelatoSession session, CreateRequest request) {
-        return false;
-    }
-
-    @Override
-    public boolean processRequest(GelatoConnection connection, GelatoFileDescriptor descriptor, GelatoSession session, FlushRequest request) {
-        return false;
+        RequestConnection con = createConnection(connection, descriptor,session);
+        createRequest(con,request.getFileName(), request.getPermission(), request.getMode());
+        return true;
     }
 
     @Override
     public boolean processRequest(GelatoConnection connection, GelatoFileDescriptor descriptor, GelatoSession session, ReadRequest request) {
-        return false;
+        RequestConnection con = createConnection(connection, descriptor,session);
+        GelatoFileDescriptor clientDescriptor = new GelatoFileDescriptor();
+        clientDescriptor.setQid(getQID());
+        clientDescriptor.setFileId(request.getFileDescriptor());
+        readRequest(con,clientDescriptor,request.getFileOffset(), request.getBytesToRead());
+        return true;
     }
 
     @Override
     public boolean processRequest(GelatoConnection connection, GelatoFileDescriptor descriptor, GelatoSession session, RemoveRequest request) {
-        return false;
+        RequestConnection con = createConnection(connection, descriptor,session);
+        GelatoFileDescriptor clientDescriptor = new GelatoFileDescriptor();
+        clientDescriptor.setQid(getQID());
+        clientDescriptor.setFileId(request.getFileDescriptor());
+        removeRequest(con,clientDescriptor);
+        return true;
     }
 
     @Override
     public boolean processRequest(GelatoConnection connection, GelatoFileDescriptor descriptor, GelatoSession session, StatRequest request) {
-        return false;
+        RequestConnection con = createConnection(connection, descriptor,session);
+        GelatoFileDescriptor clientDescriptor = new GelatoFileDescriptor();
+        clientDescriptor.setQid(getQID());
+        clientDescriptor.setFileId(request.getFileDescriptor());
+        statRequest(con,clientDescriptor);
+        return true;
     }
 
     @Override
     public boolean processRequest(GelatoConnection connection, GelatoFileDescriptor descriptor, GelatoSession session, WriteStatRequest request) {
-        return false;
+        RequestConnection con = createConnection(connection, descriptor,session);
+        GelatoFileDescriptor clientDescriptor = new GelatoFileDescriptor();
+        clientDescriptor.setQid(getQID());
+        clientDescriptor.setFileId(request.getFileDescriptor());
+        writeStatRequest(con,clientDescriptor, request.getStatStruct());
+        return true;
     }
 
     @Override
     public boolean processRequest(GelatoConnection connection, GelatoFileDescriptor descriptor, GelatoSession session, WriteRequest request) {
-        return false;
+        RequestConnection con = createConnection(connection, descriptor,session);
+        GelatoFileDescriptor clientDescriptor = new GelatoFileDescriptor();
+        clientDescriptor.setQid(getQID());
+        clientDescriptor.setFileId(request.getFileDescriptor());
+        writeRequest(con,clientDescriptor, request.getFileOffset(), request.getWriteData());
+        return true;
+    }
+
+    private RequestConnection createConnection(GelatoConnection connection, GelatoFileDescriptor descriptor, GelatoSession session) {
+        RequestConnection con = new RequestConnection();
+        con.setConnection(connection);
+        con.setDescriptor(descriptor);
+        con.setSession(session);
+        return con;
     }
 
     public abstract void  openRequest(RequestConnection connection, GelatoFileDescriptor clientFileDescriptor, byte mode);

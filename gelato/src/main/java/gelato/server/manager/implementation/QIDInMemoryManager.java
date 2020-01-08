@@ -42,7 +42,7 @@ public class QIDInMemoryManager implements GelatoQIDManager {
 
 
     @Override
-    public QID generateAuthQID() {
+    public synchronized QID generateAuthQID() {
         QID newAuthQID = new QID();
         newAuthQID.setVersion(0);
         newAuthQID.setType((byte)QID.QID_AUTH_NOT_REQUIRED);
@@ -51,7 +51,7 @@ public class QIDInMemoryManager implements GelatoQIDManager {
     }
 
     @Override
-    public boolean mapResourceHandler(GelatoFileDescriptor id, GelatoResourceHandler handler) {
+    public synchronized boolean mapResourceHandler(GelatoFileDescriptor id, GelatoResourceHandler handler) {
         if(resourceHandlerMap.containsKey(id.getQid().getLongFileId()) || handler == null) {
             logger.error("Resource in USE or NULL Handler");
             return false;
@@ -61,7 +61,7 @@ public class QIDInMemoryManager implements GelatoQIDManager {
     }
 
     @Override
-    public GelatoResourceHandler getHandler(GelatoFileDescriptor id) {
+    public synchronized GelatoResourceHandler getHandler(GelatoFileDescriptor id) {
         if(resourceHandlerMap.containsKey(id.getQid().getLongFileId())) {
             return resourceHandlerMap.get(id.getQid().getLongFileId());
         }

@@ -56,7 +56,7 @@ public interface P9Protocol {
     public static final byte RREAD = TREAD + 1;
     public static final byte TWRITE = RREAD + 1;
     public static final byte RWRITE = TWRITE + 1;
-    public static final byte TCLUNK = RREAD + 1;
+    public static final byte TCLUNK = RWRITE + 1;
     public static final byte RCLUNK = TCLUNK + 1;
     public static final byte TREMOVE = RCLUNK + 1;
     public static final byte RREMOVE = TREMOVE + 1;
@@ -66,7 +66,7 @@ public interface P9Protocol {
     public static final byte RWSTAT = TWSTAT + 1;
     public static final byte TCLOSE = TCLUNK;
     public static final byte RCLOSE = RCLUNK;
-    public static final byte TMNT = RWSTAT + 1;
+    public static final byte TMNT = (byte) (RWSTAT + 1);
     public static final byte RMNT = TMNT + 1;
     public static final byte TBND = (byte) (RMNT + 1);
     public static final byte RBND = TBND + 1;

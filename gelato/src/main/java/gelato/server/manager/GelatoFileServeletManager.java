@@ -61,6 +61,10 @@ public class GelatoFileServeletManager extends Thread {
         }
     }
 
+    public void addResource(GelatoFileDescriptor fileDescriptor,GelatoResourceHandler newServerResource) {
+        qidManager.mapResourceHandler(fileDescriptor, newServerResource);
+    }
+
     public void serve() {
         this.start();
     }

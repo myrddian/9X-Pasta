@@ -24,8 +24,8 @@ public class RequestConnection {
     private GelatoConnection connection;
     private GelatoFileDescriptor descriptor;
 
-    public void reply(Message msg) {
-        connection.sendMessage(descriptor, msg);
+    public void reply(TransactionMessage msg) {
+        connection.sendMessage(descriptor, msg.toMessage());
     }
 
     public GelatoSession getSession() {
