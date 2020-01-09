@@ -16,6 +16,10 @@
 
 package protocol;
 
+import jdk.jfr.*;
+
+import javax.annotation.*;
+
 public class StatStruct {
 
     private int statSize;
@@ -32,6 +36,22 @@ public class StatStruct {
     private String gid;
     private String muid;
 
+    public long getAccessTime() {
+        return ByteEncoder.getUnsigned(atime);
+    }
+
+    public long getModifiedTime() {
+        return ByteEncoder.getUnsigned(mtime);
+    }
+
+    public void setAccessTime(long newAccessTime) {
+        atime = ByteEncoder.toUnsigned(newAccessTime);
+    }
+
+    public void setModifiedTime(long newModifiedTime) {
+        mtime = ByteEncoder.toUnsigned(newModifiedTime);
+    }
+
     public byte [] EncodeStat() {
         byte [] nameByte = ByteEncoder.encodeStringToBuffer(name);
         byte [] uidByte =  ByteEncoder.encodeStringToBuffer(uid);
@@ -40,7 +60,7 @@ public class StatStruct {
 
         int statSize = P9Protocol.MSG_SHORT_SIZE + P9Protocol.MSG_SHORT_SIZE + P9Protocol.MSG_INT_SIZE;
         statSize += P9Protocol.MSG_INT_SIZE;
-        statSize += P9Protocol.MSG_LONG_SIZE * 3;
+        statSize += P9Protocol.MSG_LONG_SIZE;
         statSize += P9Protocol.MSG_QID_SIZE;
         statSize += nameByte.length;
         statSize += uidByte.length;
@@ -140,19 +160,20 @@ public class StatStruct {
         this.mode = mode;
     }
 
-    public int getAtime() {
+
+    public int getRawAtime() {
         return atime;
     }
 
-    public void setAtime(int atime) {
+    public void setRawAtime(int atime) {
         this.atime = atime;
     }
 
-    public int getMtime() {
+    public int getRawMtime() {
         return mtime;
     }
 
-    public void setMtime(int mtime) {
+    public void setRawMtime(int mtime) {
         this.mtime = mtime;
     }
 

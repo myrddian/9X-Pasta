@@ -21,8 +21,8 @@ import protocol.*;
 import java.util.*;
 
 public class GelatoDescriptorManager {
-    private Map<Integer, Boolean> usedFid = new HashMap<>();
-    private Map<Integer, GelatoFileDescriptor> qidMap = new HashMap<>();
+    private Map<Long, Boolean> usedFid = new HashMap<>();
+    private Map<Long, GelatoFileDescriptor> qidMap = new HashMap<>();
 
     private Random generator = new Random();
 
@@ -44,8 +44,9 @@ public class GelatoDescriptorManager {
         if(usedFid.containsKey(val)) {
             return generateDescriptor();
         }
-        usedFid.put(val,true);
-        newDescriptor.setFileId(val);
+        newDescriptor.setRawFileDescriptor(val);
+        usedFid.put(newDescriptor.getDescriptorId(),true);
+
         return newDescriptor;
     }
 

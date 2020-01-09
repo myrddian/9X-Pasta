@@ -20,7 +20,7 @@ import java.util.*;
 
 public class GelatoTagManager {
 
-    private Map<Integer, GelatoTags> tagsMap = new HashMap<>();
+    private Map<Long, GelatoTags> tagsMap = new HashMap<>();
 
     public void createTagHandler(GelatoFileDescriptor descriptor) {
         GelatoTags newTags = new GelatoTags();

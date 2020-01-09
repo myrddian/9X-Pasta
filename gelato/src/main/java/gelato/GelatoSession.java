@@ -110,7 +110,7 @@ public class GelatoSession {
         if(this.authorisationDescriptor == null) {
             authorisationDescriptor = manager.generateDescriptor();
         }
-        authRequest.setAuthFileID(authorisationDescriptor.getDescriptorId());
+        authRequest.setAuthFileID(authorisationDescriptor.getRawFileDescriptor());
         connection.sendMessage(authRequest.toMessage());
         resp = connection.getMessage();
         if(resp.messageType != P9Protocol.RAUTH) {

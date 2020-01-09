@@ -86,7 +86,7 @@ public class GelatoServerConnection extends Thread implements GelatoConnection {
                 ClientTCPTransport tcpTransport = new ClientTCPTransport(clientSocket);
                 GelatoFileDescriptor fileDescriptor = descriptorManager.generateDescriptor();
                 synchronized (this) {
-                    logger.info("Connected Client - File Descriptor: " + Integer.toString(fileDescriptor.getDescriptorId()));
+                    logger.info("Connected Client - File Descriptor: " + Long.toString(fileDescriptor.getDescriptorId()));
                     connections.put(fileDescriptor, tcpTransport);
                     libraryReference.getExecutorService().submit(tcpTransport);
                 }

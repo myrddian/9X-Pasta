@@ -55,7 +55,7 @@ public class GelatoDescriptorHandler {
 
     private void createDescriptorSession(GelatoFileDescriptor descriptor, Message msg) {
         if(msg.messageType != P9Protocol.TVERSION) {
-            logger.error("Descriptor has not started a valid session " + Integer.toString(descriptor.getDescriptorId()) + " " + Byte.toString(msg.messageType));
+            logger.error("Descriptor has not started a valid session " + Long.toString(descriptor.getDescriptorId()) + " " + Byte.toString(msg.messageType));
             return;
         }
         library.getTagManager().createTagHandler(descriptor);
@@ -70,7 +70,7 @@ public class GelatoDescriptorHandler {
         newSession.getTags().registerTag(msg.tag);
         serverConnection.sendMessage(descriptor, rspVersion);
         descriptorGelatoSessionMap.put(descriptor, newSession);
-        logger.info("Started Session for Descriptor " + Integer.toString(descriptor.getDescriptorId()));
+        logger.info("Started Session for Descriptor " + Long.toString(descriptor.getDescriptorId()));
     }
 
 }

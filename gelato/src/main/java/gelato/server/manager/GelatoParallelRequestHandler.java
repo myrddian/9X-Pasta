@@ -39,9 +39,9 @@ public class GelatoParallelRequestHandler implements GenericRequestHandler {
     public boolean processRequest(GelatoConnection connection, GelatoFileDescriptor descriptor, GelatoSession session, Message request) {
         GelatoFileDescriptor requestedResource = new GelatoFileDescriptor();
         if(request.messageType == P9Protocol.TWALK) {
-            requestedResource.setFileId(Decoder.decodeWalkRequest(request).getBaseDescriptor());
+            requestedResource.setRawFileDescriptor(Decoder.decodeWalkRequest(request).getBaseDescriptor());
         } else if ( request.messageType == P9Protocol.TOPEN) {
-            requestedResource.setFileId(Decoder.decodeOpenRequest(request).getFileDescriptor());
+            requestedResource.setRawFileDescriptor(Decoder.decodeOpenRequest(request).getFileDescriptor());
         } else {
             return false;
         }

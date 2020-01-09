@@ -47,9 +47,9 @@ public class GelatoValidateRequestHandler implements GenericRequestHandler
 
         GelatoFileDescriptor requestedResource = new GelatoFileDescriptor();
         if(request.messageType == P9Protocol.TWALK) {
-            requestedResource.setFileId(Decoder.decodeWalkRequest(request).getBaseDescriptor());
+            requestedResource.setRawFileDescriptor(Decoder.decodeWalkRequest(request).getBaseDescriptor());
         } else if ( request.messageType == P9Protocol.TOPEN) {
-            requestedResource.setFileId(Decoder.decodeOpenRequest(request).getFileDescriptor());
+            requestedResource.setRawFileDescriptor(Decoder.decodeOpenRequest(request).getFileDescriptor());
         } else {
             logger.trace("Messge Type unknown - Passing to Registered Unknown Handler");
             if(unknownHandler != null) {

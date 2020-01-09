@@ -152,4 +152,13 @@ public class ByteEncoder {
         return end;
     }
 
+    public static long getUnsigned(int signed) {
+        return signed >= 0 ? signed : 2 * (long) Integer.MAX_VALUE + 2 + signed;
+    }
+
+    public static int toUnsigned(long value) {
+        String lngString = Long.toString(value);
+        return Integer.parseUnsignedInt(lngString);
+    }
+
 }

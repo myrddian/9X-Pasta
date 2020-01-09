@@ -69,7 +69,7 @@ public abstract class GelatoResourceHandler implements GenericRequestHandler,
         RequestConnection con = createConnection(connection, descriptor,session);
         GelatoFileDescriptor clientDescriptor = new GelatoFileDescriptor();
         clientDescriptor.setQid(getQID());
-        clientDescriptor.setFileId(request.getFileDescriptor());
+        clientDescriptor.setRawFileDescriptor(request.getFileDescriptor());
         openRequest(con, clientDescriptor, request.getMode());
         return true;
     }
@@ -79,7 +79,7 @@ public abstract class GelatoResourceHandler implements GenericRequestHandler,
         RequestConnection con = createConnection(connection, descriptor,session);
         GelatoFileDescriptor clientDescriptor = new GelatoFileDescriptor();
         clientDescriptor.setQid(getQID());
-        clientDescriptor.setFileId(request.getNewDecriptor());
+        clientDescriptor.setRawFileDescriptor(request.getNewDecriptor());
         walkRequest(con, request.getTargetFile(), clientDescriptor);
         return true;
     }
@@ -89,7 +89,7 @@ public abstract class GelatoResourceHandler implements GenericRequestHandler,
         RequestConnection con = createConnection(connection, descriptor,session);
         GelatoFileDescriptor clientDescriptor = new GelatoFileDescriptor();
         clientDescriptor.setQid(getQID());
-        clientDescriptor.setFileId(request.getFileID());
+        clientDescriptor.setRawFileDescriptor(request.getFileID());
         closeRequest(con,clientDescriptor);
         return true;
     }
@@ -106,7 +106,7 @@ public abstract class GelatoResourceHandler implements GenericRequestHandler,
         RequestConnection con = createConnection(connection, descriptor,session);
         GelatoFileDescriptor clientDescriptor = new GelatoFileDescriptor();
         clientDescriptor.setQid(getQID());
-        clientDescriptor.setFileId(request.getFileDescriptor());
+        clientDescriptor.setRawFileDescriptor(request.getFileDescriptor());
         readRequest(con,clientDescriptor,request.getFileOffset(), request.getBytesToRead());
         return true;
     }
@@ -116,7 +116,7 @@ public abstract class GelatoResourceHandler implements GenericRequestHandler,
         RequestConnection con = createConnection(connection, descriptor,session);
         GelatoFileDescriptor clientDescriptor = new GelatoFileDescriptor();
         clientDescriptor.setQid(getQID());
-        clientDescriptor.setFileId(request.getFileDescriptor());
+        clientDescriptor.setRawFileDescriptor(request.getFileDescriptor());
         removeRequest(con,clientDescriptor);
         return true;
     }
@@ -126,7 +126,7 @@ public abstract class GelatoResourceHandler implements GenericRequestHandler,
         RequestConnection con = createConnection(connection, descriptor,session);
         GelatoFileDescriptor clientDescriptor = new GelatoFileDescriptor();
         clientDescriptor.setQid(getQID());
-        clientDescriptor.setFileId(request.getFileDescriptor());
+        clientDescriptor.setRawFileDescriptor(request.getFileDescriptor());
         statRequest(con,clientDescriptor);
         return true;
     }
@@ -136,7 +136,7 @@ public abstract class GelatoResourceHandler implements GenericRequestHandler,
         RequestConnection con = createConnection(connection, descriptor,session);
         GelatoFileDescriptor clientDescriptor = new GelatoFileDescriptor();
         clientDescriptor.setQid(getQID());
-        clientDescriptor.setFileId(request.getFileDescriptor());
+        clientDescriptor.setRawFileDescriptor(request.getFileDescriptor());
         writeStatRequest(con,clientDescriptor, request.getStatStruct());
         return true;
     }
@@ -146,7 +146,7 @@ public abstract class GelatoResourceHandler implements GenericRequestHandler,
         RequestConnection con = createConnection(connection, descriptor,session);
         GelatoFileDescriptor clientDescriptor = new GelatoFileDescriptor();
         clientDescriptor.setQid(getQID());
-        clientDescriptor.setFileId(request.getFileDescriptor());
+        clientDescriptor.setRawFileDescriptor(request.getFileDescriptor());
         writeRequest(con,clientDescriptor, request.getFileOffset(), request.getWriteData());
         return true;
     }

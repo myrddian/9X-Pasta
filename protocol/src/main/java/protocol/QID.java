@@ -42,12 +42,13 @@ public class QID {
     }
 
 
-    public int getVersion() {
-        return version;
+    public long getVersion() {
+        return ByteEncoder.getUnsigned(version);
     }
 
-    public void setVersion(int version) {
-        this.version = version;
+    public void setVersion(long newVersion) {
+        String lngString = Long.toString(newVersion);
+        version = Integer.parseUnsignedInt(lngString);
     }
 
     public byte getType() {

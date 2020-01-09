@@ -23,14 +23,20 @@ public class GelatoFileDescriptor {
     private int fileId;
     private QID qid;
 
-    public int getDescriptorId() {
-        return fileId;
+    public long getDescriptorId() {
+        return ByteEncoder.getUnsigned(fileId);
     }
+
+    public void setDescriptorId(long newDescriptorId) {
+        fileId = ByteEncoder.toUnsigned(newDescriptorId);
+    }
+
     public QID getQid() { return qid;}
 
-    public void setFileId(int fileId) {
+    public void setRawFileDescriptor(int fileId) {
         this.fileId = fileId;
     }
+    public int getRawFileDescriptor() { return fileId; }
 
     public void setQid(QID qid) {
         this.qid = qid;

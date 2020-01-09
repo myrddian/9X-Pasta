@@ -45,7 +45,7 @@ public class GelatoFileManager {
         //WALK to file
         //Open File
         OpenRequest openRequest = new OpenRequest();
-        openRequest.setFileDescriptor(tmp.getDescriptorId());
+        openRequest.setFileDescriptor(tmp.getRawFileDescriptor());
         openRequest.setMode(mode);
         openRequest.setTag(tagManager.getManager(authDescriptor).generateTag());
         Message msgOpenRequest = openRequest.toMessage();
