@@ -64,6 +64,11 @@ public class AttachRequest implements TransactionMessage {
     }
 
     @Override
+    public void setTransactionId(int transactionId) {
+        setTag(transactionId);
+    }
+
+    @Override
     public void setTag(int tag) {
         this.tag = tag;
     }

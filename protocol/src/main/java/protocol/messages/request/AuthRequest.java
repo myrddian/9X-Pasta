@@ -55,6 +55,11 @@ public class AuthRequest implements TransactionMessage {
     }
 
     @Override
+    public void setTransactionId(int transactionId) {
+        setTag(transactionId);
+    }
+
+    @Override
     public void setTag(int tagValue) {
         this.tagValue = tagValue;
     }

@@ -21,10 +21,20 @@ import gelato.server.manager.implementation.*;
 import gelato.server.manager.requests.*;
 import protocol.*;
 
-public abstract class GelatoDirectoryServelet extends IgnoreFlushRequests {
+public abstract class GelatoAbstractFileServelet extends IgnoreFlushRequests{
+
+    public String getFileName() { return this.resourceName();}
+    public void setFileName(String fileName) { this.setResourceName(fileName);}
 
     @Override
-    public void writeRequest(RequestConnection connection, GelatoFileDescriptor clientFileDescriptor, long offset, byte[] data) {
-
+    public void walkRequest(RequestConnection connection, String fileName, GelatoFileDescriptor newDescriptor) {
+        sendErrorMessage(connection,"Cannot Process Walk on File Resource, only directories");
     }
+
+    @Override
+    public void createRequest(RequestConnection connection, String fileName, int permission, byte mode) {
+        sendErrorMessage(connection, "Create Requests can only be handled in a directory resource");
+    }
+
 }
+

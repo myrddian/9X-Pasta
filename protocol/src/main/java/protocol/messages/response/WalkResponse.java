@@ -26,6 +26,11 @@ public class WalkResponse implements TransactionMessage {
     private QID newQID;
 
     @Override
+    public void setTransactionId(int transactionId) {
+        setTag(transactionId);
+    }
+
+    @Override
     public void setTag(int newTag) {
         tag = newTag;
     }

@@ -22,6 +22,7 @@ import org.slf4j.*;
 import protocol.*;
 import protocol.messages.*;
 import protocol.messages.request.*;
+import protocol.messages.response.*;
 
 public abstract class GelatoResourceHandler implements GenericRequestHandler,
         RequestCreateHandler,
@@ -66,7 +67,7 @@ public abstract class GelatoResourceHandler implements GenericRequestHandler,
 
     @Override
     public boolean processRequest(GelatoConnection connection, GelatoFileDescriptor descriptor, GelatoSession session, OpenRequest request) {
-        RequestConnection con = createConnection(connection, descriptor,session);
+        RequestConnection con = createConnection(connection, descriptor,session, request.getTag());
         GelatoFileDescriptor clientDescriptor = new GelatoFileDescriptor();
         clientDescriptor.setQid(getQID());
         clientDescriptor.setRawFileDescriptor(request.getFileDescriptor());
@@ -76,7 +77,7 @@ public abstract class GelatoResourceHandler implements GenericRequestHandler,
 
     @Override
     public boolean processRequest(GelatoConnection connection, GelatoFileDescriptor descriptor, GelatoSession session, WalkRequest request) {
-        RequestConnection con = createConnection(connection, descriptor,session);
+        RequestConnection con = createConnection(connection, descriptor,session, request.getTag());
         GelatoFileDescriptor clientDescriptor = new GelatoFileDescriptor();
         clientDescriptor.setQid(getQID());
         clientDescriptor.setRawFileDescriptor(request.getNewDecriptor());
@@ -86,7 +87,7 @@ public abstract class GelatoResourceHandler implements GenericRequestHandler,
 
     @Override
     public boolean processRequest(GelatoConnection connection, GelatoFileDescriptor descriptor, GelatoSession session, CloseRequest request) {
-        RequestConnection con = createConnection(connection, descriptor,session);
+        RequestConnection con = createConnection(connection, descriptor,session, request.getTag());
         GelatoFileDescriptor clientDescriptor = new GelatoFileDescriptor();
         clientDescriptor.setQid(getQID());
         clientDescriptor.setRawFileDescriptor(request.getFileID());
@@ -96,14 +97,14 @@ public abstract class GelatoResourceHandler implements GenericRequestHandler,
 
     @Override
     public boolean processRequest(GelatoConnection connection, GelatoFileDescriptor descriptor, GelatoSession session, CreateRequest request) {
-        RequestConnection con = createConnection(connection, descriptor,session);
+        RequestConnection con = createConnection(connection, descriptor,session, request.getTag());
         createRequest(con,request.getFileName(), request.getPermission(), request.getMode());
         return true;
     }
 
     @Override
     public boolean processRequest(GelatoConnection connection, GelatoFileDescriptor descriptor, GelatoSession session, ReadRequest request) {
-        RequestConnection con = createConnection(connection, descriptor,session);
+        RequestConnection con = createConnection(connection, descriptor,session, request.getTag());
         GelatoFileDescriptor clientDescriptor = new GelatoFileDescriptor();
         clientDescriptor.setQid(getQID());
         clientDescriptor.setRawFileDescriptor(request.getFileDescriptor());
@@ -113,7 +114,7 @@ public abstract class GelatoResourceHandler implements GenericRequestHandler,
 
     @Override
     public boolean processRequest(GelatoConnection connection, GelatoFileDescriptor descriptor, GelatoSession session, RemoveRequest request) {
-        RequestConnection con = createConnection(connection, descriptor,session);
+        RequestConnection con = createConnection(connection, descriptor,session, request.getTag());
         GelatoFileDescriptor clientDescriptor = new GelatoFileDescriptor();
         clientDescriptor.setQid(getQID());
         clientDescriptor.setRawFileDescriptor(request.getFileDescriptor());
@@ -123,7 +124,7 @@ public abstract class GelatoResourceHandler implements GenericRequestHandler,
 
     @Override
     public boolean processRequest(GelatoConnection connection, GelatoFileDescriptor descriptor, GelatoSession session, StatRequest request) {
-        RequestConnection con = createConnection(connection, descriptor,session);
+        RequestConnection con = createConnection(connection, descriptor,session, request.getTag());
         GelatoFileDescriptor clientDescriptor = new GelatoFileDescriptor();
         clientDescriptor.setQid(getQID());
         clientDescriptor.setRawFileDescriptor(request.getFileDescriptor());
@@ -133,7 +134,7 @@ public abstract class GelatoResourceHandler implements GenericRequestHandler,
 
     @Override
     public boolean processRequest(GelatoConnection connection, GelatoFileDescriptor descriptor, GelatoSession session, WriteStatRequest request) {
-        RequestConnection con = createConnection(connection, descriptor,session);
+        RequestConnection con = createConnection(connection, descriptor,session, request.getTag());
         GelatoFileDescriptor clientDescriptor = new GelatoFileDescriptor();
         clientDescriptor.setQid(getQID());
         clientDescriptor.setRawFileDescriptor(request.getFileDescriptor());
@@ -143,7 +144,7 @@ public abstract class GelatoResourceHandler implements GenericRequestHandler,
 
     @Override
     public boolean processRequest(GelatoConnection connection, GelatoFileDescriptor descriptor, GelatoSession session, WriteRequest request) {
-        RequestConnection con = createConnection(connection, descriptor,session);
+        RequestConnection con = createConnection(connection, descriptor,session, request.getTag());
         GelatoFileDescriptor clientDescriptor = new GelatoFileDescriptor();
         clientDescriptor.setQid(getQID());
         clientDescriptor.setRawFileDescriptor(request.getFileDescriptor());
@@ -151,12 +152,20 @@ public abstract class GelatoResourceHandler implements GenericRequestHandler,
         return true;
     }
 
-    private RequestConnection createConnection(GelatoConnection connection, GelatoFileDescriptor descriptor, GelatoSession session) {
+    private RequestConnection createConnection(GelatoConnection connection, GelatoFileDescriptor descriptor, GelatoSession session, int tag) {
         RequestConnection con = new RequestConnection();
         con.setConnection(connection);
         con.setDescriptor(descriptor);
         con.setSession(session);
+        con.setTransactionId(tag);
         return con;
+    }
+
+    public void sendErrorMessage(RequestConnection connection, String message) {
+        ErrorMessage msg = new ErrorMessage();
+        msg.setTag(connection.getTransactionId());
+        msg.setErrorMessage(message);
+        connection.reply(msg);
     }
 
     public abstract void  openRequest(RequestConnection connection, GelatoFileDescriptor clientFileDescriptor, byte mode);
@@ -177,7 +186,7 @@ public abstract class GelatoResourceHandler implements GenericRequestHandler,
         return fileDescriptor.getQid();
     }
     public String resourceName() {
-        return directoryName;
+        return getStat().getName();
     }
     public StatStruct getStat() {
         return resourceStat;
@@ -191,10 +200,14 @@ public abstract class GelatoResourceHandler implements GenericRequestHandler,
     public void setFileDescriptor(GelatoFileDescriptor descriptor) {
         fileDescriptor = descriptor;
     }
+    public void setResourceName(String newName) { getStat().setName(newName); }
+    public void setQidManager(GelatoQIDManager newManager) { resourceManager = newManager;}
+    public GelatoQIDManager getResourceManager() { return resourceManager; }
 
-    private GelatoFileDescriptor fileDescriptor;
+    private GelatoFileDescriptor fileDescriptor = new GelatoFileDescriptor();
     private String directoryName = "";
-    private StatStruct resourceStat;
+    private StatStruct resourceStat = new StatStruct();
+    private GelatoQIDManager resourceManager;
 
 
 }

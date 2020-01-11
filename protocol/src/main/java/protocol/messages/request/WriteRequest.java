@@ -26,6 +26,10 @@ public class WriteRequest implements TransactionMessage {
     private int byteCount;
     private byte [] writeData;
 
+    @Override
+    public void setTransactionId(int transactionId) {
+        setTag(transactionId);
+    }
 
     @Override
     public int getTag() {

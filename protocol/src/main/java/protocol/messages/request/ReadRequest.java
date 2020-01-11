@@ -25,6 +25,10 @@ public class ReadRequest implements TransactionMessage {
     private long fileOffset;
     private int bytesToRead;
 
+    @Override
+    public void setTransactionId(int transactionId) {
+        setTag(transactionId);
+    }
 
     @Override
     public int getTag() {

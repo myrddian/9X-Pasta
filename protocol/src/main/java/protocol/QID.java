@@ -47,8 +47,7 @@ public class QID {
     }
 
     public void setVersion(long newVersion) {
-        String lngString = Long.toString(newVersion);
-        version = Integer.parseUnsignedInt(lngString);
+        version = ByteEncoder.toUnsigned(newVersion);
     }
 
     public byte getType() {

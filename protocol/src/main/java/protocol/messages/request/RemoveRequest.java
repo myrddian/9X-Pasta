@@ -24,6 +24,10 @@ public class RemoveRequest implements TransactionMessage {
     private int tag;
     private int fileDescriptor;
 
+    @Override
+    public void setTransactionId(int transactionId) {
+        setTag(transactionId);
+    }
 
     @Override
     public int getTag() {

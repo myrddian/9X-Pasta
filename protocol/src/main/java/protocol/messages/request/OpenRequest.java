@@ -24,6 +24,10 @@ public class OpenRequest  implements TransactionMessage {
     private int fileDescriptor;
     private byte mode;
 
+    @Override
+    public void setTransactionId(int transactionId) {
+        setTag(transactionId);
+    }
 
     @Override
     public int getTag() {

@@ -23,8 +23,10 @@ public class RequestConnection {
     private GelatoSession session;
     private GelatoConnection connection;
     private GelatoFileDescriptor descriptor;
+    private int transactionId;
 
     public void reply(TransactionMessage msg) {
+        msg.setTag(getTransactionId());
         connection.sendMessage(descriptor, msg.toMessage());
     }
 
@@ -50,5 +52,13 @@ public class RequestConnection {
 
     public void setDescriptor(GelatoFileDescriptor descriptor) {
         this.descriptor = descriptor;
+    }
+
+    public int getTransactionId() {
+        return transactionId;
+    }
+
+    public void setTransactionId(int transactionId) {
+        this.transactionId = transactionId;
     }
 }

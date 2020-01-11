@@ -22,6 +22,12 @@ public class FlushResponse implements TransactionMessage {
 
     private int tag;
 
+    @Override
+    public void setTransactionId(int transactionId) {
+        setTag(transactionId);
+    }
+
+    @Override
     public int getTag() {
         return tag;
     }
@@ -31,6 +37,7 @@ public class FlushResponse implements TransactionMessage {
         return Encoder.encodeFlushResponse(this).toMessage();
     }
 
+    @Override
     public void setTag(int tag) {
         this.tag = tag;
     }

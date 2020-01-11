@@ -27,6 +27,11 @@ public class CreateRequest implements TransactionMessage {
     private int fileDescriptor;
 
     @Override
+    public void setTransactionId(int transactionId) {
+        setTag(transactionId);
+    }
+
+    @Override
     public int getTag() {
         return tag;
     }

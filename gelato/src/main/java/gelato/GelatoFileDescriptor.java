@@ -21,7 +21,7 @@ import protocol.*;
 public class GelatoFileDescriptor {
 
     private int fileId;
-    private QID qid;
+    private QID qid = new QID();
 
     public long getDescriptorId() {
         return ByteEncoder.getUnsigned(fileId);

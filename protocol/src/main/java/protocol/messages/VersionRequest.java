@@ -49,6 +49,11 @@ public class VersionRequest  implements TransactionMessage{
     }
 
     @Override
+    public void setTransactionId(int transactionId) {
+        setTag(transactionId);
+    }
+
+    @Override
     public void setTag(int newTag) {
         messageTag = newTag;
     }

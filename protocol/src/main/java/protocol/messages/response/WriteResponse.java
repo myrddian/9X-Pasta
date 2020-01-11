@@ -23,6 +23,12 @@ public class WriteResponse implements TransactionMessage {
     private int tag;
     private int bytesWritten;
 
+
+    @Override
+    public void setTransactionId(int transactionId) {
+        setTag(transactionId);
+    }
+
     @Override
     public int getTag() {
         return tag;

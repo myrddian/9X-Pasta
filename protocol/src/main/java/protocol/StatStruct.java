@@ -48,6 +48,30 @@ public class StatStruct {
         atime = ByteEncoder.toUnsigned(newAccessTime);
     }
 
+    public int updateSize() {
+        int nameSize = ByteEncoder.stringLength(name);
+        int uidSize = ByteEncoder.stringLength(uid);
+        int guiSize = ByteEncoder.stringLength(gid);
+        int muidSzie = ByteEncoder.stringLength(muid);
+
+        int statSize = P9Protocol.MSG_SHORT_SIZE + P9Protocol.MSG_SHORT_SIZE + P9Protocol.MSG_INT_SIZE;
+        statSize += P9Protocol.MSG_SHORT_SIZE;
+        statSize += P9Protocol.MSG_SHORT_SIZE;
+        statSize += P9Protocol.MSG_INT_SIZE;
+        statSize += P9Protocol.MSG_QID_SIZE;
+        statSize += P9Protocol.MSG_INT_SIZE;
+        statSize += P9Protocol.MSG_INT_SIZE;
+        statSize += P9Protocol.MSG_LONG_SIZE;
+        statSize += nameSize;
+        statSize += uidSize;
+        statSize += guiSize;
+        statSize += muidSzie;
+
+        this.statSize = statSize;
+
+        return statSize;
+    }
+
     public void setModifiedTime(long newModifiedTime) {
         mtime = ByteEncoder.toUnsigned(newModifiedTime);
     }

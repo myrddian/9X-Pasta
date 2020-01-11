@@ -18,6 +18,7 @@ package protocol.messages;
 
 public interface TransactionMessage  {
 
+    public void setTransactionId(int transactionId);
     public void setTag(int newTag);
     public int getTag();
     Message toMessage();

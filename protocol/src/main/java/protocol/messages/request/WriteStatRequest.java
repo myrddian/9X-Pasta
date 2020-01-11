@@ -24,6 +24,10 @@ public class WriteStatRequest implements TransactionMessage {
     private int fileDescriptor;
     private StatStruct statStruct;
 
+    @Override
+    public void setTransactionId(int transactionId) {
+        setTag(transactionId);
+    }
 
     @Override
     public int getTag() {

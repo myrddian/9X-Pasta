@@ -28,6 +28,11 @@ public class WalkRequest implements TransactionMessage {
     private int newDescriptor = 0;
 
     @Override
+    public void setTransactionId(int transactionId) {
+        setTag(transactionId);
+    }
+
+    @Override
     public void setTag(int newTag) {
         messageTag = newTag;
     }

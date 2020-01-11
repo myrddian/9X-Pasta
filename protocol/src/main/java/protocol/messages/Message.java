@@ -39,6 +39,11 @@ public class Message  implements TransactionMessage{
     }
 
     @Override
+    public void setTransactionId(int transactionId) {
+        setTag(transactionId);
+    }
+
+    @Override
     public void setTag(int newTag) {
         tag = newTag;
     }

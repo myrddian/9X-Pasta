@@ -32,7 +32,7 @@ public class QIDInMemoryManager implements GelatoQIDManager {
 
     @Override
     public synchronized long generateQIDFieldID(String assetName) {
-        long value = rnd.nextLong();
+        long value = Math.abs(rnd.nextLong());
         while(qidMapping.containsKey(value)) {
             value = rnd.nextLong();
         }

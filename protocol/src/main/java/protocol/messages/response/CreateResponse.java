@@ -26,6 +26,11 @@ public class CreateResponse implements TransactionMessage {
     private int ioSize = P9Protocol.MAX_MSG_CONTENT_SIZE;
 
     @Override
+    public void setTransactionId(int transactionId) {
+        setTag(transactionId);
+    }
+
+    @Override
     public int getTag() {
         return tag;
     }

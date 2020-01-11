@@ -24,6 +24,11 @@ public class FlushRequest implements TransactionMessage {
     private int oldtag;
 
     @Override
+    public void setTransactionId(int transactionId) {
+        setTag(transactionId);
+    }
+
+    @Override
     public int getTag() {
         return tag;
     }

@@ -46,6 +46,11 @@ public class CloseRequest implements TransactionMessage {
         return rtr;
     }
 
+    @Override
+    public void setTransactionId(int transactionId) {
+        setTag(transactionId);
+    }
+
     public int getFileID() {
         return fileID;
     }

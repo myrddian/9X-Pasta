@@ -25,6 +25,11 @@ public class ReadResponse implements TransactionMessage {
     private byte[] data;
 
     @Override
+    public void setTransactionId(int transactionId) {
+        setTag(transactionId);
+    }
+
+    @Override
     public int getTag() {
         return tag;
     }

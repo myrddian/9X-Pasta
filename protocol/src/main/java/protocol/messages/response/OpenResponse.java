@@ -24,6 +24,12 @@ public class OpenResponse  implements TransactionMessage {
     private QID fileQID;
     private int sizeIO = P9Protocol.MAX_MSG_CONTENT_SIZE;
 
+    @Override
+    public void setTransactionId(int transactionId) {
+        setTag(transactionId);
+    }
+
+    @Override
     public int getTag() {
         return tag;
     }
@@ -43,6 +49,7 @@ public class OpenResponse  implements TransactionMessage {
         return retMessage;
     }
 
+    @Override
     public void setTag(int tag) {
         this.tag = tag;
     }

@@ -22,6 +22,7 @@ public class ErrorMessage  implements TransactionMessage {
     private int tag;
     private String errorMessage;
 
+    @Override
     public int getTag() {
         return tag;
     }
@@ -31,8 +32,14 @@ public class ErrorMessage  implements TransactionMessage {
         return Encoder.encodeError(this).toMessage();
     }
 
+    @Override
     public void setTag(int tag) {
         this.tag = tag;
+    }
+
+    @Override
+    public void setTransactionId(int transactionId) {
+        setTag(transactionId);
     }
 
     public String getErrorMessage() {

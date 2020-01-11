@@ -20,6 +20,7 @@ package gelato;
 import gelato.client.file.*;
 import gelato.server.*;
 import gelato.server.manager.*;
+import gelato.server.manager.implementation.*;
 import org.junit.jupiter.api.Test;
 import protocol.*;
 import protocol.messages.*;
@@ -34,6 +35,9 @@ class LibraryTest {
         GelatoServerConnection newServer = new GelatoServerConnection(library, config);
         GelatoFileServeletManager serveletManager = new GelatoFileServeletManager(newServer, library);
         serveletManager.start();
+
+        SimpleDirectoryServelet testServe = new SimpleDirectoryServelet(10l,"");
+        serveletManager.addResource(testServe);
 
         GelatoConnection client = library.createClientConnection(config);
         GelatoFileManager fileManager = new GelatoFileManager(client, library, "TEST", "TEST");

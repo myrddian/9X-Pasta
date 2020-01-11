@@ -38,11 +38,11 @@ public class GelatoSession {
     private Map<String, Object> sessionVars = new HashMap<>();
 
 
-    public void setSessionVar(String varName, Object varValue) {
+    public synchronized void setSessionVar(String varName, Object varValue) {
         sessionVars.put(varName, varValue);
     }
 
-    public Object getSessionVar(String varName) {
+    public synchronized Object getSessionVar(String varName) {
         return sessionVars.get(varName);
     }
 
