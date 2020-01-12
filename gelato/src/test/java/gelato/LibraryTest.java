@@ -37,7 +37,7 @@ class LibraryTest {
         serveletManager.start();
 
         SimpleDirectoryServelet testServe = new SimpleDirectoryServelet(10l,"");
-        serveletManager.addResource(testServe);
+        serveletManager.setRootDirectory(testServe);
 
         GelatoConnection client = library.createClientConnection(config);
         GelatoFileManager fileManager = new GelatoFileManager(client, library, "TEST", "TEST");

@@ -91,5 +91,7 @@ public interface P9Protocol {
     public static final int OPEN_MODE_OTRUNC  = 16;
     public static final int OPEN_MODE_OCEXEC  = 32;
     public static final int OPEN_MODE_ORCLOSE = 64;
+    public static final int NO_TAG = 0;
+    public static final int NO_FID = 0;
 
 }

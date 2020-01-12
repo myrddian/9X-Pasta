@@ -27,7 +27,7 @@ import protocol.messages.request.*;
 public class GelatoValidateRequestHandler implements GenericRequestHandler
 {
 
-    final Logger logger = LoggerFactory.getLogger(GelatoValidateRequestHandler.class);
+    private final Logger logger = LoggerFactory.getLogger(GelatoValidateRequestHandler.class);
 
     private GenericRequestHandler unknownHandler;
     private GenericRequestHandler nextHandler;

@@ -29,6 +29,8 @@ public class GelatoFileServeletManager extends Thread {
     private GelatoQIDManager qidManager;
     private GelatoSessionHandler sessionHandler;
     private GelatoDescriptorHandler descriptorHandler;
+    private GelatoValidateRequestHandler validateRequestHandler = new GelatoValidateRequestHandler();
+    private GelatoParallelRequestHandler parallelRequestHandler;
     private Gelato library;
     //private Map<Long, >
 
@@ -53,9 +55,10 @@ public class GelatoFileServeletManager extends Thread {
         this.library = library;
         this.connection = connection;
         qidManager = new QIDInMemoryManager();
-        sessionHandler = new GelatoSessionHandler(qidManager);
+        sessionHandler = new GelatoSessionHandler(qidManager, validateRequestHandler);
         descriptorHandler = new GelatoDescriptorHandler(library, connection, sessionHandler);
-
+        parallelRequestHandler = new GelatoParallelRequestHandler(library,qidManager);
+        validateRequestHandler.setNextHandler(parallelRequestHandler);
         if(this.connection.isStarted() == false ){
             this.connection.begin();
         }
@@ -68,6 +71,11 @@ public class GelatoFileServeletManager extends Thread {
 
     public void addResource(GelatoResourceHandler newServerResource) {
         qidManager.mapResourceHandler(newServerResource.getFileDescriptor(), newServerResource);
+    }
+
+    public void setRootDirectory(GelatoAbstractDirectoryServelet rootDirectory) {
+        sessionHandler.setRootAttach(rootDirectory);
+        addResource(rootDirectory);
     }
 
     public void serve() {

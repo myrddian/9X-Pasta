@@ -14,16 +14,11 @@
  *    limitations under the License.
  */
 
-package gelato.server.manager;
+package gelato.client.file;
 
-import gelato.*;
-import protocol.*;
-import protocol.messages.request.*;
-
-public interface GelatoAuthorisationManager {
-
-    boolean requireAuth();
-    boolean processAuthRequest(GelatoConnection connection, GelatoFileDescriptor descriptor, GelatoSession session, AuthRequest request);
-    QID authoriseQID(GelatoFileDescriptor descriptor);
-    GelatoFileDescriptor getAuthorisedDescriptor(GelatoConnection connection, GelatoFileDescriptor descriptor);
+public interface GelatoResource {
+    String getName();
+    String getPath();
+    String getFullName();
+    long   getSize();
 }

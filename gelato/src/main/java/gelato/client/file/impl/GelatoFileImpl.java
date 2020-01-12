@@ -50,20 +50,6 @@ public class GelatoFileImpl implements GelatoFile {
         return null;
     }
 
-    @Override
-    public String fileName() {
-        return fileName;
-    }
-
-    @Override
-    public String filePath() {
-        return filePath;
-    }
-
-    @Override
-    public String fullName() {
-        return filePath +"/"+fileName;
-    }
 
     @Override
     public long fileSize() {
@@ -74,5 +60,25 @@ public class GelatoFileImpl implements GelatoFile {
     @Override
     public int ioSize() {
         return ioUnitSize;
+    }
+
+    @Override
+    public String getName() {
+        return fileName;
+    }
+
+    @Override
+    public String getPath() {
+        return filePath;
+    }
+
+    @Override
+    public String getFullName() {
+        return filePath + "/" + fileName;
+    }
+
+    @Override
+    public long getSize() {
+        return 0;
     }
 }

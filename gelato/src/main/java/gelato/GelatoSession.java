@@ -29,6 +29,7 @@ public class GelatoSession {
     private final Logger logger = LoggerFactory.getLogger(GelatoSession.class);
 
     private GelatoFileDescriptor authorisationDescriptor = null;
+    private GelatoFileDescriptor fileServiceRoot = null;
     private String userName;
     private String nameSpace;
     private String userAuth;
@@ -36,6 +37,7 @@ public class GelatoSession {
     private GelatoDescriptorManager manager = null;
     private GelatoTags tags;
     private Map<String, Object> sessionVars = new HashMap<>();
+    private boolean useAuth = false;
 
 
     public synchronized void setSessionVar(String varName, Object varValue) {
@@ -90,7 +92,7 @@ public class GelatoSession {
 
     public boolean initSession() {
         VersionRequest versionRequest = new VersionRequest();
-        versionRequest.setMessageTag(tags.generateTag());
+        versionRequest.setMessageTag(P9Protocol.NO_TAG);
         connection.sendMessage(versionRequest.toMessage());
         Message resp = connection.getMessage();
         if(resp.messageType != P9Protocol.RVERSION) {
@@ -101,8 +103,37 @@ public class GelatoSession {
         logger.info("Started Session -  Server is: " + rspVersion.getVersion() + " Max Message Size: "
                 + Integer.toString(rspVersion.getMaxMsgSize()) + " Max Content Size: "
                 + Integer.toString(rspVersion.getMaxMsgSize() - MessageRaw.minSize) );
-        tags.closeTag(versionRequest.getMessageTag());
 
+        if(useAuth) {
+            authHandler();
+        } else  {
+            this.authorisationDescriptor = new GelatoFileDescriptor();
+            this.authorisationDescriptor.setRawFileDescriptor(P9Protocol.NO_FID);
+        }
+
+        //Now Attach
+        GelatoFileDescriptor attachDescriptor = manager.generateDescriptor();
+        AttachRequest request = new AttachRequest();
+        request.setTag(tags.generateTag());
+        request.setUsername(getUserName());
+        request.setNamespace(""); //default should always be blank/empty
+        request.setFid(attachDescriptor.getRawFileDescriptor());
+        request.setAfid(authorisationDescriptor.getRawFileDescriptor());
+
+        connection.sendMessage(request.toMessage());
+        resp = connection.getMessage();
+        if(resp.messageType != P9Protocol.RATTACH) {
+            logger.error("Invalid Message received while initialising session - Expected RATTACH");
+            throw new RuntimeException("INVALID RSP received");
+        }
+        AttachResponse response = Decoder.decodeAttachResponse(resp);
+        attachDescriptor.setQid(response.getServerID());
+        this.fileServiceRoot = attachDescriptor;
+        logger.info("Client Attached to Root of File Service");
+        return true;
+    }
+
+    public void authHandler() {
         AuthRequest authRequest = new AuthRequest();
         authRequest.setUserName(getUserName());
         authRequest.setUserAuth(getUserAuth());
@@ -112,7 +143,7 @@ public class GelatoSession {
         }
         authRequest.setAuthFileID(authorisationDescriptor.getRawFileDescriptor());
         connection.sendMessage(authRequest.toMessage());
-        resp = connection.getMessage();
+        Message resp = connection.getMessage();
         if(resp.messageType != P9Protocol.RAUTH) {
             logger.error("Invalid Message received while initialising session - Expected RAUTH");
             throw new RuntimeException("INVALID RSP received");
@@ -124,7 +155,7 @@ public class GelatoSession {
         }
         logger.info("Authorisation Complete - QID: " + Long.toString(authResponse.getQid().getLongFileId()) + " " +
                 Byte.toString(authResponse.getQid().getType()));
-        return true;
+        tags.closeTag(authRequest.getTag());
     }
 
     public GelatoTags getTags() {
@@ -141,5 +172,17 @@ public class GelatoSession {
 
     public void setUserAuth(String userAuth) {
         this.userAuth = userAuth;
+    }
+
+    public boolean isUseAuth() {
+        return useAuth;
+    }
+
+    public void setUseAuth(boolean useAuth) {
+        this.useAuth = useAuth;
+    }
+
+    public GelatoFileDescriptor getFileServiceRoot() {
+        return fileServiceRoot;
     }
 }

@@ -20,14 +20,11 @@ import gelato.*;
 
 import java.io.*;
 
-public interface GelatoFile {
+public interface GelatoFile extends GelatoResource{
 
     GelatoFileDescriptor getFileDescriptor();
     InputStream getFileInputStream();
     OutputStream getFileOutputStream();
-    String fileName();
-    String filePath();
-    String fullName();
     long fileSize();
     int ioSize();
 
