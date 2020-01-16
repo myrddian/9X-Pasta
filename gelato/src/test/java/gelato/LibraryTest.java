@@ -41,7 +41,7 @@ class LibraryTest {
 
         GelatoConnection client = library.createClientConnection(config);
         GelatoFileManager fileManager = new GelatoFileManager(client, library, "TEST", "TEST");
-
+        GelatoDirectory dir = fileManager.getRoot();
         System.out.println("OK");
 
      }

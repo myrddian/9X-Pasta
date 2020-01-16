@@ -117,6 +117,10 @@ public abstract class GelatoAbstractDirectoryServelet extends IgnoreFlushRequest
 
     @Override
     public void readRequest(RequestConnection connection, GelatoFileDescriptor clientFileDescriptor, long offset, int numberOfBytes) {
+        StatResponse response = new StatResponse();
+        response.setStatStruct(getStat());
+        connection.reply(response);
+
         //This should already be mapped perhaps?
         for(GelatoResourceHandler dir: directories.values()) {
             StatStruct statStruct = dir.getStat();
@@ -130,6 +134,7 @@ public abstract class GelatoAbstractDirectoryServelet extends IgnoreFlushRequest
             readResponse.setData(statStruct.EncodeStat());
             connection.reply(readResponse);
         }
+
     }
 
     @Override

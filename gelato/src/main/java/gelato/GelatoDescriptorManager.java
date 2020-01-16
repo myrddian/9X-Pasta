@@ -28,6 +28,7 @@ public class GelatoDescriptorManager {
 
     public void mapQID(GelatoFileDescriptor descriptor, GelatoFileDescriptor serverResource) {
         qidMap.put(descriptor.getDescriptorId(), serverResource);
+        usedFid.put(descriptor.getDescriptorId(),  true);
     }
 
     public GelatoFileDescriptor getServerDescriptor(GelatoFileDescriptor clientDescriptor) {

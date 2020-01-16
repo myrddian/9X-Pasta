@@ -65,6 +65,31 @@ public class GelatoFileManager {
     public GelatoFile createFile(String fileName) {
         return null;
     }
+
+    public GelatoDirectory getRoot() {
+        GelatoFileDescriptor rootDescriptor = clientSession.getFileServiceRoot();
+
+        StatRequest requestRootStat = new StatRequest();
+        requestRootStat.setFileDescriptor(rootDescriptor.getRawFileDescriptor());
+        requestRootStat.setTransactionId(clientSession.getTags().generateTag());
+        connection.sendMessage(requestRootStat.toMessage());
+        Message response = connection.getMessage();
+        if(response.messageType != P9Protocol.RSTAT) {
+            return null;
+        }
+        StatResponse statResponse = Decoder.decodeStatResponse(response);
+        long dirSize = statResponse.getStatStruct().getLength() - statResponse.getStatStruct().getStatSize();
+        ReadRequest requestDirEntries = new ReadRequest();
+
+        requestDirEntries.setTag(clientSession.getTags().generateTag());
+        requestDirEntries.setFileDescriptor(rootDescriptor.getRawFileDescriptor());
+        connection.sendMessage(requestDirEntries.toMessage());
+        response = connection.getMessage();
+        GelatoDirectoryImpl retValue = new GelatoDirectoryImpl();
+
+        return retValue;
+    }
+
     public List<GelatoFile> fileList() {
         return null;
     }

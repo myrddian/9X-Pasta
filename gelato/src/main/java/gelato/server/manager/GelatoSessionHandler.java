@@ -128,6 +128,7 @@ public class GelatoSessionHandler {
             return;
         }
         resourceDescriptor.setRawFileDescriptor(request.getFid());
+        session.setAuthorisationDescriptor(authDescriptor);
         session.getManager().mapQID(resourceDescriptor, rootAttach.getFileDescriptor());
         //Send Response
         AttachResponse response = new AttachResponse();

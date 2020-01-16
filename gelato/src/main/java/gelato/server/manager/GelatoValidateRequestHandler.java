@@ -18,6 +18,7 @@
 package gelato.server.manager;
 
 import gelato.*;
+import gelato.server.manager.implementation.*;
 import gelato.server.manager.requests.*;
 import org.slf4j.*;
 import protocol.*;
@@ -46,11 +47,27 @@ public class GelatoValidateRequestHandler implements GenericRequestHandler
         //Only Auth and Attach require two FIDS
 
         GelatoFileDescriptor requestedResource = new GelatoFileDescriptor();
-        if(request.messageType == P9Protocol.TWALK) {
-            requestedResource.setRawFileDescriptor(Decoder.decodeWalkRequest(request).getBaseDescriptor());
-        } else if ( request.messageType == P9Protocol.TOPEN) {
+        if(request.messageType == P9Protocol.TOPEN) {
             requestedResource.setRawFileDescriptor(Decoder.decodeOpenRequest(request).getFileDescriptor());
-        } else {
+        } else if (request.messageType == P9Protocol.TWALK) {
+            requestedResource.setRawFileDescriptor(Decoder.decodeWalkRequest(request).getBaseDescriptor());
+        } else if (request.messageType == P9Protocol.TFLUSH) {
+            return IgnoreFlushRequests.sendFlushResponse(connection, descriptor, session, Decoder.decodeFlushRequest(request));
+        } else if (request.messageType == P9Protocol.TREMOVE) {
+            requestedResource.setRawFileDescriptor(Decoder.decodeRemoveRequest(request).getFileDescriptor());
+        } else if (request.messageType == P9Protocol.TWSTAT) {
+            requestedResource.setRawFileDescriptor(Decoder.decodeStatWriteRequest(request).getFileDescriptor());
+        } else if (request.messageType == P9Protocol.TWRITE) {
+            requestedResource.setRawFileDescriptor(Decoder.decodeWriteRequest(request).getFileDescriptor());
+        } else if (request.messageType == P9Protocol.TCLOSE) {
+            requestedResource.setRawFileDescriptor(Decoder.decodeCloseRequest(request).getFileID());
+        } else if (request.messageType == P9Protocol.TREAD) {
+            requestedResource.setRawFileDescriptor(Decoder.decodeReadRequest(request).getFileDescriptor());
+        } else if(request.messageType == P9Protocol.TSTAT) {
+            requestedResource.setRawFileDescriptor(Decoder.decodeStatRequest(request).getFileDescriptor());
+        } else if (request.messageType == P9Protocol.TCREATE) {
+            requestedResource.setRawFileDescriptor(Decoder.decodeCreateRequest(request).getFileDescriptor());
+        } else  {
             logger.trace("Messge Type unknown - Passing to Registered Unknown Handler");
             if(unknownHandler != null) {
                 return unknownHandler.processRequest(connection, descriptor, session, request);

@@ -62,10 +62,10 @@ public class ByteEncoder {
     }
 
     public static void encodeLong(long value, byte[] buffer, int position) {
-        ByteBuffer bytesBuffer = ByteBuffer.allocate(P9Protocol.MSG_FID_SIZE);
+        ByteBuffer bytesBuffer = ByteBuffer.allocate(P9Protocol.MSG_LONG_SIZE);
         bytesBuffer = bytesBuffer.order(ByteOrder.BIG_ENDIAN);
         bytesBuffer.putLong(value);
-        copyBytesTo(bytesBuffer.array(), buffer, position, P9Protocol.MSG_FID_SIZE);
+        copyBytesTo(bytesBuffer.array(), buffer, position, P9Protocol.MSG_LONG_SIZE);
     }
 
     public static long decodeLong(byte []buffer, int position) {

@@ -54,8 +54,7 @@ public class StatStruct {
         int guiSize = ByteEncoder.stringLength(gid);
         int muidSzie = ByteEncoder.stringLength(muid);
 
-        int statSize = P9Protocol.MSG_SHORT_SIZE + P9Protocol.MSG_SHORT_SIZE + P9Protocol.MSG_INT_SIZE;
-        statSize += P9Protocol.MSG_SHORT_SIZE;
+        int statSize = P9Protocol.MSG_SHORT_SIZE;
         statSize += P9Protocol.MSG_SHORT_SIZE;
         statSize += P9Protocol.MSG_INT_SIZE;
         statSize += P9Protocol.MSG_QID_SIZE;
@@ -82,10 +81,13 @@ public class StatStruct {
         byte [] guiByte = ByteEncoder.encodeStringToBuffer(gid);
         byte [] muidByte = ByteEncoder.encodeStringToBuffer(muid);
 
-        int statSize = P9Protocol.MSG_SHORT_SIZE + P9Protocol.MSG_SHORT_SIZE + P9Protocol.MSG_INT_SIZE;
+        int statSize = P9Protocol.MSG_SHORT_SIZE;
+        statSize += P9Protocol.MSG_SHORT_SIZE;
+        statSize += P9Protocol.MSG_INT_SIZE;
+        statSize += P9Protocol.MSG_QID_SIZE;
+        statSize += P9Protocol.MSG_INT_SIZE;
         statSize += P9Protocol.MSG_INT_SIZE;
         statSize += P9Protocol.MSG_LONG_SIZE;
-        statSize += P9Protocol.MSG_QID_SIZE;
         statSize += nameByte.length;
         statSize += uidByte.length;
         statSize += guiByte.length;
@@ -140,6 +142,7 @@ public class StatStruct {
         gid = ByteEncoder.decodeString(buffer, ptr);
         ptr += ByteEncoder.stringLength(gid);
         muid = ByteEncoder.decodeString(buffer, ptr);
+        updateSize();
         return this;
     }
 
