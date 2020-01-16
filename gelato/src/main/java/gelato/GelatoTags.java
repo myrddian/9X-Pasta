@@ -25,10 +25,11 @@ public class GelatoTags {
     public int generateTag() {
         if(currentTagClient > 65000) {
             currentTagClient = 1;
+        } else {
+            ++currentTagClient;
         }
-        int tagVal =  currentTagClient + 1;
-        inFlightClient.put(tagVal,true);
-        return tagVal;
+        inFlightClient.put(currentTagClient,true);
+        return currentTagClient;
     }
 
     public void closeTag(int tag) {

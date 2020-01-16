@@ -83,6 +83,7 @@ public class GelatoFileManager {
 
         requestDirEntries.setTag(clientSession.getTags().generateTag());
         requestDirEntries.setFileDescriptor(rootDescriptor.getRawFileDescriptor());
+        requestDirEntries.setBytesToRead((int)statResponse.getStatStruct().getLength());
         connection.sendMessage(requestDirEntries.toMessage());
         response = connection.getMessage();
         GelatoDirectoryImpl retValue = new GelatoDirectoryImpl();
