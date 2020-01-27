@@ -31,6 +31,19 @@ public abstract class GelatoAbstractDirectoryServelet extends IgnoreFlushRequest
     private final Logger logger = LoggerFactory.getLogger(GelatoAbstractDirectoryServelet.class);
     private Map<String, GelatoResourceHandler> files = new HashMap<>();
 
+    private long calculateSize(long resStatSize) {
+        long count = 0;
+        for(GelatoResourceHandler dirHandler: directories.values()) {
+            count += dirHandler.getStat().getStatSize();
+        }
+
+        for(GelatoResourceHandler fileHandler: files.values()) {
+            count += fileHandler.getStat().getStatSize();
+        }
+
+        return count;
+    }
+
     public void setDirectoryName(String name) {
         this.setResourceName(name);
     }
@@ -69,8 +82,7 @@ public abstract class GelatoAbstractDirectoryServelet extends IgnoreFlushRequest
         }
         directories.put(newDirectory.getDirectoryName(), newDirectory);
         StatStruct selfStat = getStat();
-        long dirSize = selfStat.getLength() + newDirectory.getStat().updateSize();
-        selfStat.setLength(dirSize);
+        selfStat.setLength(calculateSize(newDirectory.getStat().getStatSize()));
     }
 
     public void addFile(GelatoAbstractFileServelet newFile) {
@@ -84,8 +96,7 @@ public abstract class GelatoAbstractDirectoryServelet extends IgnoreFlushRequest
         }
         files.put(newFile.getFileName(), newFile);
         StatStruct selfStat = getStat();
-        long dirSize = selfStat.getLength() + newFile.getStat().updateSize();
-        selfStat.setLength(dirSize);
+        selfStat.setLength(calculateSize(newFile.getStat().getStatSize()));
     }
 
     @Override
@@ -117,9 +128,11 @@ public abstract class GelatoAbstractDirectoryServelet extends IgnoreFlushRequest
 
     @Override
     public void readRequest(RequestConnection connection, GelatoFileDescriptor clientFileDescriptor, long offset, int numberOfBytes) {
-        StatResponse response = new StatResponse();
-        response.setStatStruct(getStat());
-        connection.reply(response);
+
+        if(directories.size()==0 && files.size()==0) {
+            ReadResponse readResponse = new ReadResponse();
+            connection.reply(readResponse);
+        }
 
         //This should already be mapped perhaps?
         for(GelatoResourceHandler dir: directories.values()) {

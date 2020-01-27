@@ -23,8 +23,6 @@ import org.slf4j.*;
 import protocol.*;
 import protocol.messages.*;
 
-import java.util.*;
-
 public class GelatoParallelRequestHandler implements GenericRequestHandler {
 
     private Gelato library;

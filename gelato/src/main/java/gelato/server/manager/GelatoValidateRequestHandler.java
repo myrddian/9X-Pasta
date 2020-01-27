@@ -18,12 +18,12 @@
 package gelato.server.manager;
 
 import gelato.*;
+import gelato.client.file.*;
 import gelato.server.manager.implementation.*;
 import gelato.server.manager.requests.*;
 import org.slf4j.*;
 import protocol.*;
 import protocol.messages.*;
-import protocol.messages.request.*;
 
 public class GelatoValidateRequestHandler implements GenericRequestHandler
 {

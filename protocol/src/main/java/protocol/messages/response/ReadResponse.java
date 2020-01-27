@@ -39,6 +39,13 @@ public class ReadResponse implements TransactionMessage {
         Message rtr = new Message();
         rtr.tag  = tag;
         rtr.messageType = P9Protocol.RREAD;
+        if(data == null) {
+            int totalSize = P9Protocol.MSG_INT_SIZE ;
+            rtr.messageContent = new byte[totalSize];
+            rtr.messageSize = P9Protocol.MIN_MSG_SIZE + totalSize;
+            ByteEncoder.encodeInt(0, rtr.messageContent, 0);
+            return rtr;
+        }
         int totalSize = P9Protocol.MSG_INT_SIZE + data.length;
         rtr.messageContent = new byte[totalSize];
         rtr.messageSize = P9Protocol.MIN_MSG_SIZE + totalSize;

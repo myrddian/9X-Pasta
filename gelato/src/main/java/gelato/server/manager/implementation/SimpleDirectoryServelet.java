@@ -38,12 +38,11 @@ public class SimpleDirectoryServelet extends GelatoAbstractDirectoryServelet {
         newStat.setGid("TEST");
         newStat.setMuid("TEST");
         QID qid  = getQID();
-        qid.setType((byte)P9Protocol.QID_DIR);
+        qid.setType(P9Protocol.QID_DIR);
         qid.setVersion(0);
         qid.setLongFileId(resourceDescriptor);
         newStat.setQid(qid);
-        int size = newStat.updateSize();
-        newStat.setLength(size);
+        newStat.updateSize();
         setQID(qid);
         setStat(newStat);
     }

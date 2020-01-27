@@ -59,7 +59,7 @@ public class GelatoDescriptorHandler {
             return;
         }
         library.getTagManager().createTagHandler(descriptor);
-        GelatoSession newSession = new GelatoSession();
+        GelatoServerSession newSession = new GelatoServerSession();
         newSession.setManager(new GelatoDescriptorManager());
         newSession.setConnection(serverConnection);
         newSession.setTags(library.getTagManager().getManager(descriptor));

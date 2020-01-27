@@ -148,11 +148,16 @@ public class Decoder {
         if(msg.messageType != P9Protocol.TWALK) {
             throw new RuntimeException("Not supported");
         }
+        int ptr = 0;
         WalkRequest retVal = new WalkRequest();
         retVal.setTag(msg.tag);
-        retVal.setBaseDescriptor(ByteEncoder.decodeInt(msg.messageContent, 0));
-        retVal.setNewDecriptor(ByteEncoder.decodeInt(msg.messageContent, P9Protocol.MSG_FID_SIZE));
-        retVal.setTargetFile(ByteEncoder.decodeString(msg.messageContent, P9Protocol.MSG_FID_SIZE * 2));
+        retVal.setBaseDescriptor(ByteEncoder.decodeInt(msg.messageContent, ptr));
+        ptr += P9Protocol.MSG_FID_SIZE;
+        retVal.setNewDecriptor(ByteEncoder.decodeInt(msg.messageContent, ptr));
+        ptr += P9Protocol.MSG_FID_SIZE;
+        retVal.setPathSize(ByteEncoder.decodeShort(msg.messageContent,ptr));
+        ptr += P9Protocol.MSG_SHORT_SIZE;
+        retVal.setTargetFile(ByteEncoder.decodeString(msg.messageContent, ptr));
         return retVal;
     }
 
@@ -240,7 +245,9 @@ public class Decoder {
         ReadResponse readResponse = new ReadResponse();
         readResponse.setTag(msg.tag);
         int dataSize = ByteEncoder.decodeInt(msg.messageContent, 0);
-        readResponse.setData(Arrays.copyOfRange(msg.messageContent, P9Protocol.MSG_INT_SIZE, dataSize));
+        if(dataSize !=0 ) {
+            readResponse.setData(Arrays.copyOfRange(msg.messageContent, P9Protocol.MSG_INT_SIZE, msg.messageContent.length));
+        }
         return readResponse;
     }
 

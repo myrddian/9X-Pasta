@@ -28,75 +28,19 @@ import java.util.*;
 
 public class GelatoFileManager {
 
-    final Logger logger = LoggerFactory.getLogger(GelatoFileManager.class);
+    private final Logger logger = LoggerFactory.getLogger(GelatoFileManager.class);
 
 
     private  GelatoConnection connection;
-    private  GelatoSession clientSession;
+    private  GelatoClientSession clientSession;
     private  Gelato gelato;
     private  GelatoTagManager tagManager;
     private  GelatoFileDescriptor authDescriptor;
-
-    public GelatoFile open(String file, byte mode) {
-        GelatoFileDescriptor tmp = clientSession.getManager().generateDescriptor();
-        GelatoFileImpl newFile = new GelatoFileImpl();
-        newFile.setDescriptor(tmp);
-        newFile.setFileName(file);
-        //WALK to file
-        //Open File
-        OpenRequest openRequest = new OpenRequest();
-        openRequest.setFileDescriptor(tmp.getRawFileDescriptor());
-        openRequest.setMode(mode);
-        openRequest.setTag(tagManager.getManager(authDescriptor).generateTag());
-        Message msgOpenRequest = openRequest.toMessage();
-        connection.sendMessage(msgOpenRequest);
-        Message rspMessage = connection.getMessage();
-        if(rspMessage.messageType != P9Protocol.ROPEN) {
-            logger.error("GOT INCORRECT RESPOST ");
-            throw new RuntimeException("Unable to open file");
-        }
-        OpenResponse rsp = Decoder.decodeOpenResponse(rspMessage);
-        tmp.setQid(rsp.getFileQID());
-        newFile.setIoSize(rsp.getSizeIO());
-        tagManager.getManager(authDescriptor).closeTag(openRequest.getTag());
-        return newFile;
-    }
-
-    public GelatoFile createFile(String fileName) {
-        return null;
-    }
+    private  GelatoDirectoryImpl root;
 
     public GelatoDirectory getRoot() {
-        GelatoFileDescriptor rootDescriptor = clientSession.getFileServiceRoot();
-
-        StatRequest requestRootStat = new StatRequest();
-        requestRootStat.setFileDescriptor(rootDescriptor.getRawFileDescriptor());
-        requestRootStat.setTransactionId(clientSession.getTags().generateTag());
-        connection.sendMessage(requestRootStat.toMessage());
-        Message response = connection.getMessage();
-        if(response.messageType != P9Protocol.RSTAT) {
-            return null;
-        }
-        StatResponse statResponse = Decoder.decodeStatResponse(response);
-        long dirSize = statResponse.getStatStruct().getLength() - statResponse.getStatStruct().getStatSize();
-        ReadRequest requestDirEntries = new ReadRequest();
-
-        requestDirEntries.setTag(clientSession.getTags().generateTag());
-        requestDirEntries.setFileDescriptor(rootDescriptor.getRawFileDescriptor());
-        requestDirEntries.setBytesToRead((int)statResponse.getStatStruct().getLength());
-        connection.sendMessage(requestDirEntries.toMessage());
-        response = connection.getMessage();
-        GelatoDirectoryImpl retValue = new GelatoDirectoryImpl();
-
-        return retValue;
+        return root;
     }
-
-    public List<GelatoFile> fileList() {
-        return null;
-    }
-
-    public void close(GelatoFile closeFile) {}
-    public void terminate() {}
 
     public GelatoFileManager(GelatoConnection con,
                              Gelato library,
@@ -105,7 +49,7 @@ public class GelatoFileManager {
         connection = con;
         gelato = library;
         tagManager = gelato.getTagManager();
-        clientSession = new GelatoSession();
+        clientSession = new GelatoClientSession();
         authDescriptor = gelato.getDescriptorManager().generateDescriptor();
         tagManager = gelato.getTagManager();
         tagManager.createTagHandler(authDescriptor);
@@ -122,7 +66,7 @@ public class GelatoFileManager {
             logger.error("Unable to establish session");
             throw new RuntimeException("Unable to establish session");
         }
-
+        root = new GelatoDirectoryImpl(clientSession, connection, clientSession.getFileServiceRoot());
     }
 
 

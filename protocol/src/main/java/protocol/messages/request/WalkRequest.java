@@ -48,12 +48,16 @@ public class WalkRequest implements TransactionMessage {
         returnMessage.tag = messageTag;
         returnMessage.messageType  = P9Protocol.TWALK;
         byte []stringPath = ByteEncoder.encodeStringToBuffer(targetFile);
-        int contentSize = stringPath.length + (2 * P9Protocol.MSG_FID_SIZE) + P9Protocol.MSG_TAG_SIZE;
+        int contentSize = stringPath.length + (P9Protocol.MSG_FID_SIZE *2) + P9Protocol.MSG_SHORT_SIZE;
         returnMessage.messageContent = new byte[contentSize];
-        ByteEncoder.encodeInt(baseDescriptor, returnMessage.messageContent, 0);
-        ByteEncoder.encodeInt(newDescriptor, returnMessage.messageContent, P9Protocol.MSG_FID_SIZE);
-        ByteEncoder.encodeShort(pathSize, returnMessage.messageContent, P9Protocol.MSG_FID_SIZE * 2);
-        ByteEncoder.copyBytesTo(stringPath, returnMessage.messageContent,(P9Protocol.MSG_FID_SIZE * 2)+ P9Protocol.MSG_TAG_SIZE, stringPath.length );
+        int ptr =0;
+        ByteEncoder.encodeInt(baseDescriptor, returnMessage.messageContent, ptr);
+        ptr+= P9Protocol.MSG_FID_SIZE;
+        ByteEncoder.encodeInt(newDescriptor, returnMessage.messageContent, ptr);
+        ptr+= P9Protocol.MSG_FID_SIZE;
+        ByteEncoder.encodeShort(pathSize, returnMessage.messageContent, ptr);
+        ptr+= P9Protocol.MSG_SHORT_SIZE;
+        ByteEncoder.copyBytesTo(stringPath, returnMessage.messageContent, ptr, stringPath.length);
         returnMessage.messageSize = MessageRaw.minSize + contentSize;
         return returnMessage;
     }

@@ -60,6 +60,7 @@ public class StatStruct {
         statSize += P9Protocol.MSG_QID_SIZE;
         statSize += P9Protocol.MSG_INT_SIZE;
         statSize += P9Protocol.MSG_INT_SIZE;
+        statSize += P9Protocol.MSG_INT_SIZE;
         statSize += P9Protocol.MSG_LONG_SIZE;
         statSize += nameSize;
         statSize += uidSize;
@@ -87,6 +88,7 @@ public class StatStruct {
         statSize += P9Protocol.MSG_QID_SIZE;
         statSize += P9Protocol.MSG_INT_SIZE;
         statSize += P9Protocol.MSG_INT_SIZE;
+        statSize += P9Protocol.MSG_INT_SIZE;
         statSize += P9Protocol.MSG_LONG_SIZE;
         statSize += nameByte.length;
         statSize += uidByte.length;
@@ -95,7 +97,7 @@ public class StatStruct {
 
         byte [] statRet = new byte[statSize];
         int ptr = 0;
-        ByteEncoder.encodeShort(statSize, statRet, 0);
+        ByteEncoder.encodeShort(this.statSize, statRet, 0);
         ptr += P9Protocol.MSG_SHORT_SIZE;
         ByteEncoder.encodeShort(type, statRet, ptr);
         ptr += P9Protocol.MSG_SHORT_SIZE;
@@ -103,6 +105,8 @@ public class StatStruct {
         ptr += P9Protocol.MSG_INT_SIZE;
         ByteEncoder.encodeQID(qid,statRet, ptr);
         ptr += P9Protocol.MSG_QID_SIZE;
+        ByteEncoder.encodeInt(mode,statRet,ptr);
+        ptr += P9Protocol.MSG_INT_SIZE;
         ByteEncoder.encodeInt(atime, statRet, ptr);
         ptr += P9Protocol.MSG_INT_SIZE;
         ByteEncoder.encodeInt(mtime, statRet, ptr);
@@ -121,10 +125,12 @@ public class StatStruct {
 
     public StatStruct DecodeStat(byte[] buffer, int position) {
         int ptr = position;
+        statSize = ByteEncoder.decodeShort(buffer,ptr);
+        ptr += P9Protocol.MSG_SHORT_SIZE;
         type = ByteEncoder.decodeShort(buffer,ptr);
         ptr += P9Protocol.MSG_SHORT_SIZE;
-        dev = ByteEncoder.decodeShort(buffer, ptr);
-        ptr += P9Protocol.MSG_SHORT_SIZE;
+        dev = ByteEncoder.decodeInt(buffer, ptr);
+        ptr += P9Protocol.MSG_INT_SIZE;
         qid = ByteEncoder.decodeQID(buffer, ptr);
         ptr += P9Protocol.MSG_QID_SIZE;
         mode = ByteEncoder.decodeInt(buffer, ptr);

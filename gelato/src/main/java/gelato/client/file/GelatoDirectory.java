@@ -21,5 +21,5 @@ import java.util.*;
 public interface GelatoDirectory extends GelatoResource{
     List<GelatoDirectory> getDirectories();
     List<GelatoFile> getFiles();
-
+    boolean valid();
 }

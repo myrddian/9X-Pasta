@@ -17,6 +17,7 @@
 package gelato.server.manager;
 
 import gelato.*;
+import gelato.client.file.*;
 import gelato.server.manager.requests.*;
 import org.slf4j.*;
 import protocol.*;
