@@ -8,4 +8,5 @@
  */
 
 rootProject.name = '9X'
-include 'protocol', 'gelato', 'fettuccine'
+include 'protocol', 'gelato', 'fettuccine', 'fettuccineshell'
+

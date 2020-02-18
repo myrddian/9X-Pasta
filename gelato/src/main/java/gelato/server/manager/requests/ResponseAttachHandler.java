@@ -14,13 +14,13 @@
  *    limitations under the License.
  */
 
-package gelato.client.file;
+package gelato.server.manager.requests;
 
-import java.util.*;
+import gelato.*;
+import protocol.messages.response.*;
 
-public interface GelatoDirectory extends GelatoResource{
-    List<GelatoDirectory> getDirectories();
-    List<GelatoFile> getFiles();
-    GelatoDirectory getDirectory(String name);
-    boolean valid();
+public interface ResponseAttachHandler {
+
+    boolean writeResponse(GelatoConnection connection, GelatoFileDescriptor fileDescriptor, AttachResponse response);
+
 }

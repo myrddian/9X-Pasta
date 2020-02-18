@@ -27,14 +27,26 @@ import java.util.*;
 
 public abstract class GelatoAbstractDirectoryServelet extends IgnoreFlushRequests {
 
+    public static final String PARENT_DIR = "..";
+    public static final String CURRENT_DIR = ".";
+
     private Map<String, GelatoResourceHandler> directories = new HashMap<>();
     private final Logger logger = LoggerFactory.getLogger(GelatoAbstractDirectoryServelet.class);
     private Map<String, GelatoResourceHandler> files = new HashMap<>();
+    private StatStruct parentDir = null;
 
-    private long calculateSize(long resStatSize) {
+
+    private long calculateSize() {
         long count = 0;
-        for(GelatoResourceHandler dirHandler: directories.values()) {
-            count += dirHandler.getStat().getStatSize();
+        for(String dirName: directories.keySet()) {
+            GelatoResourceHandler dirHandler = directories.get(dirName);
+            if(dirName.equals(PARENT_DIR)) {
+                count += parentDir.getStatSize();
+            }
+            else {
+                count += dirHandler.getStat().getStatSize();
+            }
+
         }
 
         for(GelatoResourceHandler fileHandler: files.values()) {
@@ -71,6 +83,13 @@ public abstract class GelatoAbstractDirectoryServelet extends IgnoreFlushRequest
         }
     }
 
+    public void mapPaths(GelatoAbstractDirectoryServelet parentDir) {
+        directories.put(GelatoAbstractDirectoryServelet.PARENT_DIR, parentDir);
+        this.parentDir = parentDir.getStat().duplicate();
+        this.parentDir.setName(GelatoAbstractDirectoryServelet.PARENT_DIR);
+        this.parentDir.updateSize();
+    }
+
     public void addDirectory(GelatoAbstractDirectoryServelet newDirectory) {
         if(files.containsKey(newDirectory.getDirectoryName())){
             logger.error("Cannot add the a Directory Handler which is a file");
@@ -81,8 +100,7 @@ public abstract class GelatoAbstractDirectoryServelet extends IgnoreFlushRequest
             return;
         }
         directories.put(newDirectory.getDirectoryName(), newDirectory);
-        StatStruct selfStat = getStat();
-        selfStat.setLength(calculateSize(newDirectory.getStat().getStatSize()));
+        newDirectory.mapPaths(this);
     }
 
     public void addFile(GelatoAbstractFileServelet newFile) {
@@ -95,8 +113,7 @@ public abstract class GelatoAbstractDirectoryServelet extends IgnoreFlushRequest
             return;
         }
         files.put(newFile.getFileName(), newFile);
-        StatStruct selfStat = getStat();
-        selfStat.setLength(calculateSize(newFile.getStat().getStatSize()));
+
     }
 
     @Override
@@ -121,8 +138,10 @@ public abstract class GelatoAbstractDirectoryServelet extends IgnoreFlushRequest
 
     @Override
     public void statRequest(RequestConnection connection, GelatoFileDescriptor clientFileDescriptor) {
+        StatStruct selfStat = getStat();
+        selfStat.setLength(calculateSize());
         StatResponse response = new StatResponse();
-        response.setStatStruct(getStat());
+        response.setStatStruct(selfStat);
         connection.reply(response);
     }
 
@@ -134,13 +153,17 @@ public abstract class GelatoAbstractDirectoryServelet extends IgnoreFlushRequest
             connection.reply(readResponse);
         }
 
-        //This should already be mapped perhaps?
-        for(GelatoResourceHandler dir: directories.values()) {
+        for(String dirName: directories.keySet()) {
+            GelatoResourceHandler dir = directories.get(dirName);
             StatStruct statStruct = dir.getStat();
+            if(dirName.equals(GelatoAbstractDirectoryServelet.PARENT_DIR)) {
+                statStruct = this.parentDir;
+            }
             ReadResponse readResponse = new ReadResponse();
             readResponse.setData(statStruct.EncodeStat());
             connection.reply(readResponse);
         }
+
         for(GelatoResourceHandler files: files.values()) {
             StatStruct statStruct = files.getStat();
             ReadResponse readResponse = new ReadResponse();

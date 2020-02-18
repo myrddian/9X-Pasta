@@ -42,7 +42,7 @@ public class GelatoDirectoryImpl implements GelatoDirectory {
     private StatStruct directoryStat;
     private Map<String, GelatoDirectoryImpl> directoryMap = new HashMap<>();
     private Map<String, GelatoFile> fileMap = new HashMap<>();
-    private String path = "/";
+    private String path = "";
     private boolean isValid = true;
 
     public GelatoDirectoryImpl(GelatoSession session,
@@ -80,6 +80,16 @@ public class GelatoDirectoryImpl implements GelatoDirectory {
     public List<GelatoFile> getFiles() {
         cacheValidate();
         return new ArrayList<GelatoFile>(fileMap.values());
+    }
+
+    @Override
+    public GelatoDirectory getDirectory(String name) {
+        if(directoryMap.containsKey(name)) {
+            GelatoDirectoryImpl target = directoryMap.get(name);
+            target.scanDirectory(1);
+            return directoryMap.get(name);
+        }
+        return null;
     }
 
     @Override
@@ -217,7 +227,7 @@ public class GelatoDirectoryImpl implements GelatoDirectory {
                    newFileDescriptor.setQid(walkResponse.getQID());
                    session.getTags().closeTag(walkRequest.getTag());
                    GelatoDirectoryImpl newDir = new GelatoDirectoryImpl(session,
-                           connection, newFileDescriptor, currentDepth-1, path);
+                           connection, newFileDescriptor, currentDepth-1, path+"/"+getName());
                    directoryMap.put(entry.getName(), newDir);
                    logger.info("Found : " + entry.getName() + " Mapped to Resource: " + Long.toString(newFileDescriptor.getDescriptorId()) +
                            " Path: " + newDir.getPath());

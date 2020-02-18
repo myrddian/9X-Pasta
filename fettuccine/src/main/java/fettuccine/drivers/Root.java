@@ -14,56 +14,42 @@
  *    limitations under the License.
  */
 
-package gelato.server.manager.implementation;
+package fettuccine.drivers;
 
+import fettuccine.*;
 import gelato.*;
 import gelato.server.manager.*;
 import gelato.server.manager.requests.*;
 import org.slf4j.*;
 import protocol.*;
-import protocol.messages.request.*;
 import protocol.messages.response.*;
+
 import java.time.*;
 
-public class SimpleDirectoryServelet extends GelatoAbstractDirectoryServelet {
+public class Root extends GelatoAbstractDirectoryServelet {
 
-    private final Logger logger = LoggerFactory.getLogger(SimpleDirectoryServelet.class);
+    public static final long ROOT_ID = 001l;
+    public static final String ROOT_NAME  = "";
 
-    public SimpleDirectoryServelet(long resourceDescriptor, String name) {
-        setResourceName(name);
+    private final Logger logger = LoggerFactory.getLogger(Root.class);
+
+    public Root() {
+        setResourceName(ROOT_NAME);
         StatStruct newStat = getStat();
         newStat.setAccessTime(Instant.now().getEpochSecond());
         newStat.setModifiedTime(newStat.getAccessTime());
-        newStat.setUid("TEST");
-        newStat.setGid("TEST");
-        newStat.setMuid("TEST");
+        newStat.setUid(FettuccineService.FETTUCCINE_SVC_NAME);
+        newStat.setGid(FettuccineService.FETTUCCINE_SVC_GRP);
+        newStat.setMuid(FettuccineService.FETTUCCINE_SVC_NAME);
         QID qid  = getQID();
         qid.setType(P9Protocol.QID_DIR);
         qid.setVersion(0);
-        qid.setLongFileId(resourceDescriptor);
+        qid.setLongFileId(ROOT_ID);
         newStat.setQid(qid);
         newStat.updateSize();
         setQID(qid);
         setStat(newStat);
     }
-
-
-    public void setUid(String uid) {
-        getStat().setUid(uid);
-        getStat().updateSize();
-    }
-
-    public void setGid(String gid) {
-        getStat().setGid(gid);
-        getStat().updateSize();
-    }
-
-    public void setMuid(String muid)
-    {
-        getStat().setMuid(muid);
-        getStat().updateSize();
-    }
-
 
 
     @Override
@@ -91,5 +77,4 @@ public class SimpleDirectoryServelet extends GelatoAbstractDirectoryServelet {
     public void writeStatRequest(RequestConnection connection, GelatoFileDescriptor clientFileDescriptor, StatStruct newStruct) {
         sendErrorMessage(connection, "This operation is not supported");
     }
-
 }

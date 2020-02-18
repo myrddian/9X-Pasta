@@ -30,7 +30,7 @@ public class GelatoValidateRequestHandler implements GenericRequestHandler
 
     private final Logger logger = LoggerFactory.getLogger(GelatoValidateRequestHandler.class);
 
-    private GenericRequestHandler unknownHandler;
+    private GenericRequestHandler unknownHandler = new GenericUnknownHandler();
     private GenericRequestHandler nextHandler;
 
     @Override
@@ -68,7 +68,7 @@ public class GelatoValidateRequestHandler implements GenericRequestHandler
         } else if (request.messageType == P9Protocol.TCREATE) {
             requestedResource.setRawFileDescriptor(Decoder.decodeCreateRequest(request).getFileDescriptor());
         } else  {
-            logger.trace("Messge Type unknown - Passing to Registered Unknown Handler");
+            logger.trace("Message Type unknown - Passing to Registered Unknown Handler");
             if(unknownHandler != null) {
                 return unknownHandler.processRequest(connection, descriptor, session, request);
             }

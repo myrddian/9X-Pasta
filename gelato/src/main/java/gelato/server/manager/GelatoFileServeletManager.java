@@ -89,4 +89,8 @@ public class GelatoFileServeletManager extends Thread {
     public synchronized boolean isShutdown() {
         return shutdown;
     }
+
+    public GelatoSessionHandler getSessionHandler() {
+        return sessionHandler;
+    }
 }

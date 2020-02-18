@@ -44,12 +44,12 @@ public class Gelato {
         return descriptorManager;
     }
 
-    ClientConnection createClientConnection(GelatoConfigImpl connectionConfig) {
+    public ClientConnection createClientConnection(GelatoConfigImpl connectionConfig) {
         ClientConnection connection = new ClientConnection(connectionConfig,this);
         return connection;
     }
 
-    GelatoConnection createConnection(GelatoConfigImpl config) {
+   public  GelatoConnection createConnection(GelatoConfigImpl config) {
         if(config.getMode()== MODE.CLIENT) {
             return createClientConnection(config);
         }else if (config.getMode() == MODE.SERVER) {
@@ -58,7 +58,7 @@ public class Gelato {
         return createServer(config);
     }
 
-    GelatoServerConnection createServer(GelatoConfigImpl con) {
+    public GelatoServerConnection createServer(GelatoConfigImpl con) {
         GelatoServerConnection connection = new GelatoServerConnection(this,con);
         return connection;
     }

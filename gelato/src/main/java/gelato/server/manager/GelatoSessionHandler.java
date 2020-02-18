@@ -17,6 +17,7 @@
 package gelato.server.manager;
 
 import gelato.*;
+import gelato.client.file.*;
 import gelato.server.manager.implementation.*;
 import gelato.server.manager.requests.*;
 import org.slf4j.*;
@@ -25,13 +26,23 @@ import protocol.messages.*;
 import protocol.messages.request.*;
 import protocol.messages.response.*;
 
-public class GelatoSessionHandler {
+public class GelatoSessionHandler implements RequestAttachHandler, ResponseAttachHandler {
 
     private final Logger logger = LoggerFactory.getLogger(GelatoSessionHandler.class);
     private GelatoQIDManager qidManager;
     private GenericRequestHandler handler;
     private GelatoAuthorisationManager authorisationManager;
     private GelatoResourceHandler rootAttach;
+    private ResponseAttachHandler responseAttachHandler = this;
+
+    public ResponseAttachHandler getResponseAttachHandler() {
+        return responseAttachHandler;
+    }
+
+    public void setResponseAttachHandler(ResponseAttachHandler responseAttachHandler) {
+        this.responseAttachHandler = responseAttachHandler;
+    }
+
 
     public GelatoSessionHandler(GelatoQIDManager gelatoQIDManager,
                                 GenericRequestHandler handler) {
@@ -82,23 +93,9 @@ public class GelatoSessionHandler {
        }
     }
 
-    private void requestAuth(GelatoConnection connection, GelatoFileDescriptor descriptor, GelatoSession session, Message message) {
-        if(message.messageType == P9Protocol.TAUTH || message.messageType == P9Protocol.TATTACH) {
-            if(message.messageType == P9Protocol.TATTACH) {
-                handleAttachRequest(connection, descriptor, session, message);
-            }
-            else {
-                handleAuthRequest(connection, descriptor, session, message);
-            }
-        }
-        else {
-            logger.error("Invalid Session Creation - Expected AUTH/Attach Message");
-        }
-    }
-
-    private void handleAttachRequest(GelatoConnection connection, GelatoFileDescriptor descriptor, GelatoSession session, Message message) {
+    @Override
+    public boolean processRequest(GelatoConnection connection, GelatoFileDescriptor descriptor, GelatoSession session, AttachRequest request) {
         logger.info("Handling Attach Request for Descriptor " + Long.toString(descriptor.getDescriptorId()));
-        AttachRequest request  = Decoder.decodeAttachRequest(message);
         GelatoDescriptorManager sessionDescriptor  = new GelatoDescriptorManager();
         GelatoFileDescriptor authDescriptor;
         GelatoFileDescriptor resourceDescriptor = new GelatoFileDescriptor();
@@ -117,7 +114,7 @@ public class GelatoSessionHandler {
             if(authDescriptor.getDescriptorId() != ByteEncoder.getUnsigned(request.getAfid())) {
                 logger.error("Client sent invalid AFID ID expected: " + Long.toString(authDescriptor.getDescriptorId()) +
                         "Got: " + Long.toString(ByteEncoder.getUnsigned(request.getAfid())));
-                return;
+                return false;
             }
             session.setManager(sessionDescriptor);
             authDescriptor.setRawFileDescriptor(request.getAfid());
@@ -125,18 +122,37 @@ public class GelatoSessionHandler {
         }
         else {
             logger.error("Expected an Authorised FID - Authorisation Manager Requests client to be authenticated");
-            return;
+            return false;
         }
         resourceDescriptor.setRawFileDescriptor(request.getFid());
         session.setAuthorisationDescriptor(authDescriptor);
         session.getManager().mapQID(resourceDescriptor, rootAttach.getFileDescriptor());
-        //Send Response
-        AttachResponse response = new AttachResponse();
-        response.setTag(message.tag);
-        response.setServerID(rootAttach.getQID());
-        connection.sendMessage(descriptor, response.toMessage());
-        logger.info("User: " + request.getUsername() + " Mapped ROOT against FID: " + Long.toString(ByteEncoder.getUnsigned(request.getFid()))
-                + " Connection: " + Long.toString(descriptor.getDescriptorId()));
+        return true;
+    }
+
+    private void requestAuth(GelatoConnection connection, GelatoFileDescriptor descriptor, GelatoSession session, Message message) {
+        if(message.messageType == P9Protocol.TAUTH || message.messageType == P9Protocol.TATTACH) {
+            if(message.messageType == P9Protocol.TATTACH) {
+                AttachRequest attachRequest = Decoder.decodeAttachRequest(message);
+                if(processRequest(connection, descriptor, session, attachRequest) ) {
+                    //Send Response
+                    AttachResponse response = new AttachResponse();
+                    response.setTag(message.tag);
+                    response.setServerID(rootAttach.getQID());
+                    responseAttachHandler.writeResponse(connection,descriptor,response);
+                    logger.info("User: " + attachRequest.getUsername() + " Mapped ROOT against FID: " + Long.toString(ByteEncoder.getUnsigned(attachRequest.getFid()))
+                            + " Connection: " + Long.toString(descriptor.getDescriptorId()));
+                } else {
+                    sendError(connection, descriptor, "Unable to Attach service", message.tag );
+                }
+            }
+            else {
+                handleAuthRequest(connection, descriptor, session, message);
+            }
+        }
+        else {
+            logger.error("Invalid Session Creation - Expected AUTH/Attach Message");
+        }
     }
 
     private void handleAuthRequest(GelatoConnection connection, GelatoFileDescriptor descriptor, GelatoSession session, Message message) {
@@ -163,21 +179,21 @@ public class GelatoSessionHandler {
                         + " Connection: " + Long.toString(descriptor.getDescriptorId()));
             } else {
                 logger.error("Unable to Authenticate user "+ authRequest.getUserName());
-                ErrorMessage errorMessage = new ErrorMessage();
-                errorMessage.setErrorMessage("authentication failed");
-                errorMessage.setTag(message.tag);
-                connection.sendMessage(descriptor, errorMessage.toMessage());
+                sendError(connection, descriptor, "authentication failed", message.tag );
             }
         } else {
             logger.error("Authorisation Manager does not support AUTH requests - Sending error");
-            ErrorMessage errorMessage = new ErrorMessage();
-            errorMessage.setTag(message.tag);
-            errorMessage.setErrorMessage("No Authorisation Supported");
-            connection.sendMessage(descriptor, errorMessage.toMessage());
+            sendError(connection, descriptor, "Authorisation Manager does not support AUTH requests", message.tag );
         }
 
     }
 
+    private void sendError(GelatoConnection connection, GelatoFileDescriptor descriptor, String errorMesg, int tagCount) {
+        ErrorMessage errorMessage = new ErrorMessage();
+        errorMessage.setTag(tagCount);
+        errorMessage.setErrorMessage(errorMesg);
+        connection.sendMessage(descriptor, errorMessage.toMessage());
+    }
 
     public GelatoQIDManager getQidManager() {
         return qidManager;
@@ -209,5 +225,12 @@ public class GelatoSessionHandler {
 
     public void setRootAttach(GelatoResourceHandler rootAttach) {
         this.rootAttach = rootAttach;
+    }
+
+
+    @Override
+    public boolean writeResponse(GelatoConnection connection, GelatoFileDescriptor fileDescriptor, AttachResponse response) {
+        connection.sendMessage(fileDescriptor, response.toMessage());
+        return true;
     }
 }

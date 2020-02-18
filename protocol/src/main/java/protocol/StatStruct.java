@@ -36,6 +36,25 @@ public class StatStruct {
     private String gid;
     private String muid;
 
+
+    public StatStruct duplicate() {
+        StatStruct newStatStruct = new StatStruct();
+        newStatStruct.statSize = statSize;
+        newStatStruct.type = type;
+        newStatStruct.dev = dev;
+        newStatStruct.qid = qid;
+        newStatStruct.mode = mode;
+        newStatStruct.atime = atime;
+        newStatStruct.mtime = mtime;
+        newStatStruct.length = length;
+        newStatStruct.name = name;
+        newStatStruct.uid = uid;
+        newStatStruct.gid = gid;
+        newStatStruct.muid = muid;
+
+        return newStatStruct;
+    }
+
     public long getAccessTime() {
         return ByteEncoder.getUnsigned(atime);
     }

@@ -14,57 +14,43 @@
  *    limitations under the License.
  */
 
-package gelato.server.manager.implementation;
+package fettuccine.drivers.proc;
 
+
+import fettuccine.*;
 import gelato.*;
 import gelato.server.manager.*;
 import gelato.server.manager.requests.*;
 import org.slf4j.*;
 import protocol.*;
-import protocol.messages.request.*;
 import protocol.messages.response.*;
+
 import java.time.*;
 
-public class SimpleDirectoryServelet extends GelatoAbstractDirectoryServelet {
+public class ProcDir extends GelatoAbstractDirectoryServelet {
 
-    private final Logger logger = LoggerFactory.getLogger(SimpleDirectoryServelet.class);
+    public static final long PROC_ID = 100l;
+    public static final String PROC_NAME  = "proc";
 
-    public SimpleDirectoryServelet(long resourceDescriptor, String name) {
-        setResourceName(name);
+    private final Logger logger = LoggerFactory.getLogger(ProcDir.class);
+
+    public ProcDir() {
+        setResourceName(PROC_NAME);
         StatStruct newStat = getStat();
         newStat.setAccessTime(Instant.now().getEpochSecond());
         newStat.setModifiedTime(newStat.getAccessTime());
-        newStat.setUid("TEST");
-        newStat.setGid("TEST");
-        newStat.setMuid("TEST");
+        newStat.setUid(FettuccineService.FETTUCCINE_SVC_NAME);
+        newStat.setGid(FettuccineService.FETTUCCINE_SVC_GRP);
+        newStat.setMuid(FettuccineService.FETTUCCINE_SVC_NAME);
         QID qid  = getQID();
         qid.setType(P9Protocol.QID_DIR);
         qid.setVersion(0);
-        qid.setLongFileId(resourceDescriptor);
+        qid.setLongFileId(PROC_ID);
         newStat.setQid(qid);
         newStat.updateSize();
         setQID(qid);
         setStat(newStat);
     }
-
-
-    public void setUid(String uid) {
-        getStat().setUid(uid);
-        getStat().updateSize();
-    }
-
-    public void setGid(String gid) {
-        getStat().setGid(gid);
-        getStat().updateSize();
-    }
-
-    public void setMuid(String muid)
-    {
-        getStat().setMuid(muid);
-        getStat().updateSize();
-    }
-
-
 
     @Override
     public void openRequest(RequestConnection connection, GelatoFileDescriptor clientFileDescriptor, byte mode) {
