@@ -76,6 +76,7 @@ public class GelatoFileServeletManager extends Thread {
     public void setRootDirectory(GelatoAbstractDirectoryServelet rootDirectory) {
         sessionHandler.setRootAttach(rootDirectory);
         addResource(rootDirectory);
+        rootDirectory.setDirectoryName("/");
     }
 
     public void serve() {
