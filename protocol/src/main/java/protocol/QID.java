@@ -46,6 +46,8 @@ public class QID {
         return ByteEncoder.getUnsigned(version);
     }
 
+    public int getVersionRaw() { return version; }
+
     public void setVersion(long newVersion) {
         version = ByteEncoder.toUnsigned(newVersion);
     }

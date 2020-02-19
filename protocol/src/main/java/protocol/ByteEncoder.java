@@ -38,9 +38,9 @@ public class ByteEncoder {
 
     public static void encodeQID(QID value, byte[] buffer, int position) {
         ByteBuffer byteBuffer = ByteBuffer.allocate(P9Protocol.MSG_QID_SIZE);
-        byteBuffer = byteBuffer.order(ByteOrder.BIG_ENDIAN);
+        byteBuffer = byteBuffer.order(ByteOrder.LITTLE_ENDIAN);
         byteBuffer.put(value.getType());
-        byteBuffer.putShort((short)value.getVersion());
+        byteBuffer.putInt(value.getVersionRaw());
         byteBuffer.putLong(value.getLongFileId());
         copyBytesTo(byteBuffer.array(), buffer, position, P9Protocol.MSG_QID_SIZE);
     }
@@ -52,7 +52,7 @@ public class ByteEncoder {
         int version = 0;
 
         type = buffer[position];
-        version = decodeShort(buffer, position + 1);
+        version = decodeInt(buffer, position + 1);
         fileId = decodeInt(buffer, position + 3);
         QID retVal = new QID();
         retVal.setLongFileId(fileId);
@@ -63,7 +63,7 @@ public class ByteEncoder {
 
     public static void encodeLong(long value, byte[] buffer, int position) {
         ByteBuffer bytesBuffer = ByteBuffer.allocate(P9Protocol.MSG_LONG_SIZE);
-        bytesBuffer = bytesBuffer.order(ByteOrder.BIG_ENDIAN);
+        bytesBuffer = bytesBuffer.order(ByteOrder.LITTLE_ENDIAN);
         bytesBuffer.putLong(value);
         copyBytesTo(bytesBuffer.array(), buffer, position, P9Protocol.MSG_LONG_SIZE);
     }
@@ -72,7 +72,7 @@ public class ByteEncoder {
         byte [] numBuffer = new byte[P9Protocol.MSG_LONG_SIZE];
         copyBytesFrom(buffer, numBuffer, position, P9Protocol.MSG_LONG_SIZE);
         ByteBuffer bytesBuffer = ByteBuffer.allocate(P9Protocol.MSG_LONG_SIZE);
-        bytesBuffer = bytesBuffer.order(ByteOrder.BIG_ENDIAN);
+        bytesBuffer = bytesBuffer.order(ByteOrder.LITTLE_ENDIAN);
         bytesBuffer.put(numBuffer);
         bytesBuffer.flip();
         return bytesBuffer.getLong();
@@ -81,7 +81,7 @@ public class ByteEncoder {
 
     public static void encodeInt(int value, byte[] buffer, int position) {
         ByteBuffer bytesBuffer = ByteBuffer.allocate(P9Protocol.MSG_FID_SIZE);
-        bytesBuffer = bytesBuffer.order(ByteOrder.BIG_ENDIAN);
+        bytesBuffer = bytesBuffer.order(ByteOrder.LITTLE_ENDIAN);
         bytesBuffer.putInt(value);
         copyBytesTo(bytesBuffer.array(), buffer, position, P9Protocol.MSG_FID_SIZE);
     }
@@ -90,7 +90,7 @@ public class ByteEncoder {
         byte [] numBuffer = new byte[P9Protocol.MSG_FID_SIZE];
         copyBytesFrom(buffer, numBuffer, position, P9Protocol.MSG_FID_SIZE);
         ByteBuffer bytesBuffer = ByteBuffer.allocate(P9Protocol.MSG_FID_SIZE);
-        bytesBuffer = bytesBuffer.order(ByteOrder.BIG_ENDIAN);
+        bytesBuffer = bytesBuffer.order(ByteOrder.LITTLE_ENDIAN);
         bytesBuffer.put(numBuffer);
         bytesBuffer.flip();
         return bytesBuffer.getInt();
@@ -100,7 +100,7 @@ public class ByteEncoder {
         byte [] numBuffer = new byte[P9Protocol.MSG_TAG_SIZE];
         copyBytesFrom(buffer, numBuffer, position, P9Protocol.MSG_TAG_SIZE);
         ByteBuffer bytesBuffer = ByteBuffer.allocate(P9Protocol.MSG_TAG_SIZE);
-        bytesBuffer = bytesBuffer.order(ByteOrder.BIG_ENDIAN);
+        bytesBuffer = bytesBuffer.order(ByteOrder.LITTLE_ENDIAN);
         bytesBuffer.put(numBuffer);
         bytesBuffer.flip();
         short val =  bytesBuffer.getShort();
@@ -111,7 +111,7 @@ public class ByteEncoder {
         short shorted = (short) value;
         byte [] shortBuffer = new byte[P9Protocol.MSG_TAG_SIZE];
         ByteBuffer bytesBuffer = ByteBuffer.allocate(P9Protocol.MSG_TAG_SIZE);
-        bytesBuffer = bytesBuffer.order(ByteOrder.BIG_ENDIAN);
+        bytesBuffer = bytesBuffer.order(ByteOrder.LITTLE_ENDIAN);
         bytesBuffer.putShort(shorted);
         bytesBuffer.flip();
         copyBytesTo(bytesBuffer.array(), buffer, position, P9Protocol.MSG_TAG_SIZE);

@@ -75,6 +75,7 @@ public class StatStruct {
 
         int statSize = P9Protocol.MSG_SHORT_SIZE;
         statSize += P9Protocol.MSG_SHORT_SIZE;
+        statSize += P9Protocol.MSG_SHORT_SIZE;
         statSize += P9Protocol.MSG_INT_SIZE;
         statSize += P9Protocol.MSG_QID_SIZE;
         statSize += P9Protocol.MSG_INT_SIZE;
@@ -103,6 +104,7 @@ public class StatStruct {
 
         int statSize = P9Protocol.MSG_SHORT_SIZE;
         statSize += P9Protocol.MSG_SHORT_SIZE;
+        statSize += P9Protocol.MSG_SHORT_SIZE;
         statSize += P9Protocol.MSG_INT_SIZE;
         statSize += P9Protocol.MSG_QID_SIZE;
         statSize += P9Protocol.MSG_INT_SIZE;
@@ -116,7 +118,9 @@ public class StatStruct {
 
         byte [] statRet = new byte[statSize];
         int ptr = 0;
-        ByteEncoder.encodeShort(this.statSize, statRet, 0);
+        ByteEncoder.encodeShort(this.statSize, statRet, ptr);
+        ptr += P9Protocol.MSG_SHORT_SIZE;
+        ByteEncoder.encodeShort(this.statSize-2, statRet, ptr);
         ptr += P9Protocol.MSG_SHORT_SIZE;
         ByteEncoder.encodeShort(type, statRet, ptr);
         ptr += P9Protocol.MSG_SHORT_SIZE;
@@ -146,6 +150,8 @@ public class StatStruct {
         int ptr = position;
         statSize = ByteEncoder.decodeShort(buffer,ptr);
         ptr += P9Protocol.MSG_SHORT_SIZE;
+        int tmp = ByteEncoder.decodeShort(buffer,ptr);
+        ptr += P9Protocol.MSG_SHORT_SIZE;
         type = ByteEncoder.decodeShort(buffer,ptr);
         ptr += P9Protocol.MSG_SHORT_SIZE;
         dev = ByteEncoder.decodeInt(buffer, ptr);
@@ -174,6 +180,7 @@ public class StatStruct {
     public int getStatSize() {
         return statSize;
     }
+    public int getStatSizen() { return statSize - 2; }
 
     public void setStatSize(int statSize) {
         this.statSize = statSize;
