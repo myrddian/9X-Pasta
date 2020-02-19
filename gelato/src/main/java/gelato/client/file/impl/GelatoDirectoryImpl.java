@@ -18,6 +18,7 @@ package gelato.client.file.impl;
 
 import gelato.*;
 import gelato.client.file.*;
+import gelato.server.manager.*;
 import org.slf4j.*;
 import protocol.*;
 import protocol.messages.*;
@@ -38,12 +39,22 @@ public class GelatoDirectoryImpl implements GelatoDirectory {
     private GelatoConnection connection;
     private GelatoFileDescriptor descriptor;
     private long cacheLoaded = (System.currentTimeMillis() / 1000);
-    private long cacheExpiry = 100;
+    private long cacheExpiry = 10;
     private StatStruct directoryStat;
     private Map<String, GelatoDirectoryImpl> directoryMap = new HashMap<>();
     private Map<String, GelatoFile> fileMap = new HashMap<>();
     private String path = "";
     private boolean isValid = true;
+
+    public GelatoDirectoryImpl getParent() {
+        return parent;
+    }
+
+    public void setParent(GelatoDirectoryImpl parent) {
+        this.parent = parent;
+    }
+
+    private GelatoDirectoryImpl parent = this;
 
     public GelatoDirectoryImpl(GelatoSession session,
                                GelatoConnection connection,
@@ -84,10 +95,18 @@ public class GelatoDirectoryImpl implements GelatoDirectory {
 
     @Override
     public GelatoDirectory getDirectory(String name) {
+        if(name.equals(GelatoAbstractDirectoryServelet.CURRENT_DIR)){
+            this.cacheValidate();
+            return this;
+        }
+        if(name.equals(GelatoAbstractDirectoryServelet.PARENT_DIR)){
+            parent.cacheValidate();
+            return parent;
+        }
         if(directoryMap.containsKey(name)) {
             GelatoDirectoryImpl target = directoryMap.get(name);
-            target.scanDirectory(1);
-            return directoryMap.get(name);
+            target.cacheValidate();
+            return target;
         }
         return null;
     }
@@ -209,6 +228,9 @@ public class GelatoDirectoryImpl implements GelatoDirectory {
         }
 
         for(StatStruct entry: statEntries) {
+            if(entry.getName().equals(GelatoAbstractDirectoryServelet.CURRENT_DIR) || entry.getName().equals(GelatoAbstractDirectoryServelet.PARENT_DIR)) {
+                continue;
+            }
             if(entry.getQid().getType() == P9Protocol.QID_DIR && directoryMap.containsKey(entry.getName()) == false) {
                //Issue a new walk request
                WalkRequest walkRequest = new WalkRequest();
@@ -227,7 +249,8 @@ public class GelatoDirectoryImpl implements GelatoDirectory {
                    newFileDescriptor.setQid(walkResponse.getQID());
                    session.getTags().closeTag(walkRequest.getTag());
                    GelatoDirectoryImpl newDir = new GelatoDirectoryImpl(session,
-                           connection, newFileDescriptor, currentDepth-1, path+"/"+getName());
+                           connection, newFileDescriptor, currentDepth-1, path+getName()+"/");
+                   newDir.setParent(this);
                    directoryMap.put(entry.getName(), newDir);
                    logger.info("Found : " + entry.getName() + " Mapped to Resource: " + Long.toString(newFileDescriptor.getDescriptorId()) +
                            " Path: " + newDir.getPath());
@@ -280,10 +303,11 @@ public class GelatoDirectoryImpl implements GelatoDirectory {
 
     private void cacheValidate() {
         logger.trace("Validating Cache entries");
-        long lifeSpan = cacheLoaded - (System.currentTimeMillis()/1000);
+        long lifeSpan = (System.currentTimeMillis()/1000) - cacheLoaded;
         if(lifeSpan > cacheExpiry) {
             scanDirectory(-1);
         }
+        cacheLoaded = (System.currentTimeMillis() / 1000);
     }
 
 
