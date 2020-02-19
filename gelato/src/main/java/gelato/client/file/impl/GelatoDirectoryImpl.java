@@ -306,8 +306,9 @@ public class GelatoDirectoryImpl implements GelatoDirectory {
         long lifeSpan = (System.currentTimeMillis()/1000) - cacheLoaded;
         if(lifeSpan > cacheExpiry) {
             scanDirectory(-1);
+            cacheLoaded = (System.currentTimeMillis() / 1000);
         }
-        cacheLoaded = (System.currentTimeMillis() / 1000);
+        
     }
 
 
