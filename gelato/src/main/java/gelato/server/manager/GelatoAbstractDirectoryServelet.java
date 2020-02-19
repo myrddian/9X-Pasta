@@ -145,7 +145,7 @@ public abstract class GelatoAbstractDirectoryServelet extends IgnoreFlushRequest
         connection.reply(response);
     }
 
-    @Override
+     @Override
     public void readRequest(RequestConnection connection, GelatoFileDescriptor clientFileDescriptor, long offset, int numberOfBytes) {
 
         if(directories.size()==0 && files.size()==0) {
@@ -153,24 +153,49 @@ public abstract class GelatoAbstractDirectoryServelet extends IgnoreFlushRequest
             connection.reply(readResponse);
         }
 
+        //Serialise the whole struct to memory
+        byte []statBuff = new byte[numberOfBytes];
+        int ptr = 0;
+        byte []encodedStat = null;
+
         for(String dirName: directories.keySet()) {
             GelatoResourceHandler dir = directories.get(dirName);
             StatStruct statStruct = dir.getStat();
             if(dirName.equals(GelatoAbstractDirectoryServelet.PARENT_DIR)) {
                 statStruct = this.parentDir;
             }
-            ReadResponse readResponse = new ReadResponse();
-            readResponse.setData(statStruct.EncodeStat());
-            connection.reply(readResponse);
+            encodedStat = statStruct.EncodeStat();
+            ByteEncoder.copyBytesTo(encodedStat, statBuff, ptr, encodedStat.length);
+            ptr += encodedStat.length;
+
         }
 
         for(GelatoResourceHandler files: files.values()) {
             StatStruct statStruct = files.getStat();
-            ReadResponse readResponse = new ReadResponse();
-            readResponse.setData(statStruct.EncodeStat());
-            connection.reply(readResponse);
+            encodedStat = statStruct.EncodeStat();
+            ByteEncoder.copyBytesTo(encodedStat, statBuff, ptr, encodedStat.length);
+            ptr += encodedStat.length;
         }
 
+        if(statBuff.length < P9Protocol.MAX_MSG_CONTENT_SIZE) {
+            ReadResponse readResponse = new ReadResponse();
+            readResponse.setData(statBuff);
+            connection.reply(readResponse);
+        } else {
+            ptr = 0;
+            while(ptr < statBuff.length) {
+                int copy = statBuff.length - ptr;
+                if(copy > P9Protocol.MAX_MSG_CONTENT_SIZE) {
+                    copy = P9Protocol.MAX_MSG_CONTENT_SIZE;
+                } 
+                encodedStat = new byte[copy];
+                ReadResponse readResponse = new ReadResponse();
+                ByteEncoder.copyBytesTo(encodedStat, statBuff, ptr, copy);
+                readResponse.setData(encodedStat);
+                connection.reply(readResponse);
+                ptr +=copy;
+            }
+        }
     }
 
     @Override
