@@ -59,7 +59,7 @@ public class GelatoParallelRequestHandler implements GenericRequestHandler {
             requestedResource.setRawFileDescriptor(Decoder.decodeCreateRequest(request).getFileDescriptor());
         }
         GelatoFileDescriptor serverResource = session.getManager().getServerDescriptor(requestedResource);
-        GelatoResourceHandler handler = resources.getHandler(serverResource);
+        GelatoGelatoAbstractResourcetHandler handler = resources.getHandler(serverResource);
 
         int scheduleGroup = Math.abs((int) (serverResource.getQid().getLongFileId() % library.threadCapacity()));
         return handler.processRequest(connection,descriptor,session,request);

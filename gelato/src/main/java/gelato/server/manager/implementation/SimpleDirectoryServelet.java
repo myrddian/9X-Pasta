@@ -18,14 +18,12 @@ package gelato.server.manager.implementation;
 
 import gelato.*;
 import gelato.server.manager.*;
-import gelato.server.manager.requests.*;
 import org.slf4j.*;
 import protocol.*;
-import protocol.messages.request.*;
 import protocol.messages.response.*;
 import java.time.*;
 
-public class SimpleDirectoryServelet extends GelatoAbstractDirectoryServelet {
+public class SimpleDirectoryServelet extends GelatoGelatoAbstractDirectoryServelet {
 
     private final Logger logger = LoggerFactory.getLogger(SimpleDirectoryServelet.class);
 

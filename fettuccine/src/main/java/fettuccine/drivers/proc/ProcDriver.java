@@ -18,21 +18,21 @@ package fettuccine.drivers.proc;
 
 import fettuccine.*;
 import gelato.*;
-import gelato.server.manager.*;
+import gelato.server.GelatoServerManager;
 import gelato.server.manager.implementation.*;
-import gelato.server.manager.requests.*;
+import gelato.server.manager.response.*;
 import org.slf4j.*;
 import protocol.messages.response.*;
 
 public class ProcDriver implements ResponseAttachHandler {
 
     private ProcDir procDir;
-    private GelatoFileServeletManager serveletManager;
+    private GelatoServerManager serveletManager;
     private final Logger logger = LoggerFactory.getLogger(ProcDriver.class);
 
-    public ProcDriver(GelatoFileServeletManager gelatoFileServeletManager) {
+    public ProcDriver(GelatoServerManager gelatoServerManager) {
         procDir = new ProcDir();
-        serveletManager = gelatoFileServeletManager;
+        serveletManager = gelatoServerManager;
         serveletManager.getSessionHandler().setResponseAttachHandler(this);
         serveletManager.addResource(procDir);
     }

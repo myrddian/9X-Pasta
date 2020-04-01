@@ -14,16 +14,14 @@
  *    limitations under the License.
  */
 
-package gelato.server.manager;
+package ciotola.annotations;
 
-import gelato.*;
-import protocol.*;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
-public interface GelatoQIDManager {
-
-    long generateQIDFieldID(String assetName);
-    QID generateAuthQID();
-    boolean mapResourceHandler(GelatoFileDescriptor id, GelatoGelatoAbstractResourcetHandler handler);
-    GelatoGelatoAbstractResourcetHandler getHandler(GelatoFileDescriptor id);
-
+@Retention(RetentionPolicy.RUNTIME)
+@Target(ElementType.METHOD)
+public @interface CiotolaServiceStop {
 }

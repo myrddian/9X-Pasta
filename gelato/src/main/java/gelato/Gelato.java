@@ -31,8 +31,8 @@ public class Gelato {
 
 
     public Gelato() {
-        logger.info("Starting Gelato");
-        logger.info(GelatoVersion.getVersion());
+        logger.trace("Starting Gelato");
+        logger.trace(GelatoVersion.getVersion());
         executorService = Executors.newWorkStealingPool();
     }
 

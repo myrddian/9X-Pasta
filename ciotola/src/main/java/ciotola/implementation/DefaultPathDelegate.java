@@ -14,16 +14,13 @@
  *    limitations under the License.
  */
 
-package gelato.server.manager;
+package ciotola.implementation;
 
-import gelato.*;
-import protocol.*;
+import ciotola.CiotolaPathDelegateHelper;
 
-public interface GelatoQIDManager {
-
-    long generateQIDFieldID(String assetName);
-    QID generateAuthQID();
-    boolean mapResourceHandler(GelatoFileDescriptor id, GelatoGelatoAbstractResourcetHandler handler);
-    GelatoGelatoAbstractResourcetHandler getHandler(GelatoFileDescriptor id);
-
+public class DefaultPathDelegate implements CiotolaPathDelegateHelper {
+    @Override
+    public String getPath(Class loadingClass) {
+        return loadingClass.getProtectionDomain().getCodeSource().getLocation().getPath();
+    }
 }

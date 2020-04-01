@@ -20,7 +20,6 @@ import fettuccine.drivers.*;
 import fettuccine.drivers.proc.*;
 import gelato.*;
 import gelato.server.*;
-import gelato.server.manager.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -33,7 +32,7 @@ public class FettuccineService {
     private Gelato gelato;
     private FettuccineConfig config;
     private GelatoServerConnection serverConnection;
-    private GelatoFileServeletManager serveletManager;
+    private GelatoServerManager serveletManager;
     private ProcDriver procDriver;
     private Root rootDir = new Root();
 
@@ -42,12 +41,14 @@ public class FettuccineService {
         logger.info(FettuccineVersion.getVersion());
         config.loadDefaultConfig();
         serverConnection = new GelatoServerConnection(gelato, config.generateConfig());
-        serveletManager = new GelatoFileServeletManager(serverConnection, gelato);
+        serveletManager = new GelatoServerManager(serverConnection, gelato);
         procDriver = new ProcDriver(serveletManager);
         serveletManager.start();
         rootDir.addDirectory(procDriver.getProcDir());
         serveletManager.setRootDirectory(rootDir);
+        serveletManager.hold();
     }
+
 
     public FettuccineService() {
         logger.info("Fettuccine - Interposer/Root VFS - Service is Initialising");

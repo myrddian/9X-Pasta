@@ -14,16 +14,18 @@
  *    limitations under the License.
  */
 
-package gelato.server.manager;
+package ciotola;
 
-import gelato.*;
-import protocol.*;
+public interface CiotolaServiceInterface {
 
-public interface GelatoQIDManager {
+    boolean startUp();
 
-    long generateQIDFieldID(String assetName);
-    QID generateAuthQID();
-    boolean mapResourceHandler(GelatoFileDescriptor id, GelatoGelatoAbstractResourcetHandler handler);
-    GelatoGelatoAbstractResourcetHandler getHandler(GelatoFileDescriptor id);
+    boolean shutdown();
+
+    boolean run();
+
+    String serviceName();
+
+    Object getObject();
 
 }

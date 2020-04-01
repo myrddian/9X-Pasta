@@ -17,22 +17,22 @@
 package gelato.server.manager;
 
 import gelato.*;
-import gelato.client.file.*;
 import gelato.server.manager.implementation.*;
 import gelato.server.manager.requests.*;
+import gelato.server.manager.response.*;
 import org.slf4j.*;
 import protocol.*;
 import protocol.messages.*;
 import protocol.messages.request.*;
 import protocol.messages.response.*;
 
-public class GelatoSessionHandler implements RequestAttachHandler, ResponseAttachHandler {
+public class GelatoSessionHandler extends GelatoAbstractGenericRequestHandler implements RequestAttachHandler, ResponseAttachHandler {
 
     private final Logger logger = LoggerFactory.getLogger(GelatoSessionHandler.class);
     private GelatoQIDManager qidManager;
     private GenericRequestHandler handler;
     private GelatoAuthorisationManager authorisationManager;
-    private GelatoResourceHandler rootAttach;
+    private GelatoGelatoAbstractResourcetHandler rootAttach;
     private ResponseAttachHandler responseAttachHandler = this;
 
     public ResponseAttachHandler getResponseAttachHandler() {
@@ -55,7 +55,7 @@ public class GelatoSessionHandler implements RequestAttachHandler, ResponseAttac
 
     public GelatoSessionHandler(GelatoQIDManager gelatoQIDManager,
                                 GenericRequestHandler handler,
-                                GelatoResourceHandler root) {
+                                GelatoGelatoAbstractResourcetHandler root) {
         qidManager = gelatoQIDManager;
         this.handler = handler;
         authorisationManager = new NullAuthorisation();
@@ -65,7 +65,7 @@ public class GelatoSessionHandler implements RequestAttachHandler, ResponseAttac
     public GelatoSessionHandler(GelatoQIDManager gelatoQIDManager,
                                 GenericRequestHandler nextHandler,
                                 GelatoAuthorisationManager authorisationManager,
-                                GelatoResourceHandler root)
+                                GelatoGelatoAbstractResourcetHandler root)
     {
         qidManager = gelatoQIDManager;
         handler = nextHandler;
@@ -73,24 +73,25 @@ public class GelatoSessionHandler implements RequestAttachHandler, ResponseAttac
         rootAttach = root;
     }
 
-    public void handleSession(GelatoConnection connection, GelatoFileDescriptor descriptor, GelatoSession session, Message message) {
-       GelatoFileDescriptor auth = session.getAuthorisationDescriptor();
+    @Override
+    public boolean processRequest(GelatoConnection connection, GelatoFileDescriptor descriptor, GelatoSession session, Message request) {
+        GelatoFileDescriptor auth = session.getAuthorisationDescriptor();
 
-       //validate tag
-       if (session.getTags().isRecycled(message.tag)  != false) {
-           logger.error("Invalid Tags, Expected: " + Integer.toString(session.getTags().getTagCount()) + " Got: " + Integer.toString(message.tag));
-       }
-       session.getTags().registerTag(message.tag);
-       if(auth == null) {
-           requestAuth(connection, descriptor, session, message);
-       } else {
-           if (handler == null) {
-               logger.error("Request Handler currently not setup ");
-           }
-           if (handler.processRequest(connection, descriptor, session, message) == false) {
-               logger.error("Unable to process request");
-           }
-       }
+        //validate tag
+        if (session.getTags().isRecycled(request.tag)  != false) {
+            logger.error("Invalid Tags, Expected: " + Integer.toString(session.getTags().getTagCount()) + " Got: " + Integer.toString(request.tag));
+        }
+        session.getTags().registerTag(request.tag);
+        if(auth == null) {
+            return requestAuth(connection, descriptor, session, request);
+        } else {
+            if (handler == null) {
+                logger.error("Request Handler currently not setup ");
+                return false;
+            } else {
+                return handler.processRequest(connection, descriptor, session, request);
+            }
+        }
     }
 
     @Override
@@ -130,7 +131,7 @@ public class GelatoSessionHandler implements RequestAttachHandler, ResponseAttac
         return true;
     }
 
-    private void requestAuth(GelatoConnection connection, GelatoFileDescriptor descriptor, GelatoSession session, Message message) {
+    private boolean requestAuth(GelatoConnection connection, GelatoFileDescriptor descriptor, GelatoSession session, Message message) {
         if(message.messageType == P9Protocol.TAUTH || message.messageType == P9Protocol.TATTACH) {
             if(message.messageType == P9Protocol.TATTACH) {
                 AttachRequest attachRequest = Decoder.decodeAttachRequest(message);
@@ -142,20 +143,23 @@ public class GelatoSessionHandler implements RequestAttachHandler, ResponseAttac
                     responseAttachHandler.writeResponse(connection,descriptor,response);
                     logger.info("User: " + attachRequest.getUsername() + " Mapped ROOT against FID: " + Long.toString(ByteEncoder.getUnsigned(attachRequest.getFid()))
                             + " Connection: " + Long.toString(descriptor.getDescriptorId()));
+                    return true;
                 } else {
-                    sendError(connection, descriptor, "Unable to Attach service", message.tag );
+                    sendErrorMessage(connection, descriptor, message.tag,"Unable to Attach service" );
+                    return false;
                 }
             }
             else {
-                handleAuthRequest(connection, descriptor, session, message);
+                return handleAuthRequest(connection, descriptor, session, message);
             }
         }
         else {
             logger.error("Invalid Session Creation - Expected AUTH/Attach Message");
         }
+        return false;
     }
 
-    private void handleAuthRequest(GelatoConnection connection, GelatoFileDescriptor descriptor, GelatoSession session, Message message) {
+    private boolean handleAuthRequest(GelatoConnection connection, GelatoFileDescriptor descriptor, GelatoSession session, Message message) {
         AuthRequest authRequest = Decoder.decodeAuthRequest(message);
         if(authorisationManager.requireAuth()) {
             if(authorisationManager.processAuthRequest(connection, descriptor, session, authRequest)) {
@@ -177,22 +181,17 @@ public class GelatoSessionHandler implements RequestAttachHandler, ResponseAttac
 
                 logger.info("User: " + authRequest.getUserName() + " authenticated against FID: " + Integer.toString(authRequest.getAuthFileID())
                         + " Connection: " + Long.toString(descriptor.getDescriptorId()));
+                return true;
             } else {
                 logger.error("Unable to Authenticate user "+ authRequest.getUserName());
-                sendError(connection, descriptor, "authentication failed", message.tag );
+                sendErrorMessage(connection, descriptor, message.tag,"authentication failed");
             }
         } else {
             logger.error("Authorisation Manager does not support AUTH requests - Sending error");
-            sendError(connection, descriptor, "Authorisation Manager does not support AUTH requests", message.tag );
+            sendErrorMessage(connection, descriptor, message.tag,"Authorisation Manager does not support AUTH requests");
         }
+        return false;
 
-    }
-
-    private void sendError(GelatoConnection connection, GelatoFileDescriptor descriptor, String errorMesg, int tagCount) {
-        ErrorMessage errorMessage = new ErrorMessage();
-        errorMessage.setTag(tagCount);
-        errorMessage.setErrorMessage(errorMesg);
-        connection.sendMessage(descriptor, errorMessage.toMessage());
     }
 
     public GelatoQIDManager getQidManager() {
@@ -219,11 +218,11 @@ public class GelatoSessionHandler implements RequestAttachHandler, ResponseAttac
         this.authorisationManager = authorisationManager;
     }
 
-    public GelatoResourceHandler getRootAttach() {
+    public GelatoGelatoAbstractResourcetHandler getRootAttach() {
         return rootAttach;
     }
 
-    public void setRootAttach(GelatoResourceHandler rootAttach) {
+    public void setRootAttach(GelatoGelatoAbstractResourcetHandler rootAttach) {
         this.rootAttach = rootAttach;
     }
 
@@ -233,4 +232,6 @@ public class GelatoSessionHandler implements RequestAttachHandler, ResponseAttac
         connection.sendMessage(fileDescriptor, response.toMessage());
         return true;
     }
+
+
 }

@@ -14,7 +14,7 @@
  *    limitations under the License.
  */
 
-package gelato.server.manager.requests;
+package gelato.server.manager;
 
 import gelato.*;
 import protocol.messages.*;

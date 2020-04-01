@@ -20,14 +20,13 @@ package fettuccine.drivers.proc;
 import fettuccine.*;
 import gelato.*;
 import gelato.server.manager.*;
-import gelato.server.manager.requests.*;
 import org.slf4j.*;
 import protocol.*;
 import protocol.messages.response.*;
 
 import java.time.*;
 
-public class ProcDir extends GelatoAbstractDirectoryServelet {
+public class ProcDir extends GelatoGelatoAbstractDirectoryServelet {
 
     public static final long PROC_ID = 100l;
     public static final String PROC_NAME  = "proc";

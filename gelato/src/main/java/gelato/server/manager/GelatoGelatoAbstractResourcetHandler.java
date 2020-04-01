@@ -17,15 +17,13 @@
 package gelato.server.manager;
 
 import gelato.*;
-import gelato.client.file.*;
 import gelato.server.manager.requests.*;
 import org.slf4j.*;
 import protocol.*;
 import protocol.messages.*;
 import protocol.messages.request.*;
-import protocol.messages.response.*;
 
-public abstract class GelatoResourceHandler implements GenericRequestHandler,
+public abstract class GelatoGelatoAbstractResourcetHandler extends GelatoAbstractGenericRequestHandler implements
         RequestCreateHandler,
         RequestFlushHandler,
         RequestWalkHandler,
@@ -37,7 +35,7 @@ public abstract class GelatoResourceHandler implements GenericRequestHandler,
         RequestStatHandler,
         RequestWriteHandler {
 
-    private final Logger logger = LoggerFactory.getLogger(GelatoResourceHandler.class);
+    private final Logger logger = LoggerFactory.getLogger(GelatoGelatoAbstractResourcetHandler.class);
 
     @Override
     public boolean processRequest(GelatoConnection connection, GelatoFileDescriptor descriptor, GelatoSession session, Message request) {
@@ -151,22 +149,6 @@ public abstract class GelatoResourceHandler implements GenericRequestHandler,
         clientDescriptor.setRawFileDescriptor(request.getFileDescriptor());
         writeRequest(con,clientDescriptor, request.getFileOffset(), request.getWriteData());
         return true;
-    }
-
-    private RequestConnection createConnection(GelatoConnection connection, GelatoFileDescriptor descriptor, GelatoSession session, int tag) {
-        RequestConnection con = new RequestConnection();
-        con.setConnection(connection);
-        con.setDescriptor(descriptor);
-        con.setSession(session);
-        con.setTransactionId(tag);
-        return con;
-    }
-
-    public void sendErrorMessage(RequestConnection connection, String message) {
-        ErrorMessage msg = new ErrorMessage();
-        msg.setTag(connection.getTransactionId());
-        msg.setErrorMessage(message);
-        connection.reply(msg);
     }
 
     public abstract void  openRequest(RequestConnection connection, GelatoFileDescriptor clientFileDescriptor, byte mode);

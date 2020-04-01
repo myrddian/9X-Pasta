@@ -19,14 +19,13 @@ package fettuccine.drivers;
 import fettuccine.*;
 import gelato.*;
 import gelato.server.manager.*;
-import gelato.server.manager.requests.*;
 import org.slf4j.*;
 import protocol.*;
 import protocol.messages.response.*;
 
 import java.time.*;
 
-public class Root extends GelatoAbstractDirectoryServelet {
+public class Root extends GelatoGelatoAbstractDirectoryServelet {
 
     public static final long ROOT_ID = 001l;
     public static final String ROOT_NAME  = "";

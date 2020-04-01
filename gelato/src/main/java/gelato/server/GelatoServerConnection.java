@@ -16,8 +16,15 @@
 
 package gelato.server;
 
+import ciotola.CiotolaContext;
+import ciotola.annotations.CiotolaAutowire;
+import ciotola.annotations.CiotolaServiceRun;
+import ciotola.annotations.CiotolaServiceStart;
+import ciotola.annotations.CiotolaServiceStop;
+import ciotola.implementation.AnnotatedJavaServiceRunner;
 import gelato.*;
 import gelato.client.*;
+import gelato.server.v2.V2TCPTransport;
 import gelato.transport.*;
 import org.slf4j.*;
 import protocol.*;
@@ -27,9 +34,11 @@ import java.io.*;
 import java.net.*;
 import java.util.*;
 
-public class GelatoServerConnection extends Thread implements GelatoConnection {
+public class GelatoServerConnection implements GelatoConnection {
 
-    final Logger logger = LoggerFactory.getLogger(GelatoServerConnection.class);
+    public enum MODE {V1_SELECT, V2_API, API_LATEST}
+
+    private final Logger logger = LoggerFactory.getLogger(GelatoServerConnection.class);
     private int portNumber = 7073;
     private ServerSocket serverSocket;
     private GelatoDescriptorManager descriptorManager;
@@ -37,6 +46,7 @@ public class GelatoServerConnection extends Thread implements GelatoConnection {
     private boolean shutdown = false;
     private Gelato libraryReference;
     private boolean started = false;
+    private MODE transportMode = MODE.V2_API;
 
     public GelatoServerConnection(Gelato library, GelatoConfigImpl config) {
         portNumber = config.getPortNumber();
@@ -55,14 +65,13 @@ public class GelatoServerConnection extends Thread implements GelatoConnection {
 
 
     public void startServer() {
-
-        this.start();
         started = true;
     }
 
     @Override
     public boolean isStarted() { return started; }
 
+    @CiotolaServiceStart
     @Override
     public void begin() {
         this.startServer();
@@ -77,19 +86,27 @@ public class GelatoServerConnection extends Thread implements GelatoConnection {
         }
     }
 
-    @Override
+    @CiotolaAutowire
+    private CiotolaContext context;
+
+    @CiotolaServiceRun
     public void run(){
         logger.info("Server Bound and waiting Connections");
+        if(transportMode == MODE.V1_SELECT) {
+            oldV1Api();
+        } else if(transportMode == MODE.V2_API || transportMode == MODE.API_LATEST) {
+            processMessages();
+        }
+    }
+
+    private void processMessages() {
         while(!shutdown) {
             try {
                 Socket clientSocket = serverSocket.accept();
-                ClientTCPTransport tcpTransport = new ClientTCPTransport(clientSocket);
                 GelatoFileDescriptor fileDescriptor = descriptorManager.generateDescriptor();
-                synchronized (this) {
-                    logger.info("Connected Client - File Descriptor: " + Long.toString(fileDescriptor.getDescriptorId()));
-                    connections.put(fileDescriptor, tcpTransport);
-                    libraryReference.getExecutorService().submit(tcpTransport);
-                }
+                logger.debug("Connected Client - File Descriptor: " + Long.toString(fileDescriptor.getDescriptorId()));
+                V2TCPTransport tcpTransport = new V2TCPTransport(clientSocket, fileDescriptor);
+                context.injectService(tcpTransport);
             } catch (IOException e) {
                 logger.error("Unable to handle connections ", e);
             }
@@ -107,7 +124,7 @@ public class GelatoServerConnection extends Thread implements GelatoConnection {
     }
 
     @Override
-    public List<GelatoFileDescriptor> getConnections() {
+    public synchronized List<GelatoFileDescriptor> getConnections() {
         return new ArrayList<>(connections.keySet());
     }
 
@@ -137,6 +154,7 @@ public class GelatoServerConnection extends Thread implements GelatoConnection {
         throw new RuntimeException("Invalid Operation");
     }
 
+    @CiotolaServiceStop
     @Override
     public synchronized void shutdown() {
         shutdown = true;
@@ -147,6 +165,24 @@ public class GelatoServerConnection extends Thread implements GelatoConnection {
     public Message getMessage() {
         logger.error("Method not supported (GET-MESSAGE) - on server you must specify a Descriptor");
         throw new RuntimeException("Invalid Operation");
+    }
+
+
+    private void oldV1Api() {
+        while(!shutdown) {
+            try {
+                Socket clientSocket = serverSocket.accept();
+                ClientTCPTransport tcpTransport = new ClientTCPTransport(clientSocket);
+                GelatoFileDescriptor fileDescriptor = descriptorManager.generateDescriptor();
+                synchronized (this) {
+                    logger.trace("Connected Client - File Descriptor: " + Long.toString(fileDescriptor.getDescriptorId()));
+                    connections.put(fileDescriptor, tcpTransport);
+                    libraryReference.getExecutorService().submit(tcpTransport);
+                }
+            } catch (IOException e) {
+                logger.error("Unable to handle connections ", e);
+            }
+        }
     }
 
 }

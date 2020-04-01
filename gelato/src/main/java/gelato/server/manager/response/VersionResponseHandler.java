@@ -14,16 +14,12 @@
  *    limitations under the License.
  */
 
-package gelato.server.manager;
+package gelato.server.manager.response;
 
 import gelato.*;
-import protocol.*;
+import protocol.messages.*;
+import protocol.messages.response.*;
 
-public interface GelatoQIDManager {
-
-    long generateQIDFieldID(String assetName);
-    QID generateAuthQID();
-    boolean mapResourceHandler(GelatoFileDescriptor id, GelatoGelatoAbstractResourcetHandler handler);
-    GelatoGelatoAbstractResourcetHandler getHandler(GelatoFileDescriptor id);
-
+public interface VersionResponseHandler {
+    boolean writeResponse(GelatoConnection connection, GelatoFileDescriptor fileDescriptor, VersionRequest response);
 }

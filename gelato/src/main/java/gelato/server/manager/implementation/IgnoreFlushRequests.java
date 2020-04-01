@@ -21,7 +21,7 @@ import gelato.server.manager.*;
 import protocol.messages.request.*;
 import protocol.messages.response.*;
 
-public abstract class IgnoreFlushRequests extends GelatoResourceHandler {
+public abstract class IgnoreFlushRequests extends GelatoGelatoAbstractResourcetHandler {
     @Override
     public boolean processRequest(GelatoConnection connection, GelatoFileDescriptor descriptor, GelatoSession session, FlushRequest request) {
         return sendFlushResponse(connection, descriptor, session, request);

@@ -14,13 +14,13 @@
  *    limitations under the License.
  */
 
-package gelato.server.manager.requests;
+package ciotola;
 
-import gelato.*;
-import protocol.messages.response.*;
-
-public interface ResponseAttachHandler {
-
-    boolean writeResponse(GelatoConnection connection, GelatoFileDescriptor fileDescriptor, AttachResponse response);
-
+public enum  ServiceStatus {
+    SERVICE_START,
+    SERVICE_STOP,
+    SERVICE_RESTART,
+    SERVICE_RUNNING,
+    SERVICE_STATUS
 }
+

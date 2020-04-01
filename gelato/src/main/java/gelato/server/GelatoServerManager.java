@@ -14,16 +14,21 @@
  *    limitations under the License.
  */
 
-package gelato.server.manager;
+package gelato.server;
 
+import ciotola.Ciotola;
 import gelato.*;
+import gelato.server.manager.GelatoDescriptorHandler;
+import gelato.server.manager.GelatoGelatoAbstractDirectoryServelet;
+import gelato.server.manager.GelatoGelatoAbstractResourcetHandler;
+import gelato.server.manager.GelatoParallelRequestHandler;
+import gelato.server.manager.GelatoQIDManager;
+import gelato.server.manager.GelatoSessionHandler;
+import gelato.server.manager.GelatoValidateRequestHandler;
 import gelato.server.manager.implementation.*;
 import org.slf4j.*;
-import protocol.*;
 
-import java.util.*;
-
-public class GelatoFileServeletManager extends Thread {
+public class GelatoServerManager {
 
     private GelatoConnection connection;
     private GelatoQIDManager qidManager;
@@ -31,28 +36,15 @@ public class GelatoFileServeletManager extends Thread {
     private GelatoDescriptorHandler descriptorHandler;
     private GelatoValidateRequestHandler validateRequestHandler = new GelatoValidateRequestHandler();
     private GelatoParallelRequestHandler parallelRequestHandler;
-    private Gelato library;
-    //private Map<Long, >
+    private Ciotola serviceContainer = Ciotola.getInstance();
 
     private boolean shutdown = false;
-    private final Logger logger = LoggerFactory.getLogger(GelatoFileServeletManager.class);
+    private final Logger logger = LoggerFactory.getLogger(GelatoServerManager.class);
 
-    @Override
-    public void run(){
-        logger.info("Running File Servelet Manager");
-        while(!isShutdown()) {
-            descriptorHandler.processDescriptorMessages();
-            try {
-                Thread.sleep(50);
-            } catch (InterruptedException e) {
-                logger.error("Thread Interrupted", e);
-            }
-        }
-    }
 
-    public GelatoFileServeletManager(GelatoConnection connection,
-                                     Gelato library) {
-        this.library = library;
+    public GelatoServerManager(GelatoConnection connection,
+                               Gelato library) {
+
         this.connection = connection;
         qidManager = new QIDInMemoryManager();
         sessionHandler = new GelatoSessionHandler(qidManager, validateRequestHandler);
@@ -62,25 +54,39 @@ public class GelatoFileServeletManager extends Thread {
         if(this.connection.isStarted() == false ){
             this.connection.begin();
         }
+        serviceContainer.setExecutorService(library.getExecutorService());
+        serviceContainer.addService(descriptorHandler);
+        serviceContainer.addService(connection);
     }
 
-    public void addResource(GelatoFileDescriptor fileDescriptor,GelatoResourceHandler newServerResource) {
+    public void addResource(GelatoFileDescriptor fileDescriptor, GelatoGelatoAbstractResourcetHandler newServerResource) {
         newServerResource.setFileDescriptor(fileDescriptor);
         qidManager.mapResourceHandler(fileDescriptor, newServerResource);
     }
 
-    public void addResource(GelatoResourceHandler newServerResource) {
+    public void addResource(GelatoGelatoAbstractResourcetHandler newServerResource) {
         qidManager.mapResourceHandler(newServerResource.getFileDescriptor(), newServerResource);
     }
 
-    public void setRootDirectory(GelatoAbstractDirectoryServelet rootDirectory) {
+    public void setRootDirectory(GelatoGelatoAbstractDirectoryServelet rootDirectory) {
         sessionHandler.setRootAttach(rootDirectory);
         addResource(rootDirectory);
         rootDirectory.setDirectoryName("/");
     }
 
-    public void serve() {
-        this.start();
+    public void start() {
+        this.serviceContainer.start();
+    }
+
+    public void hold() {
+        while(!shutdown) {
+            try {
+                Thread.sleep(5000);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+                return;
+            }
+        }
     }
 
     public synchronized void shutdown() {

@@ -95,11 +95,11 @@ public class GelatoDirectoryImpl implements GelatoDirectory {
 
     @Override
     public GelatoDirectory getDirectory(String name) {
-        if(name.equals(GelatoAbstractDirectoryServelet.CURRENT_DIR)){
+        if(name.equals(GelatoGelatoAbstractDirectoryServelet.CURRENT_DIR)){
             this.cacheValidate();
             return this;
         }
-        if(name.equals(GelatoAbstractDirectoryServelet.PARENT_DIR)){
+        if(name.equals(GelatoGelatoAbstractDirectoryServelet.PARENT_DIR)){
             parent.cacheValidate();
             return parent;
         }
@@ -139,7 +139,7 @@ public class GelatoDirectoryImpl implements GelatoDirectory {
     }
 
     private void scanDirectory(int currentDepth) {
-        logger.info("Scanning Directory depth: " + Integer.toString(currentDepth));
+        logger.trace("Scanning Directory depth: " + Integer.toString(currentDepth));
         ErrorMessage err;
         StatRequest requestRootStat = new StatRequest();
         requestRootStat.setFileDescriptor(descriptor.getRawFileDescriptor());
@@ -217,7 +217,7 @@ public class GelatoDirectoryImpl implements GelatoDirectory {
             mappedValues.put(entry.getName(), entry);
         }
 
-        logger.info("Navigating Directory Tree for: " + directoryStat.getName());
+        logger.trace("Navigating Directory Tree for: " + directoryStat.getName());
         //Attempt a walk and stat - Directories
 
         for(GelatoDirectoryImpl directory: directoryMap.values()) {
@@ -228,7 +228,7 @@ public class GelatoDirectoryImpl implements GelatoDirectory {
         }
 
         for(StatStruct entry: statEntries) {
-            if(entry.getName().equals(GelatoAbstractDirectoryServelet.CURRENT_DIR) || entry.getName().equals(GelatoAbstractDirectoryServelet.PARENT_DIR)) {
+            if(entry.getName().equals(GelatoGelatoAbstractDirectoryServelet.CURRENT_DIR) || entry.getName().equals(GelatoGelatoAbstractDirectoryServelet.PARENT_DIR)) {
                 continue;
             }
             if(entry.getQid().getType() == P9Protocol.QID_DIR && directoryMap.containsKey(entry.getName()) == false) {
@@ -252,7 +252,7 @@ public class GelatoDirectoryImpl implements GelatoDirectory {
                            connection, newFileDescriptor, currentDepth-1, path+getName()+"/");
                    newDir.setParent(this);
                    directoryMap.put(entry.getName(), newDir);
-                   logger.info("Found : " + entry.getName() + " Mapped to Resource: " + Long.toString(newFileDescriptor.getDescriptorId()) +
+                   logger.trace("Found : " + entry.getName() + " Mapped to Resource: " + Long.toString(newFileDescriptor.getDescriptorId()) +
                            " Path: " + newDir.getPath());
                }
             }

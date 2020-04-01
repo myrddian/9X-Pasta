@@ -18,10 +18,8 @@ package gelato.server.manager;
 
 import gelato.*;
 import gelato.server.manager.implementation.*;
-import gelato.server.manager.requests.*;
-import protocol.*;
 
-public abstract class GelatoAbstractFileServelet extends IgnoreFlushRequests{
+public abstract class GelatoGelatoAbstractFileServelet extends IgnoreFlushRequests{
 
     public String getFileName() { return this.resourceName();}
     public void setFileName(String fileName) { this.setResourceName(fileName);}

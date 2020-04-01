@@ -18,28 +18,27 @@ package gelato.server.manager;
 
 import gelato.*;
 import gelato.server.manager.implementation.*;
-import gelato.server.manager.requests.*;
 import org.slf4j.*;
 import protocol.*;
 import protocol.messages.response.*;
 
 import java.util.*;
 
-public abstract class GelatoAbstractDirectoryServelet extends IgnoreFlushRequests {
+public abstract class GelatoGelatoAbstractDirectoryServelet extends IgnoreFlushRequests {
 
     public static final String PARENT_DIR = "..";
     public static final String CURRENT_DIR = ".";
 
-    private Map<String, GelatoResourceHandler> directories = new HashMap<>();
-    private final Logger logger = LoggerFactory.getLogger(GelatoAbstractDirectoryServelet.class);
-    private Map<String, GelatoResourceHandler> files = new HashMap<>();
+    private Map<String, GelatoGelatoAbstractResourcetHandler> directories = new HashMap<>();
+    private final Logger logger = LoggerFactory.getLogger(GelatoGelatoAbstractDirectoryServelet.class);
+    private Map<String, GelatoGelatoAbstractResourcetHandler> files = new HashMap<>();
     private StatStruct parentDir = null;
 
 
     private long calculateSize() {
         long count = 0;
         for(String dirName: directories.keySet()) {
-            GelatoResourceHandler dirHandler = directories.get(dirName);
+            GelatoGelatoAbstractResourcetHandler dirHandler = directories.get(dirName);
             if(dirName.equals(PARENT_DIR)) {
                 count += parentDir.getStatSize();
             }
@@ -49,7 +48,7 @@ public abstract class GelatoAbstractDirectoryServelet extends IgnoreFlushRequest
 
         }
 
-        for(GelatoResourceHandler fileHandler: files.values()) {
+        for(GelatoGelatoAbstractResourcetHandler fileHandler: files.values()) {
             count += fileHandler.getStat().getStatSize();
         }
 
@@ -71,7 +70,7 @@ public abstract class GelatoAbstractDirectoryServelet extends IgnoreFlushRequest
         return false;
     }
 
-    public GelatoResourceHandler getResource(String resourceName) {
+    public GelatoGelatoAbstractResourcetHandler getResource(String resourceName) {
         if(!containsResource(resourceName)) {
             return null;
         }
@@ -83,14 +82,14 @@ public abstract class GelatoAbstractDirectoryServelet extends IgnoreFlushRequest
         }
     }
 
-    public void mapPaths(GelatoAbstractDirectoryServelet parentDir) {
-        directories.put(GelatoAbstractDirectoryServelet.PARENT_DIR, parentDir);
+    public void mapPaths(GelatoGelatoAbstractDirectoryServelet parentDir) {
+        directories.put(GelatoGelatoAbstractDirectoryServelet.PARENT_DIR, parentDir);
         this.parentDir = parentDir.getStat().duplicate();
-        this.parentDir.setName(GelatoAbstractDirectoryServelet.PARENT_DIR);
+        this.parentDir.setName(GelatoGelatoAbstractDirectoryServelet.PARENT_DIR);
         this.parentDir.updateSize();
     }
 
-    public void addDirectory(GelatoAbstractDirectoryServelet newDirectory) {
+    public void addDirectory(GelatoGelatoAbstractDirectoryServelet newDirectory) {
         if(files.containsKey(newDirectory.getDirectoryName())){
             logger.error("Cannot add the a Directory Handler which is a file");
             return;
@@ -103,7 +102,7 @@ public abstract class GelatoAbstractDirectoryServelet extends IgnoreFlushRequest
         newDirectory.mapPaths(this);
     }
 
-    public void addFile(GelatoAbstractFileServelet newFile) {
+    public void addFile(GelatoGelatoAbstractFileServelet newFile) {
         if(files.containsKey(newFile.getFileName())){
             logger.error("Cannot add the a File Handler which is a Directory");
             return;
@@ -122,7 +121,7 @@ public abstract class GelatoAbstractDirectoryServelet extends IgnoreFlushRequest
             sendErrorMessage(connection, "File not found");
             return;
         }
-        GelatoResourceHandler resourceHandler = getResource(fileName);
+        GelatoGelatoAbstractResourcetHandler resourceHandler = getResource(fileName);
         connection.getSession().getManager().mapQID(newDescriptor, resourceHandler.getFileDescriptor());
         WalkResponse response = new WalkResponse();
         response.setQID(resourceHandler.getQID());
@@ -159,9 +158,9 @@ public abstract class GelatoAbstractDirectoryServelet extends IgnoreFlushRequest
         byte []encodedStat = null;
 
         for(String dirName: directories.keySet()) {
-            GelatoResourceHandler dir = directories.get(dirName);
+            GelatoGelatoAbstractResourcetHandler dir = directories.get(dirName);
             StatStruct statStruct = dir.getStat();
-            if(dirName.equals(GelatoAbstractDirectoryServelet.PARENT_DIR)) {
+            if(dirName.equals(GelatoGelatoAbstractDirectoryServelet.PARENT_DIR)) {
                 statStruct = this.parentDir;
             }
             encodedStat = statStruct.EncodeStat();
@@ -170,7 +169,7 @@ public abstract class GelatoAbstractDirectoryServelet extends IgnoreFlushRequest
 
         }
 
-        for(GelatoResourceHandler files: files.values()) {
+        for(GelatoGelatoAbstractResourcetHandler files: files.values()) {
             StatStruct statStruct = files.getStat();
             encodedStat = statStruct.EncodeStat();
             ByteEncoder.copyBytesTo(encodedStat, statBuff, ptr, encodedStat.length);
