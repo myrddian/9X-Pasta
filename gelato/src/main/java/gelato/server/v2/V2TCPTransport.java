@@ -193,6 +193,6 @@ public class V2TCPTransport implements GelatoTransport {
 
   @CiotolaServiceStart
   public void serviceStart() {
-    logger.info("Starting TCP Transport");
+    logger.debug("Starting TCP Transport");
   }
 }

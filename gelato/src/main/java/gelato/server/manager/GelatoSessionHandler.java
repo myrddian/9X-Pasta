@@ -116,7 +116,7 @@ public class GelatoSessionHandler extends GelatoAbstractGenericRequestHandler
       GelatoFileDescriptor descriptor,
       GelatoSession session,
       AttachRequest request) {
-    logger.info(
+    logger.debug(
         "Handling Attach Request for Descriptor " + Long.toString(descriptor.getDescriptorId()));
     GelatoDescriptorManager sessionDescriptor = new GelatoDescriptorManager();
     GelatoFileDescriptor authDescriptor;
@@ -169,7 +169,7 @@ public class GelatoSessionHandler extends GelatoAbstractGenericRequestHandler
           response.setTag(message.tag);
           response.setServerID(rootAttach.getQID());
           responseAttachHandler.writeResponse(connection, descriptor, response);
-          logger.info(
+          logger.debug(
               "User: "
                   + attachRequest.getUsername()
                   + " Mapped ROOT against FID: "
@@ -214,7 +214,7 @@ public class GelatoSessionHandler extends GelatoAbstractGenericRequestHandler
         response.setQid(authQID);
         connection.sendMessage(descriptor, response.toMessage());
 
-        logger.info(
+        logger.debug(
             "User: "
                 + authRequest.getUserName()
                 + " authenticated against FID: "

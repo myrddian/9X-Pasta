@@ -58,10 +58,10 @@ public class GelatoServerConnection implements GelatoConnection {
     portNumber = config.getPortNumber();
     descriptorManager = library.getDescriptorManager();
     libraryReference = library;
-    logger.info("Starting Server on port: " + Integer.toString(portNumber));
+    logger.debug("Starting Server on port: " + Integer.toString(portNumber));
     try {
       serverSocket = new ServerSocket(portNumber);
-      logger.info("Server Started listening");
+      logger.debug("Server Started listening");
 
     } catch (IOException e) {
       logger.error("Unable to Start server", e);
@@ -95,7 +95,7 @@ public class GelatoServerConnection implements GelatoConnection {
 
   @CiotolaServiceRun
   public void run() {
-    logger.info("Server Bound and waiting Connections");
+    logger.debug("Server Bound and waiting Connections");
     if (transportMode == MODE.V1_SELECT) {
       oldV1Api();
     } else if (transportMode == MODE.V2_API || transportMode == MODE.API_LATEST) {
@@ -164,7 +164,7 @@ public class GelatoServerConnection implements GelatoConnection {
   @Override
   public synchronized void shutdown() {
     shutdown = true;
-    logger.info("Server Shutting Down");
+    logger.debug("Server Shutting Down");
   }
 
   @Override

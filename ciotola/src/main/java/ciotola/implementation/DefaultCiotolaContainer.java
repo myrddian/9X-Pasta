@@ -122,7 +122,7 @@ public class DefaultCiotolaContainer implements CiotolaContext {
   @Override
   public boolean startContainer() {
     // Assumption we are embedded some how - dont do additional parsing
-    logger.info("Ciotola Container - Running");
+    logger.debug("Ciotola Container - Running");
     try (ScanResult scanResult = new ClassGraph().enableAllInfo().scan()) {
 
       ClassInfoList classInfos = scanResult.getAllClasses();
@@ -161,7 +161,7 @@ public class DefaultCiotolaContainer implements CiotolaContext {
 
   private boolean processServices() {
     for (String cService : candidateService.keySet()) {
-      logger.trace("Creating Service " + cService);
+      logger.debug("Creating Service " + cService);
       try {
         Constructor constructor = candidateService.get(cService).getConstructor();
         Object newServiceInstance = constructor.newInstance();
@@ -196,7 +196,7 @@ public class DefaultCiotolaContainer implements CiotolaContext {
             AnnotatedJavaServiceRunner runner = (AnnotatedJavaServiceRunner) autoWrite;
             autoWrite = runner.getObject();
           }
-          logger.trace(
+          logger.debug(
               "Autowiring: "
                   + wiringComponent.getClass().getName()
                   + "( "
@@ -217,7 +217,7 @@ public class DefaultCiotolaContainer implements CiotolaContext {
   }
 
   private boolean processDependencies() {
-    logger.trace("Injecting Dependencies");
+    logger.debug("Injecting Dependencies");
     // Scan Components and autowire the requested attributes
 
     for (String service : serviceInterfaceMap.keySet()) {

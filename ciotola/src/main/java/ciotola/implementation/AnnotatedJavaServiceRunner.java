@@ -41,7 +41,7 @@ public class AnnotatedJavaServiceRunner implements CiotolaServiceInterface {
 
     javaServiceObject = serviceObject;
 
-    logger.info("Loading Service: " + serviceObject.getClass().getName());
+    logger.debug("Loading Service: " + serviceObject.getClass().getName());
 
     // Scan Start
     for (Method method : javaServiceObject.getClass().getMethods()) {
@@ -77,7 +77,7 @@ public class AnnotatedJavaServiceRunner implements CiotolaServiceInterface {
       logger.error(Ciotola.SERVICE_INIT_METHOD_ERROR);
       throw new RuntimeException(Ciotola.SERVICE_INIT_METHOD_ERROR);
     }
-    logger.trace("Class " + serviceObject.getClass().getName() + " Loaded into Proxy");
+    logger.debug("Class " + serviceObject.getClass().getName() + " Loaded into Proxy");
   }
 
   @Override

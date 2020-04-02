@@ -38,19 +38,19 @@ public class PooledServiceRunner implements Runnable {
   @Override
   public void run() {
     serviceStatus = ServiceStatus.SERVICE_RUNNING;
-    logger.trace("[" + Integer.toString(serviceId) + "] - Running " + javaService.serviceName());
+    logger.debug("[" + Integer.toString(serviceId) + "] - Running " + javaService.serviceName());
     javaService.run();
-    logger.trace("[" + Integer.toString(serviceId) + "] - Stopped " + javaService.serviceName());
+    logger.debug("[" + Integer.toString(serviceId) + "] - Stopped " + javaService.serviceName());
     serviceStatus = ServiceStatus.SERVICE_STOP;
   }
 
   public void stop() {
-    logger.trace("[" + Integer.toString(serviceId) + "] - Stopping " + javaService.serviceName());
+    logger.debug("[" + Integer.toString(serviceId) + "] - Stopping " + javaService.serviceName());
     javaService.shutdown();
   }
 
   public void start() {
-    logger.trace("[" + Integer.toString(serviceId) + "] - Starting " + javaService.serviceName());
+    logger.debug("[" + Integer.toString(serviceId) + "] - Starting " + javaService.serviceName());
     javaService.startUp();
   }
 
