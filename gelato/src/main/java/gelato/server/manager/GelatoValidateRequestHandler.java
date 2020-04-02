@@ -1,4 +1,3 @@
-
 /*
  *   Copyright (c) 2020. Enzo Reyes
  *
@@ -17,89 +16,102 @@
 
 package gelato.server.manager;
 
-import gelato.*;
-import gelato.client.file.*;
-import gelato.server.manager.implementation.*;
-import gelato.server.manager.requests.*;
-import org.slf4j.*;
-import protocol.*;
-import protocol.messages.*;
+import gelato.GelatoConnection;
+import gelato.GelatoFileDescriptor;
+import gelato.GelatoSession;
+import gelato.server.manager.implementation.GenericUnknownHandler;
+import gelato.server.manager.implementation.IgnoreFlushRequests;
+import gelato.server.manager.requests.GenericRequestHandler;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import protocol.Decoder;
+import protocol.P9Protocol;
+import protocol.messages.Message;
 
-public class GelatoValidateRequestHandler implements GenericRequestHandler
-{
+public class GelatoValidateRequestHandler implements GenericRequestHandler {
 
-    private final Logger logger = LoggerFactory.getLogger(GelatoValidateRequestHandler.class);
+  private final Logger logger = LoggerFactory.getLogger(GelatoValidateRequestHandler.class);
 
-    private GenericRequestHandler unknownHandler = new GenericUnknownHandler();
-    private GenericRequestHandler nextHandler;
+  private GenericRequestHandler unknownHandler = new GenericUnknownHandler();
+  private GenericRequestHandler nextHandler;
 
-    @Override
-    public boolean processRequest(GelatoConnection connection, GelatoFileDescriptor descriptor, GelatoSession session, Message request) {
+  @Override
+  public boolean processRequest(
+      GelatoConnection connection,
+      GelatoFileDescriptor descriptor,
+      GelatoSession session,
+      Message request) {
 
-        //Determine is message is known
-        //if not pass it to the unknown handler
+    // Determine is message is known
+    // if not pass it to the unknown handler
 
-        //If version reset the entire session
+    // If version reset the entire session
 
-        //Decode the message type
-        //Get requiredFIDs
+    // Decode the message type
+    // Get requiredFIDs
 
-        //Only Auth and Attach require two FIDS
+    // Only Auth and Attach require two FIDS
 
-        GelatoFileDescriptor requestedResource = new GelatoFileDescriptor();
-        if(request.messageType == P9Protocol.TOPEN) {
-            requestedResource.setRawFileDescriptor(Decoder.decodeOpenRequest(request).getFileDescriptor());
-        } else if (request.messageType == P9Protocol.TWALK) {
-            requestedResource.setRawFileDescriptor(Decoder.decodeWalkRequest(request).getBaseDescriptor());
-        } else if (request.messageType == P9Protocol.TFLUSH) {
-            return IgnoreFlushRequests.sendFlushResponse(connection, descriptor, session, Decoder.decodeFlushRequest(request));
-        } else if (request.messageType == P9Protocol.TREMOVE) {
-            requestedResource.setRawFileDescriptor(Decoder.decodeRemoveRequest(request).getFileDescriptor());
-        } else if (request.messageType == P9Protocol.TWSTAT) {
-            requestedResource.setRawFileDescriptor(Decoder.decodeStatWriteRequest(request).getFileDescriptor());
-        } else if (request.messageType == P9Protocol.TWRITE) {
-            requestedResource.setRawFileDescriptor(Decoder.decodeWriteRequest(request).getFileDescriptor());
-        } else if (request.messageType == P9Protocol.TCLOSE) {
-            requestedResource.setRawFileDescriptor(Decoder.decodeCloseRequest(request).getFileID());
-        } else if (request.messageType == P9Protocol.TREAD) {
-            requestedResource.setRawFileDescriptor(Decoder.decodeReadRequest(request).getFileDescriptor());
-        } else if(request.messageType == P9Protocol.TSTAT) {
-            requestedResource.setRawFileDescriptor(Decoder.decodeStatRequest(request).getFileDescriptor());
-        } else if (request.messageType == P9Protocol.TCREATE) {
-            requestedResource.setRawFileDescriptor(Decoder.decodeCreateRequest(request).getFileDescriptor());
-        } else  {
-            logger.trace("Message Type unknown - Passing to Registered Unknown Handler");
-            if(unknownHandler != null) {
-                return unknownHandler.processRequest(connection, descriptor, session, request);
-            }
-            else {
-                logger.error("Unable to process message");
-                return false;
-            }
-        }
-        if(!session.getManager().validDescriptor(requestedResource)) {
-            logger.error("Invalid Descriptor request in Message");
-            return false;
-        }
-
-        return nextHandler.processRequest(connection,descriptor,session,request);
+    GelatoFileDescriptor requestedResource = new GelatoFileDescriptor();
+    if (request.messageType == P9Protocol.TOPEN) {
+      requestedResource.setRawFileDescriptor(
+          Decoder.decodeOpenRequest(request).getFileDescriptor());
+    } else if (request.messageType == P9Protocol.TWALK) {
+      requestedResource.setRawFileDescriptor(
+          Decoder.decodeWalkRequest(request).getBaseDescriptor());
+    } else if (request.messageType == P9Protocol.TFLUSH) {
+      return IgnoreFlushRequests.sendFlushResponse(
+          connection, descriptor, session, Decoder.decodeFlushRequest(request));
+    } else if (request.messageType == P9Protocol.TREMOVE) {
+      requestedResource.setRawFileDescriptor(
+          Decoder.decodeRemoveRequest(request).getFileDescriptor());
+    } else if (request.messageType == P9Protocol.TWSTAT) {
+      requestedResource.setRawFileDescriptor(
+          Decoder.decodeStatWriteRequest(request).getFileDescriptor());
+    } else if (request.messageType == P9Protocol.TWRITE) {
+      requestedResource.setRawFileDescriptor(
+          Decoder.decodeWriteRequest(request).getFileDescriptor());
+    } else if (request.messageType == P9Protocol.TCLOSE) {
+      requestedResource.setRawFileDescriptor(Decoder.decodeCloseRequest(request).getFileID());
+    } else if (request.messageType == P9Protocol.TREAD) {
+      requestedResource.setRawFileDescriptor(
+          Decoder.decodeReadRequest(request).getFileDescriptor());
+    } else if (request.messageType == P9Protocol.TSTAT) {
+      requestedResource.setRawFileDescriptor(
+          Decoder.decodeStatRequest(request).getFileDescriptor());
+    } else if (request.messageType == P9Protocol.TCREATE) {
+      requestedResource.setRawFileDescriptor(
+          Decoder.decodeCreateRequest(request).getFileDescriptor());
+    } else {
+      logger.trace("Message Type unknown - Passing to Registered Unknown Handler");
+      if (unknownHandler != null) {
+        return unknownHandler.processRequest(connection, descriptor, session, request);
+      } else {
+        logger.error("Unable to process message");
+        return false;
+      }
+    }
+    if (!session.getManager().validDescriptor(requestedResource)) {
+      logger.error("Invalid Descriptor request in Message");
+      return false;
     }
 
+    return nextHandler.processRequest(connection, descriptor, session, request);
+  }
 
+  public GenericRequestHandler getUnknownHandler() {
+    return unknownHandler;
+  }
 
-    public GenericRequestHandler getUnknownHandler() {
-        return unknownHandler;
-    }
+  public void setUnknownHandler(GenericRequestHandler unknownHandler) {
+    this.unknownHandler = unknownHandler;
+  }
 
-    public void setUnknownHandler(GenericRequestHandler unknownHandler) {
-        this.unknownHandler = unknownHandler;
-    }
+  public GenericRequestHandler getNextHandler() {
+    return nextHandler;
+  }
 
-    public GenericRequestHandler getNextHandler() {
-        return nextHandler;
-    }
-
-    public void setNextHandler(GenericRequestHandler nextHandler) {
-        this.nextHandler = nextHandler;
-    }
+  public void setNextHandler(GenericRequestHandler nextHandler) {
+    this.nextHandler = nextHandler;
+  }
 }

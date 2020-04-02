@@ -17,7 +17,9 @@
 package gelato;
 
 public interface GelatoConnectionConfig {
-    void setPort(int portNumber);
-    void setHost(String host);
-    void setMode(Gelato.MODE mode);
+  void setPort(int portNumber);
+
+  void setHost(String host);
+
+  void setMode(Gelato.MODE mode);
 }

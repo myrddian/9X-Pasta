@@ -16,15 +16,15 @@
 
 package gelato.transport;
 
-import gelato.*;
-import gelato.client.*;
+import gelato.Gelato;
+import gelato.GelatoConfigImpl;
+import gelato.client.ClientTCPTransport;
 
 public class TransportFactory {
 
-    public static GelatoTransport createClientTransport(Gelato lib, GelatoConfigImpl config) {
-        TCPTransport newTransport = new ClientTCPTransport(config);
-        lib.getExecutorService().submit(newTransport);
-        return newTransport;
-    }
-
+  public static GelatoTransport createClientTransport(Gelato lib, GelatoConfigImpl config) {
+    TCPTransport newTransport = new ClientTCPTransport(config);
+    lib.getExecutorService().submit(newTransport);
+    return newTransport;
+  }
 }

@@ -16,10 +16,13 @@
 
 package protocol.messages;
 
-public interface TransactionMessage  {
+public interface TransactionMessage {
 
-    public void setTransactionId(int transactionId);
-    public void setTag(int newTag);
-    public int getTag();
-    Message toMessage();
+  public void setTransactionId(int transactionId);
+
+  public int getTag();
+
+  public void setTag(int newTag);
+
+  Message toMessage();
 }

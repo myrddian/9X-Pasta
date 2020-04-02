@@ -31,36 +31,33 @@ import org.springframework.shell.jline.JLineShellAutoConfiguration;
 @Configuration
 public class ShellConfig {
 
-    @Bean
-    public FettuccineShellHelper shellHelper(@Lazy Terminal terminal) {
-        return new FettuccineShellHelper(terminal);
-    }
+  @Bean
+  public FettuccineShellHelper shellHelper(@Lazy Terminal terminal) {
+    return new FettuccineShellHelper(terminal);
+  }
 
-    @Bean
-    public InputReader inputReader(
-            @Lazy Terminal terminal,
-            @Lazy Parser parser,
-            JLineShellAutoConfiguration.CompleterAdapter completer,
-            @Lazy History history,
-            FettuccineShellHelper shellHelper
-    ) {
-        LineReaderBuilder lineReaderBuilder = LineReaderBuilder.builder()
-                .terminal(terminal)
-                .completer(completer)
-                .history(history)
-                .highlighter(
-                        (LineReader reader, String buffer) -> {
-                            return new AttributedString(
-                                    buffer, AttributedStyle.BOLD.foreground(PromptColor.WHITE.toJlineAttributedStyle())
-                            );
-                        }
-                ).parser(parser);
+  @Bean
+  public InputReader inputReader(
+      @Lazy Terminal terminal,
+      @Lazy Parser parser,
+      JLineShellAutoConfiguration.CompleterAdapter completer,
+      @Lazy History history,
+      FettuccineShellHelper shellHelper) {
+    LineReaderBuilder lineReaderBuilder =
+        LineReaderBuilder.builder()
+            .terminal(terminal)
+            .completer(completer)
+            .history(history)
+            .highlighter(
+                (LineReader reader, String buffer) -> {
+                  return new AttributedString(
+                      buffer,
+                      AttributedStyle.BOLD.foreground(PromptColor.WHITE.toJlineAttributedStyle()));
+                })
+            .parser(parser);
 
-        LineReader lineReader = lineReaderBuilder.build();
-        lineReader.unsetOpt(LineReader.Option.INSERT_TAB);
-        return new InputReader(lineReader, shellHelper);
-    }
-
-
-
+    LineReader lineReader = lineReaderBuilder.build();
+    lineReader.unsetOpt(LineReader.Option.INSERT_TAB);
+    return new InputReader(lineReader, shellHelper);
+  }
 }

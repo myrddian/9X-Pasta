@@ -16,64 +16,73 @@
 
 package fettuccine.drivers;
 
-import fettuccine.*;
-import gelato.*;
-import gelato.server.manager.*;
-import org.slf4j.*;
-import protocol.*;
-import protocol.messages.response.*;
+import fettuccine.FettuccineService;
+import gelato.GelatoFileDescriptor;
+import gelato.server.manager.GelatoGelatoAbstractDirectoryServelet;
+import gelato.server.manager.RequestConnection;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import protocol.P9Protocol;
+import protocol.QID;
+import protocol.StatStruct;
+import protocol.messages.response.OpenResponse;
 
-import java.time.*;
+import java.time.Instant;
 
 public class Root extends GelatoGelatoAbstractDirectoryServelet {
 
-    public static final long ROOT_ID = 001l;
-    public static final String ROOT_NAME  = "";
+  public static final long ROOT_ID = 001l;
+  public static final String ROOT_NAME = "";
 
-    private final Logger logger = LoggerFactory.getLogger(Root.class);
+  private final Logger logger = LoggerFactory.getLogger(Root.class);
 
-    public Root() {
-        setResourceName(ROOT_NAME);
-        StatStruct newStat = getStat();
-        newStat.setAccessTime(Instant.now().getEpochSecond());
-        newStat.setModifiedTime(newStat.getAccessTime());
-        newStat.setUid(FettuccineService.FETTUCCINE_SVC_NAME);
-        newStat.setGid(FettuccineService.FETTUCCINE_SVC_GRP);
-        newStat.setMuid(FettuccineService.FETTUCCINE_SVC_NAME);
-        QID qid  = getQID();
-        qid.setType(P9Protocol.QID_DIR);
-        qid.setVersion(0);
-        qid.setLongFileId(ROOT_ID);
-        newStat.setQid(qid);
-        newStat.updateSize();
-        setQID(qid);
-        setStat(newStat);
+  public Root() {
+    setResourceName(ROOT_NAME);
+    StatStruct newStat = getStat();
+    newStat.setAccessTime(Instant.now().getEpochSecond());
+    newStat.setModifiedTime(newStat.getAccessTime());
+    newStat.setUid(FettuccineService.FETTUCCINE_SVC_NAME);
+    newStat.setGid(FettuccineService.FETTUCCINE_SVC_GRP);
+    newStat.setMuid(FettuccineService.FETTUCCINE_SVC_NAME);
+    QID qid = getQID();
+    qid.setType(P9Protocol.QID_DIR);
+    qid.setVersion(0);
+    qid.setLongFileId(ROOT_ID);
+    newStat.setQid(qid);
+    newStat.updateSize();
+    setQID(qid);
+    setStat(newStat);
+  }
+
+  @Override
+  public void openRequest(
+      RequestConnection connection, GelatoFileDescriptor clientFileDescriptor, byte mode) {
+    if (mode == P9Protocol.OPEN_MODE_OREAD) {
+      OpenResponse response = new OpenResponse();
+      response.setFileQID(getQID());
+      connection.reply(response);
+      return;
     }
+    sendErrorMessage(connection, "Only READ mode is allowed");
+  }
 
+  @Override
+  public void createRequest(
+      RequestConnection connection, String fileName, int permission, byte mode) {
+    sendErrorMessage(connection, "This operation is not supported");
+  }
 
-    @Override
-    public void openRequest(RequestConnection connection, GelatoFileDescriptor clientFileDescriptor, byte mode) {
-        if(mode == P9Protocol.OPEN_MODE_OREAD) {
-            OpenResponse response = new OpenResponse();
-            response.setFileQID(getQID());
-            connection.reply(response);
-            return;
-        }
-        sendErrorMessage(connection,"Only READ mode is allowed");
-    }
+  @Override
+  public void removeRequest(
+      RequestConnection connection, GelatoFileDescriptor clientFileDescriptor) {
+    sendErrorMessage(connection, "This operation is not supported");
+  }
 
-    @Override
-    public void createRequest(RequestConnection connection, String fileName, int permission, byte mode) {
-        sendErrorMessage(connection, "This operation is not supported");
-    }
-
-    @Override
-    public void removeRequest(RequestConnection connection, GelatoFileDescriptor clientFileDescriptor) {
-        sendErrorMessage(connection, "This operation is not supported");
-    }
-
-    @Override
-    public void writeStatRequest(RequestConnection connection, GelatoFileDescriptor clientFileDescriptor, StatStruct newStruct) {
-        sendErrorMessage(connection, "This operation is not supported");
-    }
+  @Override
+  public void writeStatRequest(
+      RequestConnection connection,
+      GelatoFileDescriptor clientFileDescriptor,
+      StatStruct newStruct) {
+    sendErrorMessage(connection, "This operation is not supported");
+  }
 }

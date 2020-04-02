@@ -16,16 +16,20 @@
 
 package gelato.client.file;
 
-import gelato.*;
+import gelato.GelatoFileDescriptor;
 
-import java.io.*;
+import java.io.InputStream;
+import java.io.OutputStream;
 
-public interface GelatoFile extends GelatoResource{
+public interface GelatoFile extends GelatoResource {
 
-    GelatoFileDescriptor getFileDescriptor();
-    InputStream getFileInputStream();
-    OutputStream getFileOutputStream();
-    long fileSize();
-    int ioSize();
+  GelatoFileDescriptor getFileDescriptor();
 
+  InputStream getFileInputStream();
+
+  OutputStream getFileOutputStream();
+
+  long fileSize();
+
+  int ioSize();
 }

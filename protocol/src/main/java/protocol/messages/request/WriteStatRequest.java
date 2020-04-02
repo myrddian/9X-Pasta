@@ -16,58 +16,62 @@
 
 package protocol.messages.request;
 
-import protocol.*;
-import protocol.messages.*;
+import protocol.ByteEncoder;
+import protocol.P9Protocol;
+import protocol.StatStruct;
+import protocol.messages.Message;
+import protocol.messages.TransactionMessage;
 
 public class WriteStatRequest implements TransactionMessage {
-    private int tag;
-    private int fileDescriptor;
-    private StatStruct statStruct;
+  private int tag;
+  private int fileDescriptor;
+  private StatStruct statStruct;
 
-    @Override
-    public void setTransactionId(int transactionId) {
-        setTag(transactionId);
-    }
+  @Override
+  public void setTransactionId(int transactionId) {
+    setTag(transactionId);
+  }
 
-    @Override
-    public int getTag() {
-        return tag;
-    }
+  @Override
+  public int getTag() {
+    return tag;
+  }
 
-    @Override
-    public void setTag(int tag) {
-        this.tag = tag;
-    }
+  @Override
+  public void setTag(int tag) {
+    this.tag = tag;
+  }
 
-    @Override
-    public Message toMessage() {
+  @Override
+  public Message toMessage() {
 
-        Message rtr = new Message();
-        rtr.messageType = P9Protocol.TWSTAT;
-        rtr.tag = tag;
-        byte [] encodedState = statStruct.EncodeStat();
-        int size = encodedState.length + P9Protocol.MSG_INT_SIZE;
-        rtr.messageContent = new byte[size];
-        rtr.messageSize = P9Protocol.MIN_MSG_SIZE + size;
-        ByteEncoder.encodeInt(fileDescriptor, rtr.messageContent, 0);
-        ByteEncoder.copyBytesTo(encodedState, rtr.messageContent, P9Protocol.MSG_INT_SIZE, encodedState.length);
+    Message rtr = new Message();
+    rtr.messageType = P9Protocol.TWSTAT;
+    rtr.tag = tag;
+    byte[] encodedState = statStruct.EncodeStat();
+    int size = encodedState.length + P9Protocol.MSG_INT_SIZE;
+    rtr.messageContent = new byte[size];
+    rtr.messageSize = P9Protocol.MIN_MSG_SIZE + size;
+    ByteEncoder.encodeInt(fileDescriptor, rtr.messageContent, 0);
+    ByteEncoder.copyBytesTo(
+        encodedState, rtr.messageContent, P9Protocol.MSG_INT_SIZE, encodedState.length);
 
-        return rtr;
-    }
+    return rtr;
+  }
 
-    public int getFileDescriptor() {
-        return fileDescriptor;
-    }
+  public int getFileDescriptor() {
+    return fileDescriptor;
+  }
 
-    public void setFileDescriptor(int fileDescriptor) {
-        this.fileDescriptor = fileDescriptor;
-    }
+  public void setFileDescriptor(int fileDescriptor) {
+    this.fileDescriptor = fileDescriptor;
+  }
 
-    public StatStruct getStatStruct() {
-        return statStruct;
-    }
+  public StatStruct getStatStruct() {
+    return statStruct;
+  }
 
-    public void setStatStruct(StatStruct statStruct) {
-        this.statStruct = statStruct;
-    }
+  public void setStatStruct(StatStruct statStruct) {
+    this.statStruct = statStruct;
+  }
 }

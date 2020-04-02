@@ -16,14 +16,16 @@
 
 package gelato.server.manager;
 
-import gelato.*;
-import protocol.*;
+import gelato.GelatoFileDescriptor;
+import protocol.QID;
 
 public interface GelatoQIDManager {
 
-    long generateQIDFieldID(String assetName);
-    QID generateAuthQID();
-    boolean mapResourceHandler(GelatoFileDescriptor id, GelatoGelatoAbstractResourcetHandler handler);
-    GelatoGelatoAbstractResourcetHandler getHandler(GelatoFileDescriptor id);
+  long generateQIDFieldID(String assetName);
 
+  QID generateAuthQID();
+
+  boolean mapResourceHandler(GelatoFileDescriptor id, GelatoGelatoAbstractResourcetHandler handler);
+
+  GelatoGelatoAbstractResourcetHandler getHandler(GelatoFileDescriptor id);
 }

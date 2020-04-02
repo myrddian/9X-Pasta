@@ -16,106 +16,112 @@
 
 package gelato.server.manager;
 
-import gelato.*;
-import org.slf4j.*;
+import gelato.GelatoConnection;
+import gelato.GelatoDescriptorManager;
+import gelato.GelatoFileDescriptor;
+import gelato.GelatoSession;
+import gelato.GelatoTags;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import java.util.*;
+import java.util.HashMap;
+import java.util.Map;
 
 public class GelatoServerSession implements GelatoSession {
 
-    private final Logger logger = LoggerFactory.getLogger(GelatoServerSession.class);
+  private final Logger logger = LoggerFactory.getLogger(GelatoServerSession.class);
 
-    private GelatoFileDescriptor authorisationDescriptor = null;
-    private String userName;
-    private String nameSpace;
-    private String userAuth;
-    private GelatoConnection connection;
-    private GelatoDescriptorManager manager = null;
-    private GelatoTags tags;
-    private Map<String, Object> sessionVars = new HashMap<>();
+  private GelatoFileDescriptor authorisationDescriptor = null;
+  private String userName;
+  private String nameSpace;
+  private String userAuth;
+  private GelatoConnection connection;
+  private GelatoDescriptorManager manager = null;
+  private GelatoTags tags;
+  private Map<String, Object> sessionVars = new HashMap<>();
 
-    @Override
-    public synchronized void setSessionVar(String varName, Object varValue) {
-        sessionVars.put(varName, varValue);
-    }
+  @Override
+  public synchronized void setSessionVar(String varName, Object varValue) {
+    sessionVars.put(varName, varValue);
+  }
 
-    @Override
-    public synchronized Object getSessionVar(String varName) {
-        return sessionVars.get(varName);
-    }
+  @Override
+  public synchronized Object getSessionVar(String varName) {
+    return sessionVars.get(varName);
+  }
 
-    @Override
-    public int descriptorCount() { return manager.size(); }
+  @Override
+  public int descriptorCount() {
+    return manager.size();
+  }
 
-    @Override
-    public GelatoFileDescriptor getAuthorisationDescriptor() {
-        return authorisationDescriptor;
-    }
+  @Override
+  public GelatoFileDescriptor getAuthorisationDescriptor() {
+    return authorisationDescriptor;
+  }
 
-    @Override
-    public void setAuthorisationDescriptor(GelatoFileDescriptor authorisationDescriptor) {
-        this.authorisationDescriptor = authorisationDescriptor;
-    }
+  @Override
+  public void setAuthorisationDescriptor(GelatoFileDescriptor authorisationDescriptor) {
+    this.authorisationDescriptor = authorisationDescriptor;
+  }
 
-    @Override
-    public String getUserName() {
-        return userName;
-    }
+  @Override
+  public String getUserName() {
+    return userName;
+  }
 
-    @Override
-    public void setUserName(String userName) {
-        this.userName = userName;
-    }
+  @Override
+  public void setUserName(String userName) {
+    this.userName = userName;
+  }
 
-    @Override
-    public String getNameSpace() {
-        return nameSpace;
-    }
+  @Override
+  public String getNameSpace() {
+    return nameSpace;
+  }
 
-    @Override
-    public void setNameSpace(String nameSpace) {
-        this.nameSpace = nameSpace;
-    }
+  @Override
+  public void setNameSpace(String nameSpace) {
+    this.nameSpace = nameSpace;
+  }
 
-    @Override
-    public GelatoConnection getConnection() {
-        return connection;
-    }
+  @Override
+  public GelatoConnection getConnection() {
+    return connection;
+  }
 
-    @Override
-    public void setConnection(GelatoConnection connection) {
-        this.connection = connection;
-    }
+  @Override
+  public void setConnection(GelatoConnection connection) {
+    this.connection = connection;
+  }
 
-    @Override
-    public GelatoDescriptorManager getManager() {
-        return manager;
-    }
+  @Override
+  public GelatoDescriptorManager getManager() {
+    return manager;
+  }
 
-    @Override
-    public void setManager(GelatoDescriptorManager manager) {
-        this.manager = manager;
-    }
+  @Override
+  public void setManager(GelatoDescriptorManager manager) {
+    this.manager = manager;
+  }
 
-    @Override
-    public GelatoTags getTags() {
-        return tags;
-    }
+  @Override
+  public GelatoTags getTags() {
+    return tags;
+  }
 
-    @Override
-    public void setTags(GelatoTags tags) {
-        this.tags = tags;
-    }
+  @Override
+  public void setTags(GelatoTags tags) {
+    this.tags = tags;
+  }
 
-    @Override
-    public String getUserAuth() {
-        return userAuth;
-    }
+  @Override
+  public String getUserAuth() {
+    return userAuth;
+  }
 
-    @Override
-    public void setUserAuth(String userAuth) {
-        this.userAuth = userAuth;
-    }
-
-
+  @Override
+  public void setUserAuth(String userAuth) {
+    this.userAuth = userAuth;
+  }
 }

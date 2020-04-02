@@ -16,90 +16,82 @@
 
 package fettuccineshell;
 
-import gelato.*;
-import gelato.client.file.*;
+import gelato.client.file.GelatoDirectory;
+import gelato.client.file.GelatoFileManager;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.shell.standard.ShellComponent;
 import org.springframework.shell.standard.ShellMethod;
 import org.springframework.shell.standard.ShellOption;
 
-import java.util.*;
+import java.util.List;
 
 @ShellComponent
 public class NagivationCommands {
-    @Autowired
-    ShellConnection shellConnection;
+  @Autowired ShellConnection shellConnection;
 
-    @Autowired
-    FettuccineShellHelper shellHelper;
+  @Autowired FettuccineShellHelper shellHelper;
+  private GelatoDirectory currentDirectory;
+  private boolean isInitialised = false;
+  private GelatoFileManager fileManager;
 
-    @ShellMethod("List Directory")
-    public void ls() {
-        if(shellConnection.isConnected()) {
-            if(!isInitialised) {
-               init();
-            }
-            List<GelatoDirectory> directoryList = currentDirectory.getDirectories();
-            if(directoryList == null || directoryList.size()==0) {
-                shellHelper.print("Nothing here");
-            }
-            else {
-                for(GelatoDirectory directory: directoryList ) {
-                    shellHelper.print(directory.getName(), PromptColor.GREEN);
-                }
-            }
+  @ShellMethod("List Directory")
+  public void ls() {
+    if (shellConnection.isConnected()) {
+      if (!isInitialised) {
+        init();
+      }
+      List<GelatoDirectory> directoryList = currentDirectory.getDirectories();
+      if (directoryList == null || directoryList.size() == 0) {
+        shellHelper.print("Nothing here");
+      } else {
+        for (GelatoDirectory directory : directoryList) {
+          shellHelper.print(directory.getName(), PromptColor.GREEN);
         }
-        else {
-            shellHelper.printError("Not Currently connected");
-        }
+      }
+    } else {
+      shellHelper.printError("Not Currently connected");
     }
+  }
 
-    @ShellMethod("Change Directory")
-    public void cd(@ShellOption({"-D", "--directory"}) String directory) {
-        if(shellConnection.isConnected()) {
-            if(!isInitialised) {
-                init();
-            }
-            GelatoDirectory dir = currentDirectory.getDirectory(directory);
-            if(dir==null) {
-                shellHelper.printError("Invalid Name - Resource not found");
-            }
-            else {
-                currentDirectory = dir;
-            }
-        }
-        else {
-            shellHelper.printError("Not Currently connected");
-        }
+  @ShellMethod("Change Directory")
+  public void cd(@ShellOption({"-D", "--directory"}) String directory) {
+    if (shellConnection.isConnected()) {
+      if (!isInitialised) {
+        init();
+      }
+      GelatoDirectory dir = currentDirectory.getDirectory(directory);
+      if (dir == null) {
+        shellHelper.printError("Invalid Name - Resource not found");
+      } else {
+        currentDirectory = dir;
+      }
+    } else {
+      shellHelper.printError("Not Currently connected");
     }
+  }
 
-    @ShellMethod("Show current Path")
-    public void pwd() {
-        if(shellConnection.isConnected()) {
-            if (!isInitialised) {
-                init();
-            }
-            shellHelper.print(currentDirectory.getFullName(), PromptColor.BRIGHT);
-        }
+  @ShellMethod("Show current Path")
+  public void pwd() {
+    if (shellConnection.isConnected()) {
+      if (!isInitialised) {
+        init();
+      }
+      shellHelper.print(currentDirectory.getFullName(), PromptColor.BRIGHT);
     }
+  }
 
-    private GelatoDirectory findDir(String dirName, List<GelatoDirectory> gelatoDirectoryList) {
-        for(GelatoDirectory dir: gelatoDirectoryList) {
-            if(dir.getName().equals(dirName)) {
-                return dir;
-            }
-        }
-        return null;
+  private GelatoDirectory findDir(String dirName, List<GelatoDirectory> gelatoDirectoryList) {
+    for (GelatoDirectory dir : gelatoDirectoryList) {
+      if (dir.getName().equals(dirName)) {
+        return dir;
+      }
     }
+    return null;
+  }
 
-    private void init() {
-        fileManager = shellConnection.getFileManager();
-        currentDirectory = fileManager.getRoot();
-        isInitialised = true;
-    }
-
-    private GelatoDirectory currentDirectory;
-    private boolean isInitialised = false;
-    private GelatoFileManager fileManager;
+  private void init() {
+    fileManager = shellConnection.getFileManager();
+    currentDirectory = fileManager.getRoot();
+    isInitialised = true;
+  }
 }
-

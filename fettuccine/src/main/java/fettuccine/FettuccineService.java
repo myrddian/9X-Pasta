@@ -14,52 +14,50 @@
  *    limitations under the License.
  */
 
-
 package fettuccine;
-import fettuccine.drivers.*;
-import fettuccine.drivers.proc.*;
-import gelato.*;
-import gelato.server.*;
+
+import fettuccine.drivers.Root;
+import fettuccine.drivers.proc.ProcDriver;
+import gelato.Gelato;
+import gelato.server.GelatoServerConnection;
+import gelato.server.GelatoServerManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class FettuccineService {
 
-    public static final String FETTUCCINE_SVC_NAME = "fettuccine_svc";
-    public static final String FETTUCCINE_SVC_GRP = "fettuccine_svc";
+  public static final String FETTUCCINE_SVC_NAME = "fettuccine_svc";
+  public static final String FETTUCCINE_SVC_GRP = "fettuccine_svc";
 
-    private final Logger logger = LoggerFactory.getLogger(FettuccineService.class);
-    private Gelato gelato;
-    private FettuccineConfig config;
-    private GelatoServerConnection serverConnection;
-    private GelatoServerManager serveletManager;
-    private ProcDriver procDriver;
-    private Root rootDir = new Root();
+  private final Logger logger = LoggerFactory.getLogger(FettuccineService.class);
+  private Gelato gelato;
+  private FettuccineConfig config;
+  private GelatoServerConnection serverConnection;
+  private GelatoServerManager serveletManager;
+  private ProcDriver procDriver;
+  private Root rootDir = new Root();
 
-    public void init() {
-        logger.info("Fettuccine - Interposer/Root VFS - Service is Configuring");
-        logger.info(FettuccineVersion.getVersion());
-        config.loadDefaultConfig();
-        serverConnection = new GelatoServerConnection(gelato, config.generateConfig());
-        serveletManager = new GelatoServerManager(serverConnection, gelato);
-        procDriver = new ProcDriver(serveletManager);
-        serveletManager.start();
-        rootDir.addDirectory(procDriver.getProcDir());
-        serveletManager.setRootDirectory(rootDir);
-        serveletManager.hold();
-    }
+  public FettuccineService() {
+    logger.info("Fettuccine - Interposer/Root VFS - Service is Initialising");
+    gelato = new Gelato();
+    config = new FettuccineConfig();
+  }
 
+  public static void main(String[] args) {
+    FettuccineService service = new FettuccineService();
+    service.init();
+  }
 
-    public FettuccineService() {
-        logger.info("Fettuccine - Interposer/Root VFS - Service is Initialising");
-        gelato = new Gelato();
-        config = new FettuccineConfig();
-    }
-
-    public static void main(String[] args) {
-        FettuccineService service = new FettuccineService();
-        service.init();
-    }
-
-
+  public void init() {
+    logger.info("Fettuccine - Interposer/Root VFS - Service is Configuring");
+    logger.info(FettuccineVersion.getVersion());
+    config.loadDefaultConfig();
+    serverConnection = new GelatoServerConnection(gelato, config.generateConfig());
+    serveletManager = new GelatoServerManager(serverConnection, gelato);
+    procDriver = new ProcDriver(serveletManager);
+    serveletManager.start();
+    rootDir.addDirectory(procDriver.getProcDir());
+    serveletManager.setRootDirectory(rootDir);
+    serveletManager.hold();
+  }
 }

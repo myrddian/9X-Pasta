@@ -24,82 +24,74 @@ import protocol.messages.Message;
 import java.util.List;
 
 public class V2TransportProxy implements GelatoConnection {
-    public V2TCPTransport getTransport() {
-        return transport;
-    }
+  private V2TCPTransport transport;
 
-    public void setTransport(V2TCPTransport transport) {
-        this.transport = transport;
-    }
+  public V2TransportProxy(V2TCPTransport tcpTransport) {
+    transport = tcpTransport;
+  }
 
-    private V2TCPTransport transport;
+  public V2TCPTransport getTransport() {
+    return transport;
+  }
 
-    public V2TransportProxy(V2TCPTransport tcpTransport) {
-        transport = tcpTransport;
-    }
+  public void setTransport(V2TCPTransport transport) {
+    this.transport = transport;
+  }
 
-    @Override
-    public Message getMessage() {
-        return null;
-    }
+  @Override
+  public Message getMessage() {
+    return null;
+  }
 
-    @Override
-    public Message getMessage(GelatoFileDescriptor fileDescriptor) {
-        return null;
-    }
+  @Override
+  public Message getMessage(GelatoFileDescriptor fileDescriptor) {
+    return null;
+  }
 
-    @Override
-    public Gelato.MODE getMode() {
-        return null;
-    }
+  @Override
+  public Gelato.MODE getMode() {
+    return null;
+  }
 
-    @Override
-    public List<GelatoFileDescriptor> getConnections() {
-        return null;
-    }
+  @Override
+  public List<GelatoFileDescriptor> getConnections() {
+    return null;
+  }
 
-    @Override
-    public int getMessageCount(GelatoFileDescriptor fileDescriptor) {
-        return 0;
-    }
+  @Override
+  public int getMessageCount(GelatoFileDescriptor fileDescriptor) {
+    return 0;
+  }
 
-    @Override
-    public int getMessageCount() {
-        return 0;
-    }
+  @Override
+  public int getMessageCount() {
+    return 0;
+  }
 
-    @Override
-    public int connections() {
-        return 0;
-    }
+  @Override
+  public int connections() {
+    return 0;
+  }
 
-    @Override
-    public void sendMessage(GelatoFileDescriptor descriptor, Message msg) {
-        transport.writeMessage(msg);
-    }
+  @Override
+  public void sendMessage(GelatoFileDescriptor descriptor, Message msg) {
+    transport.writeMessage(msg);
+  }
 
-    @Override
-    public void sendMessage(Message msg) {
+  @Override
+  public void sendMessage(Message msg) {}
 
-    }
+  @Override
+  public void shutdown() {}
 
-    @Override
-    public void shutdown() {
+  @Override
+  public boolean isStarted() {
+    return false;
+  }
 
-    }
+  @Override
+  public void begin() {}
 
-    @Override
-    public boolean isStarted() {
-        return false;
-    }
-
-    @Override
-    public void begin() {
-
-    }
-
-    @Override
-    public void closeConnection(GelatoFileDescriptor descriptor) {
-
-    }
+  @Override
+  public void closeConnection(GelatoFileDescriptor descriptor) {}
 }

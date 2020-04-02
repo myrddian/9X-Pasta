@@ -20,12 +20,9 @@ import ciotola.annotations.CiotolaAutowire;
 import ciotola.annotations.CiotolaServiceRun;
 import ciotola.annotations.CiotolaServiceStart;
 import ciotola.annotations.CiotolaServiceStop;
-import gelato.GelatoConfigImpl;
-import gelato.GelatoConnection;
 import gelato.GelatoFileDescriptor;
 import gelato.server.manager.GelatoDescriptorHandler;
 import gelato.transport.GelatoTransport;
-import gelato.transport.TCPTransport;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import protocol.Decoder;
@@ -37,176 +34,165 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.Socket;
-import java.net.UnknownHostException;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 
-public  class V2TCPTransport implements GelatoTransport {
+public class V2TCPTransport implements GelatoTransport {
 
-    final Logger logger = LoggerFactory.getLogger(V2TCPTransport.class);
+  final Logger logger = LoggerFactory.getLogger(V2TCPTransport.class);
 
-    @CiotolaAutowire
-    private GelatoDescriptorHandler descriptorHandler;
+  @CiotolaAutowire private GelatoDescriptorHandler descriptorHandler;
+  private BlockingQueue<Message> readMessageQueue = new LinkedBlockingQueue<>();
+  private BlockingQueue<Message> writeMessageQueue = new LinkedBlockingQueue<>();
+  private boolean closeConnction = false;
+  private int headerSize = MessageRaw.minSize;
+  private int readSize = 0;
+  private byte[] minHeaderBuffer = new byte[headerSize];
+  private V2TransportProxy proxy = new V2TransportProxy(this);
+  private Socket clientSocket;
+  private GelatoFileDescriptor descriptor;
+  public V2TCPTransport(Socket cliSocket, GelatoFileDescriptor connectionDescriptor) {
+    descriptor = connectionDescriptor;
+    clientSocket = cliSocket;
+  }
 
-    @Override
-    public synchronized void close() {
-        logger.debug("Closing Connection");
-        closeConnction = true;
+  @Override
+  public synchronized void close() {
+    logger.debug("Closing Connection");
+    closeConnction = true;
+  }
+
+  @Override
+  public synchronized boolean isOpen() {
+    return !closeConnction;
+  }
+
+  @Override
+  public boolean writeMessage(Message messageRaw) {
+    try {
+      writeMessageQueue.put(messageRaw);
+      return true;
+    } catch (InterruptedException e) {
+      logger.error("Interrupted - Nothing Written to transport", e);
     }
+    return false;
+  }
 
-    @Override
-    public synchronized boolean isOpen() {
-        return !closeConnction;
+  @Override
+  public Message readMessage() {
+    try {
+      return readMessageQueue.take();
+    } catch (InterruptedException e) {
+      logger.error("Interrupted - Returning Null", e);
+      return null;
     }
+  }
 
-    @Override
-    public boolean writeMessage(Message messageRaw) {
-        try {
-            writeMessageQueue.put(messageRaw);
-            return true;
-        } catch (InterruptedException e) {
-            logger.error("Interrupted - Nothing Written to transport", e);
+  @Override
+  public int size() {
+    return readMessageQueue.size();
+  }
+
+  @CiotolaServiceRun
+  public void run() {
+    try {
+      processMessages();
+    } catch (IOException e) {
+      logger.error("IOException has occurred in the thread -", e);
+    } catch (InterruptedException e) {
+      logger.error("Interrupted", e);
+    }
+  }
+
+  private void processOutbound(OutputStream os) throws InterruptedException, IOException {
+    int messages = writeMessageQueue.size();
+    // Process outbound
+    for (int counter = 0; counter < messages; ++counter) {
+      Message outbound = writeMessageQueue.take();
+      MessageRaw raw = outbound.toRaw();
+      byte[] outBytes = Encoder.messageToBytes(raw);
+      os.write(outBytes);
+    }
+  }
+
+  private void processInbound(InputStream is) throws InterruptedException, IOException {
+    // peek if there are bytes available otherwise just skip
+    readSize = is.available();
+    if (readSize == 0) return;
+
+    MessageRaw minMessage;
+    int rsize = 0;
+    // Read the header of the incoming message
+    if (readSize >= headerSize) {
+      rsize = is.read(minHeaderBuffer);
+      if (rsize == -1 || rsize != headerSize) {
+        logger.error("Invalid size detected for header");
+        throw new IOException("??-WTF");
+      }
+    } else {
+      for (int byteCount = 0; byteCount < headerSize; ++byteCount) {
+        int val = is.read();
+        if (val != -1) {
+          minHeaderBuffer[byteCount] = (byte) (val & 0xFF);
+        } else {
+          logger.error("Unable to read header");
+          throw new IOException("WTF");
         }
-        return false;
+      }
     }
+    minMessage = Decoder.decodeRawHeader(minHeaderBuffer);
+    Message msg = minMessage.toMessage();
+    int bytesToRead = msg.getContentSize();
+    byte[] content = new byte[bytesToRead];
+    rsize = is.read(content);
+    msg.messageContent = content;
+    V2Message newMessage = new V2Message();
+    newMessage.setMessage(msg);
+    newMessage.setDescriptor(descriptor);
+    newMessage.setClientConnection(proxy);
+    descriptorHandler.addMessage(newMessage);
+  }
 
-    @Override
-    public Message readMessage() {
-        try {
-            return readMessageQueue.take();
-        } catch (InterruptedException e) {
-            logger.error("Interrupted - Returning Null", e);
-            return  null;
-        }
+  private void processMessages() throws IOException, InterruptedException {
+    InputStream is = getSocketInputStream();
+    OutputStream os = getSocketOutputStream();
+    while (isOpen()) {
+      processOutbound(os);
+      processInbound(is);
+      Thread.sleep(50);
     }
+    closeStream();
+  }
 
-    @Override
-    public int size() {
-        return readMessageQueue.size();
+  public InputStream getSocketInputStream() {
+    try {
+      return clientSocket.getInputStream();
+    } catch (IOException e) {
+      e.printStackTrace();
     }
+    return null;
+  }
 
-    @CiotolaServiceRun
-    public void run() {
-        try {
-            processMessages();
-        } catch (IOException e) {
-            logger.error("IOException has occurred in the thread -", e);
-        } catch (InterruptedException e) {
-            logger.error("Interrupted", e);
-        }
+  public OutputStream getSocketOutputStream() {
+    try {
+      return clientSocket.getOutputStream();
+    } catch (IOException e) {
+      e.printStackTrace();
     }
+    return null;
+  }
 
-    private BlockingQueue<Message> readMessageQueue = new LinkedBlockingQueue<>();
-    private BlockingQueue<Message> writeMessageQueue = new LinkedBlockingQueue<>();
-    private boolean closeConnction = false;
-    private int headerSize = MessageRaw.minSize;
-    private int readSize = 0;
-    private byte [] minHeaderBuffer = new byte[headerSize];
-    private V2TransportProxy proxy = new V2TransportProxy(this);
-
-    private void processOutbound(OutputStream os) throws InterruptedException, IOException {
-        int messages = writeMessageQueue.size();
-        //Process outbound
-        for(int counter=0; counter < messages; ++counter) {
-            Message outbound = writeMessageQueue.take();
-            MessageRaw raw = outbound.toRaw();
-            byte [] outBytes = Encoder.messageToBytes(raw);
-            os.write(outBytes);
-        }
+  @CiotolaServiceStop
+  public void closeStream() {
+    try {
+      clientSocket.close();
+    } catch (IOException e) {
+      e.printStackTrace();
     }
+  }
 
-    private void processInbound(InputStream is) throws InterruptedException, IOException {
-        //peek if there are bytes available otherwise just skip
-        readSize = is.available();
-        if(readSize == 0 )
-            return;
-
-        MessageRaw minMessage;
-        int rsize = 0;
-        //Read the header of the incoming message
-        if(readSize >= headerSize) {
-           rsize = is.read(minHeaderBuffer);
-           if(rsize == -1 || rsize != headerSize) {
-               logger.error("Invalid size detected for header");
-               throw new IOException("??-WTF");
-           }
-        }
-        else {
-            for(int byteCount=0; byteCount < headerSize; ++byteCount) {
-                int val = is.read();
-                if(val != -1) {
-                    minHeaderBuffer[byteCount] = (byte)(val & 0xFF);
-                }
-                else {
-                    logger.error("Unable to read header");
-                    throw new IOException("WTF");
-                }
-            }
-        }
-        minMessage = Decoder.decodeRawHeader(minHeaderBuffer);
-        Message msg = minMessage.toMessage();
-        int bytesToRead = msg.getContentSize();
-        byte [] content = new byte[bytesToRead];
-        rsize = is.read(content);
-        msg.messageContent = content;
-        V2Message newMessage = new V2Message();
-        newMessage.setMessage(msg);
-        newMessage.setDescriptor(descriptor);
-        newMessage.setClientConnection(proxy);
-        descriptorHandler.addMessage(newMessage);
-    }
-
-    private void processMessages() throws IOException, InterruptedException {
-        InputStream is = getSocketInputStream();
-        OutputStream os = getSocketOutputStream();
-        while(isOpen()) {
-            processOutbound(os);
-            processInbound(is);
-            Thread.sleep(50);
-        }
-        closeStream();
-    }
-
-    private Socket clientSocket;
-    private GelatoFileDescriptor descriptor;
-
-    public V2TCPTransport(Socket cliSocket, GelatoFileDescriptor connectionDescriptor) {
-        descriptor = connectionDescriptor;
-        clientSocket = cliSocket;
-    }
-
-    public InputStream getSocketInputStream()  {
-        try {
-            return clientSocket.getInputStream();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        return null;
-    }
-
-
-    public OutputStream getSocketOutputStream() {
-        try {
-            return clientSocket.getOutputStream();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        return  null;
-    }
-
-
-    @CiotolaServiceStop
-    public void closeStream() {
-        try {
-            clientSocket.close();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-
-    @CiotolaServiceStart
-    public void serviceStart() {
-        logger.info("Starting TCP Transport");
-    }
-
+  @CiotolaServiceStart
+  public void serviceStart() {
+    logger.info("Starting TCP Transport");
+  }
 }

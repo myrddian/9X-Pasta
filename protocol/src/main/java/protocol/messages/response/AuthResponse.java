@@ -16,38 +16,40 @@
 
 package protocol.messages.response;
 
-import protocol.*;
-import protocol.messages.*;
+import protocol.QID;
+import protocol.messages.Encoder;
+import protocol.messages.Message;
+import protocol.messages.TransactionMessage;
 
 public class AuthResponse implements TransactionMessage {
-    private QID qid;
-    private int tag;
+  private QID qid;
+  private int tag;
 
-    @Override
-    public void setTransactionId(int transactionId) {
-        setTag(transactionId);
-    }
+  @Override
+  public void setTransactionId(int transactionId) {
+    setTag(transactionId);
+  }
 
-    @Override
-    public int getTag() {
-        return tag;
-    }
+  @Override
+  public int getTag() {
+    return tag;
+  }
 
-    @Override
-    public void setTag(int tag) {
-        this.tag = tag;
-    }
+  @Override
+  public void setTag(int tag) {
+    this.tag = tag;
+  }
 
-    public QID getQid() {
-        return qid;
-    }
+  public QID getQid() {
+    return qid;
+  }
 
-    public void setQid(QID qid) {
-        this.qid = qid;
-    }
+  public void setQid(QID qid) {
+    this.qid = qid;
+  }
 
-    @Override
-    public Message toMessage() {
-        return Encoder.encodeAuthResponse(this).toMessage();
-    }
+  @Override
+  public Message toMessage() {
+    return Encoder.encodeAuthResponse(this).toMessage();
+  }
 }

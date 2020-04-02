@@ -16,69 +16,82 @@
 
 package gelato.client.file.impl;
 
-import gelato.*;
-import gelato.client.file.*;
+import gelato.GelatoFileDescriptor;
+import gelato.client.file.GelatoFile;
 
-import java.io.*;
+import java.io.InputStream;
+import java.io.OutputStream;
 
 public class GelatoFileImpl implements GelatoFile {
 
-    private GelatoFileDescriptor descriptor;
-    private String fileName;
-    private String filePath;
-    private long fileSize;
-    private int ioUnitSize;
+  private GelatoFileDescriptor descriptor;
+  private String fileName;
+  private String filePath;
+  private long fileSize;
+  private int ioUnitSize;
 
-    public void setDescriptor(GelatoFileDescriptor newDescriptor) {descriptor = newDescriptor;}
-    public void setFileName(String newName) { fileName = newName;}
-    public void setIoSize(int newSize) {ioUnitSize = newSize;}
-    public void setFileSize(int newSize) {fileSize = newSize;}
-    public void setFilePath(String newPath) { filePath = newPath;}
+  public void setDescriptor(GelatoFileDescriptor newDescriptor) {
+    descriptor = newDescriptor;
+  }
 
-    @Override
-    public GelatoFileDescriptor getFileDescriptor() {
-        return descriptor;
-    }
+  public void setFileName(String newName) {
+    fileName = newName;
+  }
 
-    @Override
-    public InputStream getFileInputStream() {
-        return null;
-    }
+  public void setIoSize(int newSize) {
+    ioUnitSize = newSize;
+  }
 
-    @Override
-    public OutputStream getFileOutputStream() {
-        return null;
-    }
+  public void setFileSize(int newSize) {
+    fileSize = newSize;
+  }
 
+  public void setFilePath(String newPath) {
+    filePath = newPath;
+  }
 
-    @Override
-    public long fileSize() {
-        return fileSize;
-    }
+  @Override
+  public GelatoFileDescriptor getFileDescriptor() {
+    return descriptor;
+  }
 
+  @Override
+  public InputStream getFileInputStream() {
+    return null;
+  }
 
-    @Override
-    public int ioSize() {
-        return ioUnitSize;
-    }
+  @Override
+  public OutputStream getFileOutputStream() {
+    return null;
+  }
 
-    @Override
-    public String getName() {
-        return fileName;
-    }
+  @Override
+  public long fileSize() {
+    return fileSize;
+  }
 
-    @Override
-    public String getPath() {
-        return filePath;
-    }
+  @Override
+  public int ioSize() {
+    return ioUnitSize;
+  }
 
-    @Override
-    public String getFullName() {
-        return filePath + "/" + fileName;
-    }
+  @Override
+  public String getName() {
+    return fileName;
+  }
 
-    @Override
-    public long getSize() {
-        return 0;
-    }
+  @Override
+  public String getPath() {
+    return filePath;
+  }
+
+  @Override
+  public String getFullName() {
+    return filePath + "/" + fileName;
+  }
+
+  @Override
+  public long getSize() {
+    return 0;
+  }
 }

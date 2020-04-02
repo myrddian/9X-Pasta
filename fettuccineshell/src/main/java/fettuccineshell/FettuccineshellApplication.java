@@ -7,9 +7,8 @@ import org.springframework.context.ConfigurableApplicationContext;
 @SpringBootApplication
 public class FettuccineshellApplication {
 
-    public static void main(String[] args) {
-        ConfigurableApplicationContext context = SpringApplication.run(FettuccineshellApplication.class, args);
-    }
-
+  public static void main(String[] args) {
+    ConfigurableApplicationContext context =
+        SpringApplication.run(FettuccineshellApplication.class, args);
+  }
 }
-

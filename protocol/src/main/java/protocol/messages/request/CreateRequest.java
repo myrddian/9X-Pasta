@@ -16,81 +16,84 @@
 
 package protocol.messages.request;
 
-import protocol.*;
-import protocol.messages.*;
+import protocol.ByteEncoder;
+import protocol.P9Protocol;
+import protocol.messages.Message;
+import protocol.messages.MessageRaw;
+import protocol.messages.TransactionMessage;
 
 public class CreateRequest implements TransactionMessage {
-    private int tag;
-    private int permission;
-    private byte mode;
-    private String fileName;
-    private int fileDescriptor;
+  private int tag;
+  private int permission;
+  private byte mode;
+  private String fileName;
+  private int fileDescriptor;
 
-    @Override
-    public void setTransactionId(int transactionId) {
-        setTag(transactionId);
-    }
+  @Override
+  public void setTransactionId(int transactionId) {
+    setTag(transactionId);
+  }
 
-    @Override
-    public int getTag() {
-        return tag;
-    }
+  @Override
+  public int getTag() {
+    return tag;
+  }
 
-    @Override
-    public void setTag(int tag) {
-        this.tag = tag;
-    }
+  @Override
+  public void setTag(int tag) {
+    this.tag = tag;
+  }
 
-    @Override
-    public Message toMessage() {
-        Message rtr = new Message();
+  @Override
+  public Message toMessage() {
+    Message rtr = new Message();
 
-        rtr.tag = tag;
-        rtr.messageType = P9Protocol.TCREATE;
-        byte []encodedName = ByteEncoder.encodeStringToBuffer(fileName);
-        int totalSize = encodedName.length + ( P9Protocol.MSG_INT_SIZE * 2 ) + 1;
-        rtr.messageContent = new byte[totalSize];
-        int ptr = 0;
-        ByteEncoder.encodeInt(fileDescriptor, rtr.messageContent, 0);
-        ptr += P9Protocol.MSG_INT_SIZE;
-        ByteEncoder.copyBytesTo(encodedName,rtr.messageContent, ptr, encodedName.length);
-        ptr += encodedName.length;
-        ByteEncoder.encodeInt(permission, rtr.messageContent,ptr);
-        ptr += P9Protocol.MSG_INT_SIZE;
-        rtr.messageContent[ptr] = mode;
-        rtr.messageSize = MessageRaw.minSize + totalSize;
-        return rtr;
-    }
+    rtr.tag = tag;
+    rtr.messageType = P9Protocol.TCREATE;
+    byte[] encodedName = ByteEncoder.encodeStringToBuffer(fileName);
+    int totalSize = encodedName.length + (P9Protocol.MSG_INT_SIZE * 2) + 1;
+    rtr.messageContent = new byte[totalSize];
+    int ptr = 0;
+    ByteEncoder.encodeInt(fileDescriptor, rtr.messageContent, 0);
+    ptr += P9Protocol.MSG_INT_SIZE;
+    ByteEncoder.copyBytesTo(encodedName, rtr.messageContent, ptr, encodedName.length);
+    ptr += encodedName.length;
+    ByteEncoder.encodeInt(permission, rtr.messageContent, ptr);
+    ptr += P9Protocol.MSG_INT_SIZE;
+    rtr.messageContent[ptr] = mode;
+    rtr.messageSize = MessageRaw.minSize + totalSize;
+    return rtr;
+  }
 
-    public int getPermission() {
-        return permission;
-    }
+  public int getPermission() {
+    return permission;
+  }
 
-    public void setPermission(int permission) {
-        this.permission = permission;
-    }
+  public void setPermission(int permission) {
+    this.permission = permission;
+  }
 
-    public byte getMode() {
-        return mode;
-    }
+  public byte getMode() {
+    return mode;
+  }
 
-    public void setMode(byte mode) {
-        this.mode = mode;
-    }
+  public void setMode(byte mode) {
+    this.mode = mode;
+  }
 
-    public String getFileName() {
-        return fileName;
-    }
+  public String getFileName() {
+    return fileName;
+  }
 
-    public void setFileName(String fileName) {
-        this.fileName = fileName;
-    }
+  public void setFileName(String fileName) {
+    this.fileName = fileName;
+  }
 
-    public int getFileDescriptor() {
-        return fileDescriptor;
-    }
+  public int getFileDescriptor() {
+    return fileDescriptor;
+  }
 
-    public void setFileDescriptor(int fileDescriptor) {
-        this.fileDescriptor = fileDescriptor;
-    }
+  public void setFileDescriptor(int fileDescriptor) {
+    this.fileDescriptor = fileDescriptor;
+  }
 }

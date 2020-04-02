@@ -16,61 +16,61 @@
 
 package gelato;
 
-import protocol.*;
-
-import java.util.*;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Random;
 
 public class GelatoDescriptorManager {
-    private Map<Long, Boolean> usedFid = new HashMap<>();
-    private Map<Long, GelatoFileDescriptor> qidMap = new HashMap<>();
+  private Map<Long, Boolean> usedFid = new HashMap<>();
+  private Map<Long, GelatoFileDescriptor> qidMap = new HashMap<>();
 
-    private Random generator = new Random();
+  private Random generator = new Random();
 
-    public void mapQID(GelatoFileDescriptor descriptor, GelatoFileDescriptor serverResource) {
-        qidMap.put(descriptor.getDescriptorId(), serverResource);
-        usedFid.put(descriptor.getDescriptorId(),  true);
+  public void mapQID(GelatoFileDescriptor descriptor, GelatoFileDescriptor serverResource) {
+    qidMap.put(descriptor.getDescriptorId(), serverResource);
+    usedFid.put(descriptor.getDescriptorId(), true);
+  }
+
+  public GelatoFileDescriptor getServerDescriptor(GelatoFileDescriptor clientDescriptor) {
+    return qidMap.get(clientDescriptor.getDescriptorId());
+  }
+
+  public void removeServerResourceMap(GelatoFileDescriptor clientDescriptor) {
+    qidMap.remove(clientDescriptor.getDescriptorId());
+  }
+
+  public GelatoFileDescriptor generateDescriptor() {
+    GelatoFileDescriptor newDescriptor = new GelatoFileDescriptor();
+    int val = generator.nextInt();
+    if (usedFid.containsKey(val)) {
+      return generateDescriptor();
     }
+    newDescriptor.setRawFileDescriptor(val);
+    usedFid.put(newDescriptor.getDescriptorId(), true);
 
-    public GelatoFileDescriptor getServerDescriptor(GelatoFileDescriptor clientDescriptor) {
-        return qidMap.get(clientDescriptor.getDescriptorId());
+    return newDescriptor;
+  }
+
+  public boolean validDescriptor(GelatoFileDescriptor descriptor) {
+    if (usedFid.containsKey(descriptor.getDescriptorId())) {
+      return true;
     }
+    return false;
+  }
 
-    public void removeServerResourceMap(GelatoFileDescriptor clientDescriptor) {
-        qidMap.remove(clientDescriptor.getDescriptorId());
+  public int size() {
+    return usedFid.size();
+  }
+
+  public boolean registerDescriptor(GelatoFileDescriptor newDescriptor) {
+    if (usedFid.containsKey(newDescriptor.getDescriptorId())) {
+      return false;
     }
+    usedFid.put(newDescriptor.getDescriptorId(), true);
+    return true;
+  }
 
-    public GelatoFileDescriptor generateDescriptor () {
-        GelatoFileDescriptor newDescriptor = new GelatoFileDescriptor();
-        int val = generator.nextInt();
-        if(usedFid.containsKey(val)) {
-            return generateDescriptor();
-        }
-        newDescriptor.setRawFileDescriptor(val);
-        usedFid.put(newDescriptor.getDescriptorId(),true);
-
-        return newDescriptor;
-    }
-
-    public boolean validDescriptor(GelatoFileDescriptor descriptor) {
-        if(usedFid.containsKey(descriptor.getDescriptorId())) {
-            return true;
-        }
-        return false;
-    }
-
-    public int size() {
-        return usedFid.size();
-    }
-
-    public boolean registerDescriptor(GelatoFileDescriptor newDescriptor) {
-        if(usedFid.containsKey(newDescriptor.getDescriptorId())) {
-            return false;
-        }
-        usedFid.put(newDescriptor.getDescriptorId(),true);
-        return true;
-    }
-
-    public void removeDescriptor(GelatoFileDescriptor descriptor) {
-        usedFid.remove(descriptor.getDescriptorId());
-    }
+  public void removeDescriptor(GelatoFileDescriptor descriptor) {
+    usedFid.remove(descriptor.getDescriptorId());
+  }
 }

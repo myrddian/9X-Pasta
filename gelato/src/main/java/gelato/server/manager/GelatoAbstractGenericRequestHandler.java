@@ -16,33 +16,39 @@
 
 package gelato.server.manager;
 
-import gelato.*;
-import gelato.server.manager.requests.*;
-import protocol.messages.response.*;
+import gelato.GelatoConnection;
+import gelato.GelatoFileDescriptor;
+import gelato.GelatoSession;
+import gelato.server.manager.requests.GenericRequestHandler;
+import protocol.messages.response.ErrorMessage;
 
 public abstract class GelatoAbstractGenericRequestHandler implements GenericRequestHandler {
 
-    public void sendErrorMessage(RequestConnection connection, String message) {
-        ErrorMessage msg = new ErrorMessage();
-        msg.setTag(connection.getTransactionId());
-        msg.setErrorMessage(message);
-        connection.reply(msg);
-    }
+  public void sendErrorMessage(RequestConnection connection, String message) {
+    ErrorMessage msg = new ErrorMessage();
+    msg.setTag(connection.getTransactionId());
+    msg.setErrorMessage(message);
+    connection.reply(msg);
+  }
 
-    public void sendErrorMessage(GelatoConnection connection, GelatoFileDescriptor descriptor, int tag, String message) {
-        ErrorMessage msg = new ErrorMessage();
-        msg.setTag(tag);
-        msg.setErrorMessage(message);
-        connection.sendMessage(descriptor,msg.toMessage());
-    }
+  public void sendErrorMessage(
+      GelatoConnection connection, GelatoFileDescriptor descriptor, int tag, String message) {
+    ErrorMessage msg = new ErrorMessage();
+    msg.setTag(tag);
+    msg.setErrorMessage(message);
+    connection.sendMessage(descriptor, msg.toMessage());
+  }
 
-    public RequestConnection createConnection(GelatoConnection connection, GelatoFileDescriptor descriptor, GelatoSession session, int tag) {
-        RequestConnection con = new RequestConnection();
-        con.setConnection(connection);
-        con.setDescriptor(descriptor);
-        con.setSession(session);
-        con.setTransactionId(tag);
-        return con;
-    }
-
+  public RequestConnection createConnection(
+      GelatoConnection connection,
+      GelatoFileDescriptor descriptor,
+      GelatoSession session,
+      int tag) {
+    RequestConnection con = new RequestConnection();
+    con.setConnection(connection);
+    con.setDescriptor(descriptor);
+    con.setSession(session);
+    con.setTransactionId(tag);
+    return con;
+  }
 }

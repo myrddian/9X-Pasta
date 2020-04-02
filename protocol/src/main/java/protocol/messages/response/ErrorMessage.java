@@ -16,37 +16,39 @@
 
 package protocol.messages.response;
 
-import protocol.messages.*;
+import protocol.messages.Encoder;
+import protocol.messages.Message;
+import protocol.messages.TransactionMessage;
 
-public class ErrorMessage  implements TransactionMessage {
-    private int tag;
-    private String errorMessage;
+public class ErrorMessage implements TransactionMessage {
+  private int tag;
+  private String errorMessage;
 
-    @Override
-    public int getTag() {
-        return tag;
-    }
+  @Override
+  public int getTag() {
+    return tag;
+  }
 
-    @Override
-    public Message toMessage() {
-        return Encoder.encodeError(this).toMessage();
-    }
+  @Override
+  public void setTag(int tag) {
+    this.tag = tag;
+  }
 
-    @Override
-    public void setTag(int tag) {
-        this.tag = tag;
-    }
+  @Override
+  public Message toMessage() {
+    return Encoder.encodeError(this).toMessage();
+  }
 
-    @Override
-    public void setTransactionId(int transactionId) {
-        setTag(transactionId);
-    }
+  @Override
+  public void setTransactionId(int transactionId) {
+    setTag(transactionId);
+  }
 
-    public String getErrorMessage() {
-        return errorMessage;
-    }
+  public String getErrorMessage() {
+    return errorMessage;
+  }
 
-    public void setErrorMessage(String errorMessage) {
-        this.errorMessage = errorMessage;
-    }
+  public void setErrorMessage(String errorMessage) {
+    this.errorMessage = errorMessage;
+  }
 }

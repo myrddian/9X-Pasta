@@ -16,11 +16,11 @@
 
 package gelato.server.manager.requests;
 
-import gelato.*;
-import protocol.messages.*;
-import protocol.messages.request.*;
+import gelato.GelatoConnection;
+import gelato.GelatoFileDescriptor;
+import protocol.messages.VersionRequest;
 
 public interface RequestVersionHandler {
-    boolean processRequest(GelatoConnection connection, GelatoFileDescriptor descriptor, VersionRequest request);
-
+  boolean processRequest(
+      GelatoConnection connection, GelatoFileDescriptor descriptor, VersionRequest request);
 }

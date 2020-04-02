@@ -16,43 +16,45 @@
 
 package protocol.messages.response;
 
-import protocol.*;
-import protocol.messages.*;
+import protocol.P9Protocol;
+import protocol.StatStruct;
+import protocol.messages.Message;
+import protocol.messages.TransactionMessage;
 
 public class StatResponse implements TransactionMessage {
-    private int tag;
-    private StatStruct statStruct;
+  private int tag;
+  private StatStruct statStruct;
 
-    @Override
-    public void setTransactionId(int transactionId) {
-        setTag(transactionId);
-    }
+  @Override
+  public void setTransactionId(int transactionId) {
+    setTag(transactionId);
+  }
 
-    @Override
-    public int getTag() {
-        return tag;
-    }
+  @Override
+  public int getTag() {
+    return tag;
+  }
 
-    @Override
-    public Message toMessage() {
-        Message rtr = new Message();
-        rtr.tag  = tag;
-        rtr.messageType = P9Protocol.RSTAT;
-        rtr.messageContent = statStruct.EncodeStat();
-        rtr.messageSize = P9Protocol.MIN_MSG_SIZE + rtr.messageContent.length;
-        return rtr;
-    }
+  @Override
+  public void setTag(int tag) {
+    this.tag = tag;
+  }
 
-    @Override
-    public void setTag(int tag) {
-        this.tag = tag;
-    }
+  @Override
+  public Message toMessage() {
+    Message rtr = new Message();
+    rtr.tag = tag;
+    rtr.messageType = P9Protocol.RSTAT;
+    rtr.messageContent = statStruct.EncodeStat();
+    rtr.messageSize = P9Protocol.MIN_MSG_SIZE + rtr.messageContent.length;
+    return rtr;
+  }
 
-    public StatStruct getStatStruct() {
-        return statStruct;
-    }
+  public StatStruct getStatStruct() {
+    return statStruct;
+  }
 
-    public void setStatStruct(StatStruct statStruct) {
-        this.statStruct = statStruct;
-    }
+  public void setStatStruct(StatStruct statStruct) {
+    this.statStruct = statStruct;
+  }
 }

@@ -23,108 +23,103 @@ import ciotola.annotations.CiotolaServiceStart;
 import ciotola.annotations.CiotolaServiceStop;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
 import java.lang.reflect.Method;
 
 public class AnnotatedJavaServiceRunner implements CiotolaServiceInterface {
-    private Object javaServiceObject;
-    private Method startMethod;
-    private Method stopMethod;
-    private Method runMethod;
+  private final Logger logger = LoggerFactory.getLogger(AnnotatedJavaServiceRunner.class);
+  private Object javaServiceObject;
+  private Method startMethod;
+  private Method stopMethod;
+  private Method runMethod;
 
+  public AnnotatedJavaServiceRunner(Object serviceObject) {
 
-    private final Logger logger = LoggerFactory.getLogger(AnnotatedJavaServiceRunner.class);
+    boolean foundStart = false;
+    boolean foundStop = false;
+    boolean foundRun = false;
 
-    public AnnotatedJavaServiceRunner(Object serviceObject) {
+    javaServiceObject = serviceObject;
 
-        boolean foundStart = false;
-        boolean foundStop = false;
-        boolean foundRun = false;
+    logger.info("Loading Service: " + serviceObject.getClass().getName());
 
-        javaServiceObject = serviceObject;
-
-        logger.info("Loading Service: " + serviceObject.getClass().getName());
-
-        //Scan Start
-        for(Method method: javaServiceObject.getClass().getMethods()) {
-            CiotolaServiceStart startAnnotation = method.getAnnotation(CiotolaServiceStart.class);
-            if(startAnnotation != null) {
-                startMethod = method;
-                foundStart = true;
-                break;
-            }
-        }
-
-        //Scan Stop
-        for(Method method: javaServiceObject.getClass().getMethods()) {
-            CiotolaServiceStop shutdownAnnotation = method.getAnnotation(CiotolaServiceStop.class);
-            if(shutdownAnnotation != null) {
-                stopMethod = method;
-                foundStop = true;
-                break;
-            }
-        }
-
-        //Scan run
-        for(Method method: javaServiceObject.getClass().getMethods()) {
-            CiotolaServiceRun runAnnotation = method.getAnnotation(CiotolaServiceRun.class);
-            if(runAnnotation != null) {
-                runMethod = method;
-                foundRun = true;
-                break;
-            }
-        }
-
-
-        if( !foundRun || !foundStop || !foundStart) {
-            logger.error(Ciotola.SERVICE_INIT_METHOD_ERROR);
-            throw new RuntimeException(Ciotola.SERVICE_INIT_METHOD_ERROR);
-        }
-        logger.trace("Class " + serviceObject.getClass().getName() +" Loaded into Proxy");
+    // Scan Start
+    for (Method method : javaServiceObject.getClass().getMethods()) {
+      CiotolaServiceStart startAnnotation = method.getAnnotation(CiotolaServiceStart.class);
+      if (startAnnotation != null) {
+        startMethod = method;
+        foundStart = true;
+        break;
+      }
     }
 
-    @Override
-    public boolean startUp() {
-        try {
-            startMethod.invoke(javaServiceObject);
-            return true;
-        } catch (Exception e) {
-            logger.error(Ciotola.GENERIC_SERVICE_START_ERROR, e);
-        }
-        return false;
+    // Scan Stop
+    for (Method method : javaServiceObject.getClass().getMethods()) {
+      CiotolaServiceStop shutdownAnnotation = method.getAnnotation(CiotolaServiceStop.class);
+      if (shutdownAnnotation != null) {
+        stopMethod = method;
+        foundStop = true;
+        break;
+      }
     }
 
-    @Override
-    public boolean shutdown() {
-        try {
-            stopMethod.invoke(javaServiceObject);
-            return true;
-        } catch (Exception e) {
-            logger.error(Ciotola.GENERIC_SERVICE_START_ERROR, e);
-        }
-        return false;
+    // Scan run
+    for (Method method : javaServiceObject.getClass().getMethods()) {
+      CiotolaServiceRun runAnnotation = method.getAnnotation(CiotolaServiceRun.class);
+      if (runAnnotation != null) {
+        runMethod = method;
+        foundRun = true;
+        break;
+      }
     }
 
-    @Override
-    public boolean run() {
-        try {
-            runMethod.invoke(javaServiceObject);
-            return true;
-        } catch (Exception e) {
-            logger.error(Ciotola.GENERIC_SERVICE_START_ERROR, e);
-        }
-        return false;
+    if (!foundRun || !foundStop || !foundStart) {
+      logger.error(Ciotola.SERVICE_INIT_METHOD_ERROR);
+      throw new RuntimeException(Ciotola.SERVICE_INIT_METHOD_ERROR);
     }
+    logger.trace("Class " + serviceObject.getClass().getName() + " Loaded into Proxy");
+  }
 
-    @Override
-    public String serviceName() {
-        return javaServiceObject.getClass().getName();
-
+  @Override
+  public boolean startUp() {
+    try {
+      startMethod.invoke(javaServiceObject);
+      return true;
+    } catch (Exception e) {
+      logger.error(Ciotola.GENERIC_SERVICE_START_ERROR, e);
     }
+    return false;
+  }
 
-    @Override
-    public Object getObject() {
-        return javaServiceObject;
+  @Override
+  public boolean shutdown() {
+    try {
+      stopMethod.invoke(javaServiceObject);
+      return true;
+    } catch (Exception e) {
+      logger.error(Ciotola.GENERIC_SERVICE_START_ERROR, e);
     }
+    return false;
+  }
 
+  @Override
+  public boolean run() {
+    try {
+      runMethod.invoke(javaServiceObject);
+      return true;
+    } catch (Exception e) {
+      logger.error(Ciotola.GENERIC_SERVICE_START_ERROR, e);
+    }
+    return false;
+  }
 
+  @Override
+  public String serviceName() {
+    return javaServiceObject.getClass().getName();
+  }
+
+  @Override
+  public Object getObject() {
+    return javaServiceObject;
+  }
 }

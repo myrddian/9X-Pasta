@@ -16,9 +16,15 @@
 
 package gelato.server.manager.requests;
 
-import gelato.*;
-import protocol.messages.request.*;
+import gelato.GelatoConnection;
+import gelato.GelatoFileDescriptor;
+import gelato.GelatoSession;
+import protocol.messages.request.WalkRequest;
 
 public interface RequestWalkHandler {
-    boolean processRequest(GelatoConnection connection, GelatoFileDescriptor descriptor, GelatoSession session, WalkRequest request);
+  boolean processRequest(
+      GelatoConnection connection,
+      GelatoFileDescriptor descriptor,
+      GelatoSession session,
+      WalkRequest request);
 }

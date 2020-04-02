@@ -16,55 +16,55 @@
 
 package protocol.messages;
 
-import protocol.*;
+import protocol.P9Protocol;
 
-public class VersionRequest  implements TransactionMessage{
+public class VersionRequest implements TransactionMessage {
 
-    public int getMaxMsgSize() {
-        return maxMsgSize;
-    }
+  private int maxMsgSize = P9Protocol.DEFAULT_MSG_SIZE;
+  private String version = P9Protocol.protocolVersion;
+  private int messageTag = 0;
 
-    public void setMaxMsgSize(int maxMsgSize) {
-        this.maxMsgSize = maxMsgSize;
-    }
+  public int getMaxMsgSize() {
+    return maxMsgSize;
+  }
 
-    public String getVersion() {
-        return version;
-    }
+  public void setMaxMsgSize(int maxMsgSize) {
+    this.maxMsgSize = maxMsgSize;
+  }
 
-    public void setVersion(String version) {
-        this.version = version;
-    }
+  public String getVersion() {
+    return version;
+  }
 
-    private int maxMsgSize = P9Protocol.DEFAULT_MSG_SIZE;
-    private String version = P9Protocol.protocolVersion;
-    private int messageTag = 0;
+  public void setVersion(String version) {
+    this.version = version;
+  }
 
-    public int getMessageTag() {
-        return messageTag;
-    }
+  public int getMessageTag() {
+    return messageTag;
+  }
 
-    public void setMessageTag(int messageTag) {
-        this.messageTag = messageTag;
-    }
+  public void setMessageTag(int messageTag) {
+    this.messageTag = messageTag;
+  }
 
-    @Override
-    public void setTransactionId(int transactionId) {
-        setTag(transactionId);
-    }
+  @Override
+  public void setTransactionId(int transactionId) {
+    setTag(transactionId);
+  }
 
-    @Override
-    public void setTag(int newTag) {
-        messageTag = newTag;
-    }
+  @Override
+  public int getTag() {
+    return messageTag;
+  }
 
-    @Override
-    public int getTag() {
-        return messageTag;
-    }
+  @Override
+  public void setTag(int newTag) {
+    messageTag = newTag;
+  }
 
-    @Override
-    public Message toMessage() {
-        return Encoder.encodeVersionRequest(this).toMessage();
-    }
+  @Override
+  public Message toMessage() {
+    return Encoder.encodeVersionRequest(this).toMessage();
+  }
 }

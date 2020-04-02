@@ -16,12 +16,12 @@
 
 package gelato.server;
 
-import gelato.*;
-import protocol.messages.*;
+import gelato.GelatoFileDescriptor;
+import protocol.messages.Message;
 
 public interface GelatoServerEventHandler {
 
-    boolean processMessage(Message eventMessage);
-    GelatoFileDescriptor getClientDescriptor();
+  boolean processMessage(Message eventMessage);
 
+  GelatoFileDescriptor getClientDescriptor();
 }

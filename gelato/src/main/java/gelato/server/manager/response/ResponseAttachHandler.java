@@ -16,11 +16,12 @@
 
 package gelato.server.manager.response;
 
-import gelato.*;
-import protocol.messages.response.*;
+import gelato.GelatoConnection;
+import gelato.GelatoFileDescriptor;
+import protocol.messages.response.AttachResponse;
 
 public interface ResponseAttachHandler {
 
-    boolean writeResponse(GelatoConnection connection, GelatoFileDescriptor fileDescriptor, AttachResponse response);
-
+  boolean writeResponse(
+      GelatoConnection connection, GelatoFileDescriptor fileDescriptor, AttachResponse response);
 }

@@ -16,5 +16,4 @@
 
 package gelato.server.manager.response;
 
-public interface FlushResponseHandler {
-}
+public interface FlushResponseHandler {}

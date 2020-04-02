@@ -16,45 +16,48 @@
 
 package protocol.messages.response;
 
-import protocol.*;
-import protocol.messages.*;
+import protocol.ByteEncoder;
+import protocol.P9Protocol;
+import protocol.QID;
+import protocol.messages.Message;
+import protocol.messages.MessageRaw;
+import protocol.messages.TransactionMessage;
 
-public class AttachResponse  implements TransactionMessage {
-    private QID serverID;
-    private int tag;
+public class AttachResponse implements TransactionMessage {
+  private QID serverID;
+  private int tag;
 
-    public QID getServerID() {
-        return serverID;
-    }
+  public QID getServerID() {
+    return serverID;
+  }
 
-    public void setServerID(QID serverID) {
-        this.serverID = serverID;
-    }
+  public void setServerID(QID serverID) {
+    this.serverID = serverID;
+  }
 
+  @Override
+  public void setTransactionId(int transactionId) {
+    setTag(transactionId);
+  }
 
-    @Override
-    public void setTransactionId(int transactionId) {
-        setTag(transactionId);
-    }
+  @Override
+  public int getTag() {
+    return tag;
+  }
 
-    @Override
-    public int getTag() {
-        return tag;
-    }
+  @Override
+  public void setTag(int tag) {
+    this.tag = tag;
+  }
 
-    @Override
-    public Message toMessage() {
-        Message raw = new Message();
-        raw.messageType = P9Protocol.RATTACH;
-        int size = MessageRaw.minSize + P9Protocol.MSG_QID_SIZE;
-        raw.messageSize = size;
-        raw.messageContent = new byte[P9Protocol.MSG_QID_SIZE];
-        ByteEncoder.encodeQID(serverID, raw.messageContent, 0);
-        return raw;
-    }
-
-    @Override
-    public void setTag(int tag) {
-        this.tag = tag;
-    }
+  @Override
+  public Message toMessage() {
+    Message raw = new Message();
+    raw.messageType = P9Protocol.RATTACH;
+    int size = MessageRaw.minSize + P9Protocol.MSG_QID_SIZE;
+    raw.messageSize = size;
+    raw.messageContent = new byte[P9Protocol.MSG_QID_SIZE];
+    ByteEncoder.encodeQID(serverID, raw.messageContent, 0);
+    return raw;
+  }
 }

@@ -16,11 +16,14 @@
 
 package gelato.client.file;
 
-import java.util.*;
+import java.util.List;
 
-public interface GelatoDirectory extends GelatoResource{
-    List<GelatoDirectory> getDirectories();
-    List<GelatoFile> getFiles();
-    GelatoDirectory getDirectory(String name);
-    boolean valid();
+public interface GelatoDirectory extends GelatoResource {
+  List<GelatoDirectory> getDirectories();
+
+  List<GelatoFile> getFiles();
+
+  GelatoDirectory getDirectory(String name);
+
+  boolean valid();
 }

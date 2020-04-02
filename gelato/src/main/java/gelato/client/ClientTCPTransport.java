@@ -16,60 +16,62 @@
 
 package gelato.client;
 
-import gelato.*;
-import gelato.transport.*;
-import org.slf4j.*;
+import gelato.GelatoConfigImpl;
+import gelato.transport.TCPTransport;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import java.io.*;
-import java.net.*;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.net.Socket;
+import java.net.UnknownHostException;
 
 public class ClientTCPTransport extends TCPTransport {
 
-    private Socket clientSocket;
-    final Logger logger = LoggerFactory.getLogger(TCPTransport.class);
+  final Logger logger = LoggerFactory.getLogger(TCPTransport.class);
+  private Socket clientSocket;
 
-    public ClientTCPTransport(Socket cliSocket) {
-        clientSocket = cliSocket;
+  public ClientTCPTransport(Socket cliSocket) {
+    clientSocket = cliSocket;
+  }
+
+  public ClientTCPTransport(GelatoConfigImpl configuration) {
+    try {
+      clientSocket = new Socket(configuration.getHostName(), configuration.getPortNumber());
+    } catch (UnknownHostException e) {
+      e.printStackTrace();
+    } catch (IOException e) {
+      e.printStackTrace();
     }
-    public ClientTCPTransport(GelatoConfigImpl configuration) {
-        try {
-            clientSocket = new Socket(configuration.getHostName(), configuration.getPortNumber());
-        } catch (UnknownHostException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+  }
+
+  @Override
+  public InputStream getSocketInputStream() {
+    try {
+      return clientSocket.getInputStream();
+    } catch (IOException e) {
+      e.printStackTrace();
     }
+    return null;
+  }
 
-    @Override
-    public InputStream getSocketInputStream()  {
-        try {
-            return clientSocket.getInputStream();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        return null;
+  @Override
+  public OutputStream getSocketOutputStream() {
+    try {
+      return clientSocket.getOutputStream();
+    } catch (IOException e) {
+      e.printStackTrace();
     }
+    return null;
+  }
 
-    @Override
-    public OutputStream getSocketOutputStream() {
-        try {
-            return clientSocket.getOutputStream();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        return  null;
+  @Override
+  public void closeStream() {
+    try {
+      clientSocket.close();
+    } catch (IOException e) {
+      e.printStackTrace();
     }
-
-    @Override
-    public void closeStream() {
-        try {
-            clientSocket.close();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-
-
-
+  }
 }

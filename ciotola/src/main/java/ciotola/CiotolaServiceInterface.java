@@ -18,14 +18,13 @@ package ciotola;
 
 public interface CiotolaServiceInterface {
 
-    boolean startUp();
+  boolean startUp();
 
-    boolean shutdown();
+  boolean shutdown();
 
-    boolean run();
+  boolean run();
 
-    String serviceName();
+  String serviceName();
 
-    Object getObject();
-
+  Object getObject();
 }

@@ -22,34 +22,31 @@ import protocol.messages.Message;
 
 public class V2Message {
 
-    private GelatoFileDescriptor descriptor;
+  private GelatoFileDescriptor descriptor;
+  private GelatoConnection clientConnection;
+  private Message message;
 
-    public GelatoFileDescriptor getDescriptor() {
-        return descriptor;
-    }
+  public GelatoFileDescriptor getDescriptor() {
+    return descriptor;
+  }
 
-    public void setDescriptor(GelatoFileDescriptor descriptor) {
-        this.descriptor = descriptor;
-    }
+  public void setDescriptor(GelatoFileDescriptor descriptor) {
+    this.descriptor = descriptor;
+  }
 
-    public GelatoConnection getClientConnection() {
-        return clientConnection;
-    }
+  public GelatoConnection getClientConnection() {
+    return clientConnection;
+  }
 
-    public void setClientConnection(GelatoConnection clientConnection) {
-        this.clientConnection = clientConnection;
-    }
+  public void setClientConnection(GelatoConnection clientConnection) {
+    this.clientConnection = clientConnection;
+  }
 
-    public Message getMessage() {
-        return message;
-    }
+  public Message getMessage() {
+    return message;
+  }
 
-    public void setMessage(Message message) {
-        this.message = message;
-    }
-
-    private GelatoConnection clientConnection;
-    private Message message;
-
-
+  public void setMessage(Message message) {
+    this.message = message;
+  }
 }

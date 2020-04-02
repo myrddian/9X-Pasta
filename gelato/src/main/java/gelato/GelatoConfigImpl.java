@@ -16,39 +16,36 @@
 
 package gelato;
 
-import gelato.*;
+public class GelatoConfigImpl implements GelatoConnectionConfig {
 
-public class GelatoConfigImpl  implements GelatoConnectionConfig {
+  private int portNumber;
+  private String hostName;
+  private Gelato.MODE mode = Gelato.MODE.CLIENT;
 
-    private int portNumber;
-    private String hostName;
-    private Gelato.MODE mode = Gelato.MODE.CLIENT;
+  @Override
+  public void setPort(int portNumber) {
+    this.portNumber = portNumber;
+  }
 
+  @Override
+  public void setHost(String host) {
+    hostName = host;
+  }
 
-    @Override
-    public void setPort(int portNumber) {
-        this.portNumber = portNumber;
-    }
+  public int getPortNumber() {
+    return portNumber;
+  }
 
-    @Override
-    public void setHost(String host) {
-        hostName = host;
-    }
+  public String getHostName() {
+    return hostName;
+  }
 
-    @Override
-    public void setMode(Gelato.MODE mode) {
-        this.mode = mode;
-    }
+  public Gelato.MODE getMode() {
+    return mode;
+  }
 
-    public int getPortNumber() {
-        return portNumber;
-    }
-
-    public String getHostName() {
-        return hostName;
-    }
-
-    public Gelato.MODE getMode() {
-        return mode;
-    }
+  @Override
+  public void setMode(Gelato.MODE mode) {
+    this.mode = mode;
+  }
 }

@@ -1,4 +1,3 @@
-
 /*
  *   Copyright (c) 2020. Enzo Reyes
  *
@@ -19,44 +18,44 @@ package protocol;
 
 public class QID {
 
-    public static int QID_DIR = 0x80;
-    public static int QID_APPEND = 0x40;
-    public static int QID_EXCLUSIVE = 0x20;
-    public static int QID_MOUNT = 0x10;
-    public static int QID_AUTH = 0x08;
-    public static int QID_TMP = 0x04;
-    public static int QID_FILE = 0x00;
-    public static int QID_AUTH_NOT_REQUIRED = 0x18;
+  public static int QID_DIR = 0x80;
+  public static int QID_APPEND = 0x40;
+  public static int QID_EXCLUSIVE = 0x20;
+  public static int QID_MOUNT = 0x10;
+  public static int QID_AUTH = 0x08;
+  public static int QID_TMP = 0x04;
+  public static int QID_FILE = 0x00;
+  public static int QID_AUTH_NOT_REQUIRED = 0x18;
 
+  private long longFileId;
+  private int version;
+  private byte type;
 
-    private long longFileId;
-    private int  version;
-    private byte type;
+  public long getLongFileId() {
+    return longFileId;
+  }
 
-    public long getLongFileId() {
-        return longFileId;
-    }
+  public void setLongFileId(long longFileId) {
+    this.longFileId = longFileId;
+  }
 
-    public void setLongFileId(long longFileId) {
-        this.longFileId = longFileId;
-    }
+  public long getVersion() {
+    return ByteEncoder.getUnsigned(version);
+  }
 
+  public void setVersion(long newVersion) {
+    version = ByteEncoder.toUnsigned(newVersion);
+  }
 
-    public long getVersion() {
-        return ByteEncoder.getUnsigned(version);
-    }
+  public int getVersionRaw() {
+    return version;
+  }
 
-    public int getVersionRaw() { return version; }
+  public byte getType() {
+    return type;
+  }
 
-    public void setVersion(long newVersion) {
-        version = ByteEncoder.toUnsigned(newVersion);
-    }
-
-    public byte getType() {
-        return type;
-    }
-
-    public void setType(byte type) {
-        this.type = type;
-    }
+  public void setType(byte type) {
+    this.type = type;
+  }
 }

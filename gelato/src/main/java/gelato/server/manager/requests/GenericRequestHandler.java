@@ -16,14 +16,16 @@
 
 package gelato.server.manager.requests;
 
-import gelato.*;
-import protocol.messages.*;
+import gelato.GelatoConnection;
+import gelato.GelatoFileDescriptor;
+import gelato.GelatoSession;
+import protocol.messages.Message;
 
 public interface GenericRequestHandler {
 
-    boolean processRequest(GelatoConnection connection,
-                           GelatoFileDescriptor descriptor,
-                           GelatoSession session,
-                           Message request);
-
+  boolean processRequest(
+      GelatoConnection connection,
+      GelatoFileDescriptor descriptor,
+      GelatoSession session,
+      Message request);
 }

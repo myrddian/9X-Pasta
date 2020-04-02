@@ -16,49 +16,51 @@
 
 package gelato.server.manager;
 
-import gelato.*;
-import protocol.messages.*;
+import gelato.GelatoConnection;
+import gelato.GelatoFileDescriptor;
+import gelato.GelatoSession;
+import protocol.messages.TransactionMessage;
 
 public class RequestConnection {
-    private GelatoSession session;
-    private GelatoConnection connection;
-    private GelatoFileDescriptor descriptor;
-    private int transactionId;
+  private GelatoSession session;
+  private GelatoConnection connection;
+  private GelatoFileDescriptor descriptor;
+  private int transactionId;
 
-    public void reply(TransactionMessage msg) {
-        msg.setTag(getTransactionId());
-        connection.sendMessage(descriptor, msg.toMessage());
-    }
+  public void reply(TransactionMessage msg) {
+    msg.setTag(getTransactionId());
+    connection.sendMessage(descriptor, msg.toMessage());
+  }
 
-    public GelatoSession getSession() {
-        return session;
-    }
+  public GelatoSession getSession() {
+    return session;
+  }
 
-    public void setSession(GelatoSession session) {
-        this.session = session;
-    }
+  public void setSession(GelatoSession session) {
+    this.session = session;
+  }
 
-    public GelatoConnection getConnection() {
-        return connection;
-    }
+  public GelatoConnection getConnection() {
+    return connection;
+  }
 
-    public void setConnection(GelatoConnection connection) {
-        this.connection = connection;
-    }
+  public void setConnection(GelatoConnection connection) {
+    this.connection = connection;
+  }
 
-    public GelatoFileDescriptor getDescriptor() {
-        return descriptor;
-    }
+  public GelatoFileDescriptor getDescriptor() {
+    return descriptor;
+  }
 
-    public void setDescriptor(GelatoFileDescriptor descriptor) {
-        this.descriptor = descriptor;
-    }
+  public void setDescriptor(GelatoFileDescriptor descriptor) {
+    this.descriptor = descriptor;
+  }
 
-    public int getTransactionId() {
-        return transactionId;
-    }
+  public int getTransactionId() {
+    return transactionId;
+  }
 
-    public void setTransactionId(int transactionId) {
-        this.transactionId = transactionId;
-    }
+  public void setTransactionId(int transactionId) {
+    this.transactionId = transactionId;
+  }
 }

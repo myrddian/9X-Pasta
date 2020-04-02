@@ -16,30 +16,37 @@
 
 package gelato.server.manager.implementation;
 
-import gelato.*;
-import gelato.server.manager.*;
-import protocol.*;
-import protocol.messages.request.*;
+import gelato.GelatoConnection;
+import gelato.GelatoFileDescriptor;
+import gelato.GelatoSession;
+import gelato.server.manager.GelatoAuthorisationManager;
+import protocol.QID;
+import protocol.messages.request.AuthRequest;
 
 public class NullAuthorisation implements GelatoAuthorisationManager {
 
-    @Override
-    public boolean requireAuth() {
-        return false;
-    }
+  @Override
+  public boolean requireAuth() {
+    return false;
+  }
 
-    @Override
-    public boolean processAuthRequest(GelatoConnection connection, GelatoFileDescriptor descriptor, GelatoSession session, AuthRequest request) {
-        return false;
-    }
+  @Override
+  public boolean processAuthRequest(
+      GelatoConnection connection,
+      GelatoFileDescriptor descriptor,
+      GelatoSession session,
+      AuthRequest request) {
+    return false;
+  }
 
-    @Override
-    public QID authoriseQID(GelatoFileDescriptor descriptor) {
-        return null;
-    }
+  @Override
+  public QID authoriseQID(GelatoFileDescriptor descriptor) {
+    return null;
+  }
 
-    @Override
-    public GelatoFileDescriptor getAuthorisedDescriptor(GelatoConnection connection, GelatoFileDescriptor descriptor) {
-        return null;
-    }
+  @Override
+  public GelatoFileDescriptor getAuthorisedDescriptor(
+      GelatoConnection connection, GelatoFileDescriptor descriptor) {
+    return null;
+  }
 }

@@ -16,135 +16,136 @@
 
 package gelato.transport;
 
-import org.slf4j.*;
-import protocol.*;
-import protocol.messages.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import protocol.Decoder;
+import protocol.messages.Encoder;
+import protocol.messages.Message;
+import protocol.messages.MessageRaw;
 
-import java.io.*;
-import java.util.concurrent.*;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.LinkedBlockingQueue;
 
 public abstract class TCPTransport implements GelatoTransport, Runnable {
 
-    final Logger logger = LoggerFactory.getLogger(TCPTransport.class);
+  final Logger logger = LoggerFactory.getLogger(TCPTransport.class);
+  private BlockingQueue<Message> readMessageQueue = new LinkedBlockingQueue<>();
+  private BlockingQueue<Message> writeMessageQueue = new LinkedBlockingQueue<>();
+  private boolean closeConnction = false;
+  private int headerSize = MessageRaw.minSize;
+  private int readSize = 0;
+  private byte[] minHeaderBuffer = new byte[headerSize];
 
-    @Override
-    public synchronized void close() {
-        logger.info("Closing Connection");
-        closeConnction = true;
+  @Override
+  public synchronized void close() {
+    logger.info("Closing Connection");
+    closeConnction = true;
+  }
+
+  @Override
+  public synchronized boolean isOpen() {
+    return !closeConnction;
+  }
+
+  @Override
+  public boolean writeMessage(Message messageRaw) {
+    try {
+      writeMessageQueue.put(messageRaw);
+      return true;
+    } catch (InterruptedException e) {
+      logger.error("Interrupted - Nothing Written to transport", e);
     }
+    return false;
+  }
 
-    @Override
-    public synchronized boolean isOpen() {
-        return !closeConnction;
+  @Override
+  public Message readMessage() {
+    try {
+      return readMessageQueue.take();
+    } catch (InterruptedException e) {
+      logger.error("Interrupted - Returning Null", e);
+      return null;
     }
+  }
 
-    @Override
-    public boolean writeMessage(Message messageRaw) {
-        try {
-            writeMessageQueue.put(messageRaw);
-            return true;
-        } catch (InterruptedException e) {
-            logger.error("Interrupted - Nothing Written to transport", e);
+  @Override
+  public int size() {
+    return readMessageQueue.size();
+  }
+
+  @Override
+  public void run() {
+    try {
+      processMessages();
+    } catch (IOException e) {
+      logger.error("IOException has occurred in the thread -", e);
+    } catch (InterruptedException e) {
+      logger.error("Interrupted", e);
+    }
+  }
+
+  public abstract InputStream getSocketInputStream();
+
+  public abstract OutputStream getSocketOutputStream();
+
+  public abstract void closeStream();
+
+  private void processOutbound(OutputStream os) throws InterruptedException, IOException {
+    int messages = writeMessageQueue.size();
+    // Process outbound
+    for (int counter = 0; counter < messages; ++counter) {
+      Message outbound = writeMessageQueue.take();
+      MessageRaw raw = outbound.toRaw();
+      byte[] outBytes = Encoder.messageToBytes(raw);
+      os.write(outBytes);
+    }
+  }
+
+  private void processInbound(InputStream is) throws InterruptedException, IOException {
+    // peek if there are bytes available otherwise just skip
+    readSize = is.available();
+    if (readSize == 0) return;
+
+    MessageRaw minMessage;
+    int rsize = 0;
+    // Read the header of the incoming message
+    if (readSize >= headerSize) {
+      rsize = is.read(minHeaderBuffer);
+      if (rsize == -1 || rsize != headerSize) {
+        logger.error("Invalid size detected for header");
+        throw new IOException("??-WTF");
+      }
+    } else {
+      for (int byteCount = 0; byteCount < headerSize; ++byteCount) {
+        int val = is.read();
+        if (val != -1) {
+          minHeaderBuffer[byteCount] = (byte) (val & 0xFF);
+        } else {
+          logger.error("Unable to read header");
+          throw new IOException("WTF");
         }
-        return false;
+      }
     }
+    minMessage = Decoder.decodeRawHeader(minHeaderBuffer);
+    Message msg = minMessage.toMessage();
+    int bytesToRead = msg.getContentSize();
+    byte[] content = new byte[bytesToRead];
+    rsize = is.read(content);
+    msg.messageContent = content;
+    readMessageQueue.add(msg);
+  }
 
-    @Override
-    public Message readMessage() {
-        try {
-            return readMessageQueue.take();
-        } catch (InterruptedException e) {
-            logger.error("Interrupted - Returning Null", e);
-            return  null;
-        }
+  private void processMessages() throws IOException, InterruptedException {
+    InputStream is = getSocketInputStream();
+    OutputStream os = getSocketOutputStream();
+    while (isOpen()) {
+      processOutbound(os);
+      processInbound(is);
+      Thread.sleep(50);
     }
-
-    @Override
-    public int size() {
-        return readMessageQueue.size();
-    }
-
-    @Override
-    public void run() {
-        try {
-            processMessages();
-        } catch (IOException e) {
-            logger.error("IOException has occurred in the thread -", e);
-        } catch (InterruptedException e) {
-            logger.error("Interrupted", e);
-        }
-    }
-
-
-    public abstract InputStream  getSocketInputStream();
-    public abstract OutputStream getSocketOutputStream();
-    public abstract void closeStream();
-
-    private BlockingQueue<Message> readMessageQueue = new LinkedBlockingQueue<>();
-    private BlockingQueue<Message> writeMessageQueue = new LinkedBlockingQueue<>();
-    private boolean closeConnction = false;
-    private int headerSize = MessageRaw.minSize;
-    private int readSize = 0;
-    private byte [] minHeaderBuffer = new byte[headerSize];
-
-    private void processOutbound(OutputStream os) throws InterruptedException, IOException {
-        int messages = writeMessageQueue.size();
-        //Process outbound
-        for(int counter=0; counter < messages; ++counter) {
-            Message outbound = writeMessageQueue.take();
-            MessageRaw raw = outbound.toRaw();
-            byte [] outBytes = Encoder.messageToBytes(raw);
-            os.write(outBytes);
-        }
-    }
-
-    private void processInbound(InputStream is) throws InterruptedException, IOException {
-        //peek if there are bytes available otherwise just skip
-        readSize = is.available();
-        if(readSize == 0 )
-            return;
-
-        MessageRaw minMessage;
-        int rsize = 0;
-        //Read the header of the incoming message
-        if(readSize >= headerSize) {
-           rsize = is.read(minHeaderBuffer);
-           if(rsize == -1 || rsize != headerSize) {
-               logger.error("Invalid size detected for header");
-               throw new IOException("??-WTF");
-           }
-        }
-        else {
-            for(int byteCount=0; byteCount < headerSize; ++byteCount) {
-                int val = is.read();
-                if(val != -1) {
-                    minHeaderBuffer[byteCount] = (byte)(val & 0xFF);
-                }
-                else {
-                    logger.error("Unable to read header");
-                    throw new IOException("WTF");
-                }
-            }
-        }
-        minMessage = Decoder.decodeRawHeader(minHeaderBuffer);
-        Message msg = minMessage.toMessage();
-        int bytesToRead = msg.getContentSize();
-        byte [] content = new byte[bytesToRead];
-        rsize = is.read(content);
-        msg.messageContent = content;
-        readMessageQueue.add(msg);
-    }
-
-    private void processMessages() throws IOException, InterruptedException {
-        InputStream is = getSocketInputStream();
-        OutputStream os = getSocketOutputStream();
-        while(isOpen()) {
-            processOutbound(os);
-            processInbound(is);
-            Thread.sleep(50);
-        }
-        closeStream();
-    }
-
-
+    closeStream();
+  }
 }

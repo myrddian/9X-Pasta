@@ -16,45 +16,45 @@
 
 package protocol.messages;
 
-import protocol.*;
+import protocol.ByteEncoder;
 
-public class Message  implements TransactionMessage{
+public class Message implements TransactionMessage {
 
-    public int messageSize;
-    public byte messageType;
-    public byte[] messageContent;
-    public int tag;
+  public int messageSize;
+  public byte messageType;
+  public byte[] messageContent;
+  public int tag;
 
-    public int getContentSize() {
-        return messageSize - MessageRaw.minSize;
-    }
+  public int getContentSize() {
+    return messageSize - MessageRaw.minSize;
+  }
 
-    public MessageRaw toRaw() {
-        MessageRaw newRaw = new MessageRaw();
-        newRaw.type = this.messageType;
-        ByteEncoder.encodeShort(this.tag, newRaw.tag, 0);
-        ByteEncoder.encodeInt(this.messageSize, newRaw.size, 0);
-        newRaw.data = this.messageContent;
-        return newRaw;
-    }
+  public MessageRaw toRaw() {
+    MessageRaw newRaw = new MessageRaw();
+    newRaw.type = this.messageType;
+    ByteEncoder.encodeShort(this.tag, newRaw.tag, 0);
+    ByteEncoder.encodeInt(this.messageSize, newRaw.size, 0);
+    newRaw.data = this.messageContent;
+    return newRaw;
+  }
 
-    @Override
-    public void setTransactionId(int transactionId) {
-        setTag(transactionId);
-    }
+  @Override
+  public void setTransactionId(int transactionId) {
+    setTag(transactionId);
+  }
 
-    @Override
-    public void setTag(int newTag) {
-        tag = newTag;
-    }
+  @Override
+  public int getTag() {
+    return tag;
+  }
 
-    @Override
-    public int getTag() {
-        return tag;
-    }
+  @Override
+  public void setTag(int newTag) {
+    tag = newTag;
+  }
 
-    @Override
-    public Message toMessage() {
-        return this;
-    }
+  @Override
+  public Message toMessage() {
+    return this;
+  }
 }

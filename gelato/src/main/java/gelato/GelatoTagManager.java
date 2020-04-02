@@ -16,19 +16,19 @@
 
 package gelato;
 
-import java.util.*;
+import java.util.HashMap;
+import java.util.Map;
 
 public class GelatoTagManager {
 
-    private Map<Long, GelatoTags> tagsMap = new HashMap<>();
+  private Map<Long, GelatoTags> tagsMap = new HashMap<>();
 
-    public void createTagHandler(GelatoFileDescriptor descriptor) {
-        GelatoTags newTags = new GelatoTags();
-        tagsMap.put(descriptor.getDescriptorId(), newTags);
-    }
+  public void createTagHandler(GelatoFileDescriptor descriptor) {
+    GelatoTags newTags = new GelatoTags();
+    tagsMap.put(descriptor.getDescriptorId(), newTags);
+  }
 
-    public GelatoTags getManager(GelatoFileDescriptor descriptor) {
-        return tagsMap.get(descriptor.getDescriptorId());
-    }
-
+  public GelatoTags getManager(GelatoFileDescriptor descriptor) {
+    return tagsMap.get(descriptor.getDescriptorId());
+  }
 }

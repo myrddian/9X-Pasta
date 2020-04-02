@@ -17,13 +17,21 @@
 package gelato;
 
 public class GelatoVersion {
-    public static final int VERSION_MAJOR = 1;
-    public static final int VERSION_MINOR = 0;
-    public static final String VERSION_NOTES = "(alpha)";
-    public static final String COPYRIGHT = "Enzo Reyes";
+  public static final int VERSION_MAJOR = 1;
+  public static final int VERSION_MINOR = 0;
+  public static final String VERSION_NOTES = "(alpha)";
+  public static final String COPYRIGHT = "Enzo Reyes";
 
-    public static String getVersion() {
-        String ver =  "GELATO version: "+Integer.toString(GelatoVersion.VERSION_MAJOR) + "." + Integer.toString(GelatoVersion.VERSION_MINOR) + " "+ VERSION_NOTES+ " Copyright: "+COPYRIGHT;
-        return ver;
-    }
+  public static String getVersion() {
+    String ver =
+        "GELATO version: "
+            + Integer.toString(GelatoVersion.VERSION_MAJOR)
+            + "."
+            + Integer.toString(GelatoVersion.VERSION_MINOR)
+            + " "
+            + VERSION_NOTES
+            + " Copyright: "
+            + COPYRIGHT;
+    return ver;
+  }
 }

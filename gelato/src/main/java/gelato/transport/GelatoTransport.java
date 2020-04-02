@@ -16,14 +16,17 @@
 
 package gelato.transport;
 
-import protocol.messages.*;
-
+import protocol.messages.Message;
 
 public interface GelatoTransport {
 
-    void close();
-    boolean writeMessage(Message messageRaw);
-    Message readMessage();
-    int size();
-    boolean isOpen();
+  void close();
+
+  boolean writeMessage(Message messageRaw);
+
+  Message readMessage();
+
+  int size();
+
+  boolean isOpen();
 }

@@ -16,25 +16,35 @@
 
 package gelato;
 
-import protocol.messages.*;
+import protocol.messages.Message;
 
-import java.util.*;
+import java.util.List;
 
 public interface GelatoConnection {
 
-    Message getMessage();
-    Message getMessage(GelatoFileDescriptor fileDescriptor);
-    Gelato.MODE getMode();
+  Message getMessage();
 
-    List<GelatoFileDescriptor> getConnections();
-    int getMessageCount(GelatoFileDescriptor fileDescriptor);
-    int getMessageCount();
-    int connections();
-    void sendMessage(GelatoFileDescriptor descriptor, Message msg);
-    void sendMessage(Message msg);
-    void shutdown();
-    boolean isStarted();
-    void begin();
+  Message getMessage(GelatoFileDescriptor fileDescriptor);
 
-    void closeConnection(GelatoFileDescriptor descriptor);
+  Gelato.MODE getMode();
+
+  List<GelatoFileDescriptor> getConnections();
+
+  int getMessageCount(GelatoFileDescriptor fileDescriptor);
+
+  int getMessageCount();
+
+  int connections();
+
+  void sendMessage(GelatoFileDescriptor descriptor, Message msg);
+
+  void sendMessage(Message msg);
+
+  void shutdown();
+
+  boolean isStarted();
+
+  void begin();
+
+  void closeConnection(GelatoFileDescriptor descriptor);
 }

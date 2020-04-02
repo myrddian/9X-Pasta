@@ -16,29 +16,31 @@
 
 package protocol.messages.response;
 
-import protocol.messages.*;
+import protocol.messages.Encoder;
+import protocol.messages.Message;
+import protocol.messages.TransactionMessage;
 
 public class FlushResponse implements TransactionMessage {
 
-    private int tag;
+  private int tag;
 
-    @Override
-    public void setTransactionId(int transactionId) {
-        setTag(transactionId);
-    }
+  @Override
+  public void setTransactionId(int transactionId) {
+    setTag(transactionId);
+  }
 
-    @Override
-    public int getTag() {
-        return tag;
-    }
+  @Override
+  public int getTag() {
+    return tag;
+  }
 
-    @Override
-    public Message toMessage() {
-        return Encoder.encodeFlushResponse(this).toMessage();
-    }
+  @Override
+  public void setTag(int tag) {
+    this.tag = tag;
+  }
 
-    @Override
-    public void setTag(int tag) {
-        this.tag = tag;
-    }
+  @Override
+  public Message toMessage() {
+    return Encoder.encodeFlushResponse(this).toMessage();
+  }
 }

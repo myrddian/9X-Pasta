@@ -16,46 +16,48 @@
 
 package protocol.messages.request;
 
-import protocol.*;
-import protocol.messages.*;
+import protocol.ByteEncoder;
+import protocol.P9Protocol;
+import protocol.messages.Message;
+import protocol.messages.TransactionMessage;
 
 public class StatRequest implements TransactionMessage {
-    private int tag;
-    private int fileDescriptor;
+  private int tag;
+  private int fileDescriptor;
 
-    @Override
-    public void setTransactionId(int transactionId) {
-        setTag(transactionId);
-    }
+  @Override
+  public void setTransactionId(int transactionId) {
+    setTag(transactionId);
+  }
 
-    @Override
-    public int getTag() {
-        return tag;
-    }
+  @Override
+  public int getTag() {
+    return tag;
+  }
 
-    @Override
-    public void setTag(int tag) {
-        this.tag = tag;
-    }
+  @Override
+  public void setTag(int tag) {
+    this.tag = tag;
+  }
 
-    @Override
-    public Message toMessage() {
+  @Override
+  public Message toMessage() {
 
-        Message rtr = new Message();
-        rtr.messageType = P9Protocol.TSTAT;
-        rtr.tag = tag;
-        rtr.messageContent = new byte[P9Protocol.MSG_INT_SIZE];
-        rtr.messageSize = P9Protocol.MIN_MSG_SIZE + P9Protocol.MSG_INT_SIZE;
-        ByteEncoder.encodeInt(fileDescriptor, rtr.messageContent, 0);
+    Message rtr = new Message();
+    rtr.messageType = P9Protocol.TSTAT;
+    rtr.tag = tag;
+    rtr.messageContent = new byte[P9Protocol.MSG_INT_SIZE];
+    rtr.messageSize = P9Protocol.MIN_MSG_SIZE + P9Protocol.MSG_INT_SIZE;
+    ByteEncoder.encodeInt(fileDescriptor, rtr.messageContent, 0);
 
-        return rtr;
-    }
+    return rtr;
+  }
 
-    public int getFileDescriptor() {
-        return fileDescriptor;
-    }
+  public int getFileDescriptor() {
+    return fileDescriptor;
+  }
 
-    public void setFileDescriptor(int fileDescriptor) {
-        this.fileDescriptor = fileDescriptor;
-    }
+  public void setFileDescriptor(int fileDescriptor) {
+    this.fileDescriptor = fileDescriptor;
+  }
 }

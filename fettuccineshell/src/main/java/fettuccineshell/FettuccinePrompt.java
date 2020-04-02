@@ -15,6 +15,7 @@
  */
 
 package fettuccineshell;
+
 import org.jline.utils.AttributedString;
 import org.jline.utils.AttributedStyle;
 import org.springframework.shell.jline.PromptProvider;
@@ -23,22 +24,20 @@ import org.springframework.stereotype.Component;
 @Component
 public class FettuccinePrompt implements PromptProvider {
 
-    public String getConnection() {
-        return connection;
-    }
+  private String connection = "*";
 
-    public void setConnection(String connection) {
-        this.connection = connection;
-    }
+  public String getConnection() {
+    return connection;
+  }
 
-    private String connection = "*";
+  public void setConnection(String connection) {
+    this.connection = connection;
+  }
 
-
-
-    @Override
-    public AttributedString getPrompt() {
-        return new AttributedString("Fettuccine(" + connection+ "):>",
-                AttributedStyle.DEFAULT.foreground(AttributedStyle.BLUE)
-        );
-    }
+  @Override
+  public AttributedString getPrompt() {
+    return new AttributedString(
+        "Fettuccine(" + connection + "):>",
+        AttributedStyle.DEFAULT.foreground(AttributedStyle.BLUE));
+  }
 }

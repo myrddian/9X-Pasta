@@ -16,34 +16,35 @@
 
 package protocol.messages.response;
 
-import protocol.*;
-import protocol.messages.*;
+import protocol.P9Protocol;
+import protocol.messages.Message;
+import protocol.messages.TransactionMessage;
 
 public class WriteStatResponse implements TransactionMessage {
-    private int tag;
+  private int tag;
 
-    @Override
-    public void setTransactionId(int transactionId) {
-        setTag(transactionId);
-    }
+  @Override
+  public void setTransactionId(int transactionId) {
+    setTag(transactionId);
+  }
 
-    @Override
-    public int getTag() {
-        return tag;
-    }
+  @Override
+  public int getTag() {
+    return tag;
+  }
 
-    @Override
-    public Message toMessage() {
-        Message rtr = new Message();
-        rtr.tag  = tag;
-        rtr.messageType = P9Protocol.RWSTAT;
-        rtr.messageSize = P9Protocol.MIN_MSG_SIZE;
-        rtr.messageContent = null;
-        return rtr;
-    }
+  @Override
+  public void setTag(int tag) {
+    this.tag = tag;
+  }
 
-    @Override
-    public void setTag(int tag) {
-        this.tag = tag;
-    }
+  @Override
+  public Message toMessage() {
+    Message rtr = new Message();
+    rtr.tag = tag;
+    rtr.messageType = P9Protocol.RWSTAT;
+    rtr.messageSize = P9Protocol.MIN_MSG_SIZE;
+    rtr.messageContent = null;
+    return rtr;
+  }
 }

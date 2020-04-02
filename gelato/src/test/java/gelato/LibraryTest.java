@@ -1,4 +1,3 @@
-
 /*
  *   Copyright (c) 2020. Enzo Reyes
  *
@@ -17,35 +16,27 @@
 
 package gelato;
 
-import gelato.client.file.*;
-import gelato.server.*;
-import gelato.server.manager.*;
-import gelato.server.manager.implementation.*;
-import org.junit.jupiter.api.Test;
-import protocol.*;
-import protocol.messages.*;
-
 class LibraryTest {
-    //@Test
-    /*void testSomeLibraryMethod() throws InterruptedException {
-        Gelato library = new Gelato();
-        GelatoConfigImpl config = new GelatoConfigImpl();
-        config.setHost("localhost");
-        config.setPort(9093);
-        GelatoServerConnection newServer = new GelatoServerConnection(library, config);
-        GelatoFileServeletManager serveletManager = new GelatoFileServeletManager(newServer, library);
-        serveletManager.start();
+  // @Test
+  /*void testSomeLibraryMethod() throws InterruptedException {
+     Gelato library = new Gelato();
+     GelatoConfigImpl config = new GelatoConfigImpl();
+     config.setHost("localhost");
+     config.setPort(9093);
+     GelatoServerConnection newServer = new GelatoServerConnection(library, config);
+     GelatoFileServeletManager serveletManager = new GelatoFileServeletManager(newServer, library);
+     serveletManager.start();
 
-        SimpleDirectoryServelet testServe = new SimpleDirectoryServelet(10l,"");
-        SimpleDirectoryServelet newDirectory = new SimpleDirectoryServelet(11l,"TESTDIR");
-        testServe.addDirectory(newDirectory);
-        serveletManager.setRootDirectory(testServe);
-        serveletManager.addResource(newDirectory);
+     SimpleDirectoryServelet testServe = new SimpleDirectoryServelet(10l,"");
+     SimpleDirectoryServelet newDirectory = new SimpleDirectoryServelet(11l,"TESTDIR");
+     testServe.addDirectory(newDirectory);
+     serveletManager.setRootDirectory(testServe);
+     serveletManager.addResource(newDirectory);
 
-        GelatoConnection client = library.createClientConnection(config);
-        GelatoFileManager fileManager = new GelatoFileManager(client, library, "TEST", "TEST");
-        GelatoDirectory dir = fileManager.getRoot();
-        System.out.println("OK");
+     GelatoConnection client = library.createClientConnection(config);
+     GelatoFileManager fileManager = new GelatoFileManager(client, library, "TEST", "TEST");
+     GelatoDirectory dir = fileManager.getRoot();
+     System.out.println("OK");
 
-     }*/
+  }*/
 }

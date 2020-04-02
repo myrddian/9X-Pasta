@@ -16,47 +16,45 @@
 
 package gelato;
 
-import java.util.*;
+import java.util.HashMap;
+import java.util.Map;
 
 public class GelatoTags {
-    private int currentTagClient = 0;
-    private Map<Integer, Boolean> inFlightClient = new HashMap<>();
+  private int currentTagClient = 0;
+  private Map<Integer, Boolean> inFlightClient = new HashMap<>();
+  // server functionality
+  private int tagCount = 0;
 
-    public int generateTag() {
-        if(currentTagClient > 65000) {
-            currentTagClient = 1;
-        } else {
-            ++currentTagClient;
-        }
-        inFlightClient.put(currentTagClient,true);
-        return currentTagClient;
+  public int generateTag() {
+    if (currentTagClient > 65000) {
+      currentTagClient = 1;
+    } else {
+      ++currentTagClient;
     }
+    inFlightClient.put(currentTagClient, true);
+    return currentTagClient;
+  }
 
-    public void closeTag(int tag) {
-        inFlightClient.remove(tag);
+  public void closeTag(int tag) {
+    inFlightClient.remove(tag);
+  }
+
+  public boolean validTag(int tag) {
+    return inFlightClient.containsKey(tag);
+  }
+
+  public boolean isRecycled(int tag) {
+    if (tag >= tagCount) {
+      return false;
     }
+    return true;
+  }
 
-    public boolean validTag(int tag) {
-        return inFlightClient.containsKey(tag);
-    }
+  public void registerTag(int tag) {
+    tagCount = tag;
+  }
 
-    //server functionality
-    private int tagCount = 0;
-
-
-    public boolean isRecycled(int tag) {
-        if(tag >= tagCount) {
-            return false;
-        }
-        return true;
-    }
-
-    public void registerTag(int tag) {
-        tagCount = tag;
-    }
-
-    public int getTagCount() {
-        return tagCount;
-    }
-
+  public int getTagCount() {
+    return tagCount;
+  }
 }

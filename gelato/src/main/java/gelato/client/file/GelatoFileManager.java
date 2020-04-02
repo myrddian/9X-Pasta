@@ -16,62 +16,53 @@
 
 package gelato.client.file;
 
-import gelato.*;
-import gelato.client.file.impl.*;
-import org.slf4j.*;
-import protocol.*;
-import protocol.messages.*;
-import protocol.messages.request.*;
-import protocol.messages.response.*;
-
-import java.util.*;
+import gelato.Gelato;
+import gelato.GelatoConnection;
+import gelato.GelatoFileDescriptor;
+import gelato.GelatoTagManager;
+import gelato.client.file.impl.GelatoDirectoryImpl;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class GelatoFileManager {
 
-    private final Logger logger = LoggerFactory.getLogger(GelatoFileManager.class);
+  private final Logger logger = LoggerFactory.getLogger(GelatoFileManager.class);
 
+  private GelatoConnection connection;
+  private GelatoClientSession clientSession;
+  private Gelato gelato;
+  private GelatoTagManager tagManager;
+  private GelatoFileDescriptor authDescriptor;
+  private GelatoDirectoryImpl root;
 
-    private  GelatoConnection connection;
-    private  GelatoClientSession clientSession;
-    private  Gelato gelato;
-    private  GelatoTagManager tagManager;
-    private  GelatoFileDescriptor authDescriptor;
-    private  GelatoDirectoryImpl root;
+  public GelatoFileManager(GelatoConnection con, Gelato library, String userName, String userAuth) {
+    connection = con;
+    gelato = library;
+    tagManager = gelato.getTagManager();
+    clientSession = new GelatoClientSession();
+    authDescriptor = gelato.getDescriptorManager().generateDescriptor();
+    tagManager = gelato.getTagManager();
+    tagManager.createTagHandler(authDescriptor);
 
-    public GelatoDirectory getRoot() {
-        return root;
+    clientSession.setTags(tagManager.getManager(authDescriptor));
+    clientSession.setConnection(connection);
+    clientSession.setManager(gelato.getDescriptorManager());
+    clientSession.setAuthorisationDescriptor(authDescriptor);
+    clientSession.setUserName(userName);
+    clientSession.setUserAuth(userAuth);
+
+    if (clientSession.initSession() != true) {
+      logger.error("Unable to establish session");
+      throw new RuntimeException("Unable to establish session");
     }
+    root = new GelatoDirectoryImpl(clientSession, connection, clientSession.getFileServiceRoot());
+  }
 
-    public GelatoFileManager(GelatoConnection con,
-                             Gelato library,
-                             String userName,
-                             String userAuth) {
-        connection = con;
-        gelato = library;
-        tagManager = gelato.getTagManager();
-        clientSession = new GelatoClientSession();
-        authDescriptor = gelato.getDescriptorManager().generateDescriptor();
-        tagManager = gelato.getTagManager();
-        tagManager.createTagHandler(authDescriptor);
+  public GelatoDirectory getRoot() {
+    return root;
+  }
 
-        clientSession.setTags(tagManager.getManager(authDescriptor));
-        clientSession.setConnection(connection);
-        clientSession.setManager(gelato.getDescriptorManager());
-        clientSession.setAuthorisationDescriptor(authDescriptor);
-        clientSession.setUserName(userName);
-        clientSession.setUserAuth(userAuth);
-
-
-        if(clientSession.initSession()!=true) {
-            logger.error("Unable to establish session");
-            throw new RuntimeException("Unable to establish session");
-        }
-        root = new GelatoDirectoryImpl(clientSession, connection, clientSession.getFileServiceRoot());
-    }
-
-
-    private String [] parsePath(String path) {
-        return path.split("/");
-    }
-
+  private String[] parsePath(String path) {
+    return path.split("/");
+  }
 }

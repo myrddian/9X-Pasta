@@ -16,11 +16,10 @@
 
 package ciotola;
 
-public enum  ServiceStatus {
-    SERVICE_START,
-    SERVICE_STOP,
-    SERVICE_RESTART,
-    SERVICE_RUNNING,
-    SERVICE_STATUS
+public enum ServiceStatus {
+  SERVICE_START,
+  SERVICE_STOP,
+  SERVICE_RESTART,
+  SERVICE_RUNNING,
+  SERVICE_STATUS
 }
-

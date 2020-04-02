@@ -16,62 +16,66 @@
 
 package gelato;
 
-import gelato.client.*;
-import gelato.client.file.*;
-import gelato.server.*;
-import org.slf4j.*;
+import gelato.client.ClientConnection;
+import gelato.server.GelatoServerConnection;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import java.util.concurrent.*;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 public class Gelato {
-    public enum TRANSPORT {GELATO_TCP};
-    public enum MODE {SERVER, CLIENT};
-    public static final int BUFFER_SIZE = 4096;
-    final Logger logger = LoggerFactory.getLogger(Gelato.class);
+    public static final int BUFFER_SIZE = 4096;;
+  final Logger logger = LoggerFactory.getLogger(Gelato.class);;
+  private ExecutorService executorService;
+  private GelatoTagManager tagManager = new GelatoTagManager();
+  private GelatoDescriptorManager descriptorManager = new GelatoDescriptorManager();
 
+  public Gelato() {
+    logger.trace("Starting Gelato");
+    logger.trace(GelatoVersion.getVersion());
+    executorService = Executors.newWorkStealingPool();
+  }
 
-    public Gelato() {
-        logger.trace("Starting Gelato");
-        logger.trace(GelatoVersion.getVersion());
-        executorService = Executors.newWorkStealingPool();
+  public GelatoTagManager getTagManager() {
+    return tagManager;
+  }
+
+  public GelatoDescriptorManager getDescriptorManager() {
+    return descriptorManager;
+  }
+
+  public ClientConnection createClientConnection(GelatoConfigImpl connectionConfig) {
+    ClientConnection connection = new ClientConnection(connectionConfig, this);
+    return connection;
+  }
+
+  public GelatoConnection createConnection(GelatoConfigImpl config) {
+    if (config.getMode() == MODE.CLIENT) {
+      return createClientConnection(config);
+    } else if (config.getMode() == MODE.SERVER) {
+      return createServer(config);
     }
+    return createServer(config);
+  }
 
-    public GelatoTagManager getTagManager() {
-        return tagManager;
-    }
+  public GelatoServerConnection createServer(GelatoConfigImpl con) {
+    GelatoServerConnection connection = new GelatoServerConnection(this, con);
+    return connection;
+  }
 
-    public GelatoDescriptorManager getDescriptorManager() {
-        return descriptorManager;
-    }
+  public ExecutorService getExecutorService() {
+    return executorService;
+  }
 
-    public ClientConnection createClientConnection(GelatoConfigImpl connectionConfig) {
-        ClientConnection connection = new ClientConnection(connectionConfig,this);
-        return connection;
-    }
-
-   public  GelatoConnection createConnection(GelatoConfigImpl config) {
-        if(config.getMode()== MODE.CLIENT) {
-            return createClientConnection(config);
-        }else if (config.getMode() == MODE.SERVER) {
-            return createServer(config);
-        }
-        return createServer(config);
-    }
-
-    public GelatoServerConnection createServer(GelatoConfigImpl con) {
-        GelatoServerConnection connection = new GelatoServerConnection(this,con);
-        return connection;
-    }
-
-    public ExecutorService getExecutorService() {
-        return executorService;
-    }
-
-    public int threadCapacity() {
-        return Runtime.getRuntime().availableProcessors();
-    }
-
-    private ExecutorService executorService;
-    private GelatoTagManager tagManager = new GelatoTagManager();
-    private GelatoDescriptorManager descriptorManager = new GelatoDescriptorManager();
+  public int threadCapacity() {
+    return Runtime.getRuntime().availableProcessors();
+  }
+public enum TRANSPORT {
+    GELATO_TCP
+  }
+public enum MODE {
+    SERVER,
+    CLIENT
+  }
 }

@@ -16,54 +16,56 @@
 
 package protocol.messages.response;
 
-import protocol.*;
-import protocol.messages.*;
+import protocol.ByteEncoder;
+import protocol.P9Protocol;
+import protocol.messages.Message;
+import protocol.messages.TransactionMessage;
 
 public class ReadResponse implements TransactionMessage {
 
-    private int tag;
-    private byte[] data;
+  private int tag;
+  private byte[] data;
 
-    @Override
-    public void setTransactionId(int transactionId) {
-        setTag(transactionId);
-    }
+  @Override
+  public void setTransactionId(int transactionId) {
+    setTag(transactionId);
+  }
 
-    @Override
-    public int getTag() {
-        return tag;
-    }
+  @Override
+  public int getTag() {
+    return tag;
+  }
 
-    @Override
-    public Message toMessage() {
-        Message rtr = new Message();
-        rtr.tag  = tag;
-        rtr.messageType = P9Protocol.RREAD;
-        if(data == null) {
-            int totalSize = P9Protocol.MSG_INT_SIZE ;
-            rtr.messageContent = new byte[totalSize];
-            rtr.messageSize = P9Protocol.MIN_MSG_SIZE + totalSize;
-            ByteEncoder.encodeInt(0, rtr.messageContent, 0);
-            return rtr;
-        }
-        int totalSize = P9Protocol.MSG_INT_SIZE + data.length;
-        rtr.messageContent = new byte[totalSize];
-        rtr.messageSize = P9Protocol.MIN_MSG_SIZE + totalSize;
-        ByteEncoder.encodeInt(data.length, rtr.messageContent, 0);
-        ByteEncoder.copyBytesTo(data, rtr.messageContent, P9Protocol.MSG_INT_SIZE, data.length);
-        return rtr;
-    }
+  @Override
+  public void setTag(int tag) {
+    this.tag = tag;
+  }
 
-    @Override
-    public void setTag(int tag) {
-        this.tag = tag;
+  @Override
+  public Message toMessage() {
+    Message rtr = new Message();
+    rtr.tag = tag;
+    rtr.messageType = P9Protocol.RREAD;
+    if (data == null) {
+      int totalSize = P9Protocol.MSG_INT_SIZE;
+      rtr.messageContent = new byte[totalSize];
+      rtr.messageSize = P9Protocol.MIN_MSG_SIZE + totalSize;
+      ByteEncoder.encodeInt(0, rtr.messageContent, 0);
+      return rtr;
     }
+    int totalSize = P9Protocol.MSG_INT_SIZE + data.length;
+    rtr.messageContent = new byte[totalSize];
+    rtr.messageSize = P9Protocol.MIN_MSG_SIZE + totalSize;
+    ByteEncoder.encodeInt(data.length, rtr.messageContent, 0);
+    ByteEncoder.copyBytesTo(data, rtr.messageContent, P9Protocol.MSG_INT_SIZE, data.length);
+    return rtr;
+  }
 
-    public byte[] getData() {
-        return data;
-    }
+  public byte[] getData() {
+    return data;
+  }
 
-    public void setData(byte[] data) {
-        this.data = data;
-    }
+  public void setData(byte[] data) {
+    this.data = data;
+  }
 }

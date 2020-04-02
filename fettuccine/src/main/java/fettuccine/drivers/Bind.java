@@ -1,5 +1,3 @@
-
-
 /*
  *   Copyright (c) 2020. Enzo Reyes
  *
@@ -18,5 +16,4 @@
 
 package fettuccine.drivers;
 
-public class Bind {
-}
+public class Bind {}

@@ -16,10 +16,11 @@
 
 package gelato.server.manager.response;
 
-import gelato.*;
-import protocol.messages.*;
-import protocol.messages.response.*;
+import gelato.GelatoConnection;
+import gelato.GelatoFileDescriptor;
+import protocol.messages.VersionRequest;
 
 public interface VersionResponseHandler {
-    boolean writeResponse(GelatoConnection connection, GelatoFileDescriptor fileDescriptor, VersionRequest response);
+  boolean writeResponse(
+      GelatoConnection connection, GelatoFileDescriptor fileDescriptor, VersionRequest response);
 }

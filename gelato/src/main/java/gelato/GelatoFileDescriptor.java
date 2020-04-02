@@ -16,42 +16,48 @@
 
 package gelato;
 
-import protocol.*;
+import protocol.ByteEncoder;
+import protocol.QID;
 
 public class GelatoFileDescriptor {
 
-    private int fileId;
-    private QID qid = new QID();
+  private int fileId;
+  private QID qid = new QID();
 
-    public long getDescriptorId() {
-        return ByteEncoder.getUnsigned(fileId);
+  public long getDescriptorId() {
+    return ByteEncoder.getUnsigned(fileId);
+  }
+
+  public void setDescriptorId(long newDescriptorId) {
+    fileId = ByteEncoder.toUnsigned(newDescriptorId);
+  }
+
+  public QID getQid() {
+    return qid;
+  }
+
+  public void setQid(QID qid) {
+    this.qid = qid;
+  }
+
+  public int getRawFileDescriptor() {
+    return fileId;
+  }
+
+  public void setRawFileDescriptor(int fileId) {
+    this.fileId = fileId;
+  }
+
+  @Override
+  public int hashCode() {
+    return fileId;
+  }
+
+  @Override
+  public boolean equals(Object obj) {
+    if (obj.hashCode() == hashCode()) {
+      return true;
     }
-
-    public void setDescriptorId(long newDescriptorId) {
-        fileId = ByteEncoder.toUnsigned(newDescriptorId);
-    }
-
-    public QID getQid() { return qid;}
-
-    public void setRawFileDescriptor(int fileId) {
-        this.fileId = fileId;
-    }
-    public int getRawFileDescriptor() { return fileId; }
-
-    public void setQid(QID qid) {
-        this.qid = qid;
-    }
-
-    @Override
-    public int hashCode() {
-        return fileId;
-    }
-
-    @Override
-    public boolean equals(Object obj) {
-        if(obj.hashCode() == hashCode()) {
-            return true;
-        }
-        return false;
-    }
+    return false;
+  }
 }

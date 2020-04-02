@@ -16,24 +16,30 @@
 
 package fettuccine;
 
-import gelato.*;
-import org.slf4j.*;
+import gelato.GelatoConfigImpl;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class FettuccineConfig {
-    final Logger logger = LoggerFactory.getLogger(FettuccineConfig.class);
-    public static String LOCALHOST = "localhost";
-    private int port = 9090;
+  public static String LOCALHOST = "localhost";
+  final Logger logger = LoggerFactory.getLogger(FettuccineConfig.class);
+  private int port = 9090;
 
-    public int getPort() { return port; }
-    public void loadDefaultConfig() {
-        logger.info("Loading Configuration");
-        logger.info("Listening at port: " + Integer.toString(port));
-    }
-    public void loadConfigAtPath(String path) {};
-    public GelatoConfigImpl generateConfig() {
-        GelatoConfigImpl config = new GelatoConfigImpl();
-        config.setPort(port);
-        config.setHost(LOCALHOST);
-        return  config;
-    }
+  public int getPort() {
+    return port;
+  }
+
+  public void loadDefaultConfig() {
+    logger.info("Loading Configuration");
+    logger.info("Listening at port: " + Integer.toString(port));
+  }
+
+  public void loadConfigAtPath(String path) {};
+
+  public GelatoConfigImpl generateConfig() {
+    GelatoConfigImpl config = new GelatoConfigImpl();
+    config.setPort(port);
+    config.setHost(LOCALHOST);
+    return config;
+  }
 }

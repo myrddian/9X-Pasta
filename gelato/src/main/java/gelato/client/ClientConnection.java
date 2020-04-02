@@ -16,83 +16,84 @@
 
 package gelato.client;
 
-import gelato.*;
-import gelato.transport.*;
-import protocol.messages.*;
+import gelato.Gelato;
+import gelato.GelatoConfigImpl;
+import gelato.GelatoConnection;
+import gelato.GelatoFileDescriptor;
+import gelato.transport.GelatoTransport;
+import gelato.transport.TransportFactory;
+import protocol.messages.Message;
 
-import java.util.*;
+import java.util.List;
 
 public class ClientConnection implements GelatoConnection {
 
-    public ClientConnection(GelatoConfigImpl config, Gelato libConfig) {
-        transport = TransportFactory.createClientTransport(libConfig, config);
-    }
+  private GelatoTransport transport;
 
-    @Override
-    public Message getMessage() {
-        return transport.readMessage();
-    }
+  public ClientConnection(GelatoConfigImpl config, Gelato libConfig) {
+    transport = TransportFactory.createClientTransport(libConfig, config);
+  }
 
-    @Override
-    public Message getMessage(GelatoFileDescriptor fileDescriptor) {
-        return null;
-    }
+  @Override
+  public Message getMessage() {
+    return transport.readMessage();
+  }
 
+  @Override
+  public Message getMessage(GelatoFileDescriptor fileDescriptor) {
+    return null;
+  }
 
-    @Override
-    public Gelato.MODE getMode() {
-        return Gelato.MODE.CLIENT;
-    }
+  @Override
+  public Gelato.MODE getMode() {
+    return Gelato.MODE.CLIENT;
+  }
 
-    @Override
-    public List<GelatoFileDescriptor> getConnections() {
-        return null;
-    }
+  @Override
+  public List<GelatoFileDescriptor> getConnections() {
+    return null;
+  }
 
-    @Override
-    public int getMessageCount(GelatoFileDescriptor fileDescriptor) {
-        return 0;
-    }
+  @Override
+  public int getMessageCount(GelatoFileDescriptor fileDescriptor) {
+    return 0;
+  }
 
-    @Override
-    public int getMessageCount() {
-        return transport.size();
-    }
+  @Override
+  public int getMessageCount() {
+    return transport.size();
+  }
 
-    @Override
-    public int connections() {
-        return 0;
-    }
+  @Override
+  public int connections() {
+    return 0;
+  }
 
-    @Override
-    public void sendMessage(GelatoFileDescriptor descriptor, Message msg) {
-        sendMessage(msg);
-    }
+  @Override
+  public void sendMessage(GelatoFileDescriptor descriptor, Message msg) {
+    sendMessage(msg);
+  }
 
-    @Override
-    public void sendMessage(Message outbound) {
-        transport.writeMessage(outbound);
-    }
+  @Override
+  public void sendMessage(Message outbound) {
+    transport.writeMessage(outbound);
+  }
 
-    @Override
-    public void shutdown() {
-        return;
-    }
+  @Override
+  public void shutdown() {
+    return;
+  }
 
-    @Override
-    public boolean isStarted() {
-        return true;
-    }
+  @Override
+  public boolean isStarted() {
+    return true;
+  }
 
-    @Override
-    public void begin() {
+  @Override
+  public void begin() {}
 
-    }
-
-    @Override
-    public void closeConnection(GelatoFileDescriptor descriptor) {
-        shutdown();
-    }
-
-    private GelatoTransport transport;
+  @Override
+  public void closeConnection(GelatoFileDescriptor descriptor) {
+    shutdown();
+  }
 }

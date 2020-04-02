@@ -16,19 +16,20 @@
 
 package gelato.client.file.impl;
 
-import gelato.client.file.*;
-import protocol.*;
+import gelato.client.file.GelatoFile;
+import protocol.P9Protocol;
 
-import java.io.*;
+import java.io.IOException;
+import java.io.InputStream;
 
 public class GelatoInputStream extends InputStream {
 
-    private GelatoFile file;
-    private int currentLocation = 0;
-    private byte [] buffer = new byte[P9Protocol.DEFAULT_MSG_SIZE];
+  private GelatoFile file;
+  private int currentLocation = 0;
+  private byte[] buffer = new byte[P9Protocol.DEFAULT_MSG_SIZE];
 
-    @Override
-    public int read() throws IOException {
-        return 0;
-    }
+  @Override
+  public int read() throws IOException {
+    return 0;
+  }
 }

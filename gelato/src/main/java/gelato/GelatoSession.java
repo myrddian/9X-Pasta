@@ -17,37 +17,37 @@
 package gelato;
 
 public interface GelatoSession {
-    void setSessionVar(String varName, Object varValue);
+  void setSessionVar(String varName, Object varValue);
 
-    Object getSessionVar(String varName);
+  Object getSessionVar(String varName);
 
-    int descriptorCount();
+  int descriptorCount();
 
-    GelatoFileDescriptor getAuthorisationDescriptor();
+  GelatoFileDescriptor getAuthorisationDescriptor();
 
-    void setAuthorisationDescriptor(GelatoFileDescriptor authorisationDescriptor);
+  void setAuthorisationDescriptor(GelatoFileDescriptor authorisationDescriptor);
 
-    String getUserName();
+  String getUserName();
 
-    void setUserName(String userName);
+  void setUserName(String userName);
 
-    String getNameSpace();
+  String getNameSpace();
 
-    void setNameSpace(String nameSpace);
+  void setNameSpace(String nameSpace);
 
-    GelatoConnection getConnection();
+  GelatoConnection getConnection();
 
-    void setConnection(GelatoConnection connection);
+  void setConnection(GelatoConnection connection);
 
-    GelatoDescriptorManager getManager();
+  GelatoDescriptorManager getManager();
 
-    void setManager(GelatoDescriptorManager manager);
+  void setManager(GelatoDescriptorManager manager);
 
-    GelatoTags getTags();
+  GelatoTags getTags();
 
-    void setTags(GelatoTags tags);
+  void setTags(GelatoTags tags);
 
-    String getUserAuth();
+  String getUserAuth();
 
-    void setUserAuth(String userAuth);
+  void setUserAuth(String userAuth);
 }

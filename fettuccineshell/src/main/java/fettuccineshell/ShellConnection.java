@@ -15,46 +15,45 @@
  */
 
 package fettuccineshell;
-import gelato.*;
-import gelato.client.file.*;
-import org.springframework.stereotype.Service;
 
+import gelato.Gelato;
+import gelato.GelatoConfigImpl;
+import gelato.GelatoConnection;
+import gelato.client.file.GelatoFileManager;
+import org.springframework.stereotype.Service;
 
 @Service
 public class ShellConnection {
 
-    private Gelato gelato;
-    private GelatoConnection client;
+  private Gelato gelato;
+  private GelatoConnection client;
+  private GelatoFileManager fileManager;
+  private GelatoConfigImpl config;
+  private boolean isConnected = false;
 
-    public GelatoFileManager getFileManager() {
-        return fileManager;
+  public GelatoFileManager getFileManager() {
+    return fileManager;
+  }
+
+  public boolean isConnected() {
+    return isConnected;
+  }
+
+  public boolean connect(String hostName, int port, String userName) {
+    gelato = new Gelato();
+    config = new GelatoConfigImpl();
+    config.setHost(hostName);
+    config.setPort(port);
+    client = gelato.createClientConnection(config);
+    if (client == null) {
+      return false;
     }
+    fileManager = new GelatoFileManager(client, gelato, userName, userName);
+    isConnected = true;
+    return true;
+  }
 
-    private GelatoFileManager fileManager;
-    private GelatoConfigImpl config;
-
-    public boolean isConnected() {
-        return isConnected;
-    }
-
-    private boolean isConnected = false;
-
-    public boolean connect(String hostName, int port, String userName) {
-        gelato = new Gelato();
-        config = new GelatoConfigImpl();
-        config.setHost(hostName);
-        config.setPort(port);
-        client = gelato.createClientConnection(config);
-        if(client == null) {
-            return false;
-        }
-        fileManager = new GelatoFileManager(client, gelato, userName, userName);
-        isConnected = true;
-        return true;
-    }
-
-    public String getHost() {
-        return config.getHostName();
-    }
-
+  public String getHost() {
+    return config.getHostName();
+  }
 }

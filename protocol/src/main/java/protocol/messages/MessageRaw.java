@@ -16,18 +16,19 @@
 
 package protocol.messages;
 
-import protocol.*;
-import protocol.messages.*;
+import protocol.Decoder;
+import protocol.P9Protocol;
 
 public class MessageRaw {
-    public static final int minSize = P9Protocol.MSG_SIZE_HEADER + P9Protocol.MSG_TYPE_SIZE + P9Protocol.MSG_TAG_SIZE;
-    public static final int tagLocation = P9Protocol.MSG_SIZE_HEADER + P9Protocol.MSG_TYPE_SIZE;
-    public byte []size = new byte[P9Protocol.MSG_SIZE_HEADER];
-    public byte type;
-    public byte [] tag = new byte[P9Protocol.MSG_TAG_SIZE];
-    public byte [] data;
+  public static final int minSize =
+      P9Protocol.MSG_SIZE_HEADER + P9Protocol.MSG_TYPE_SIZE + P9Protocol.MSG_TAG_SIZE;
+  public static final int tagLocation = P9Protocol.MSG_SIZE_HEADER + P9Protocol.MSG_TYPE_SIZE;
+  public byte[] size = new byte[P9Protocol.MSG_SIZE_HEADER];
+  public byte type;
+  public byte[] tag = new byte[P9Protocol.MSG_TAG_SIZE];
+  public byte[] data;
 
-    public Message toMessage() {
-        return Decoder.decodeToMessage(this);
-    }
+  public Message toMessage() {
+    return Decoder.decodeToMessage(this);
+  }
 }

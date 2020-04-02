@@ -16,9 +16,15 @@
 
 package gelato.server.manager.requests;
 
-import gelato.*;
-import protocol.messages.request.*;
+import gelato.GelatoConnection;
+import gelato.GelatoFileDescriptor;
+import gelato.GelatoSession;
+import protocol.messages.request.CloseRequest;
 
 public interface RequestCloseHandler {
-    boolean processRequest(GelatoConnection connection, GelatoFileDescriptor descriptor, GelatoSession session, CloseRequest request);
+  boolean processRequest(
+      GelatoConnection connection,
+      GelatoFileDescriptor descriptor,
+      GelatoSession session,
+      CloseRequest request);
 }

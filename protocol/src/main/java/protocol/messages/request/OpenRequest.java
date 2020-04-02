@@ -16,54 +16,57 @@
 
 package protocol.messages.request;
 
-import protocol.*;
-import protocol.messages.*;
+import protocol.ByteEncoder;
+import protocol.P9Protocol;
+import protocol.messages.Message;
+import protocol.messages.MessageRaw;
+import protocol.messages.TransactionMessage;
 
-public class OpenRequest  implements TransactionMessage {
-    private int tag;
-    private int fileDescriptor;
-    private byte mode;
+public class OpenRequest implements TransactionMessage {
+  private int tag;
+  private int fileDescriptor;
+  private byte mode;
 
-    @Override
-    public void setTransactionId(int transactionId) {
-        setTag(transactionId);
-    }
+  @Override
+  public void setTransactionId(int transactionId) {
+    setTag(transactionId);
+  }
 
-    @Override
-    public int getTag() {
-        return tag;
-    }
+  @Override
+  public int getTag() {
+    return tag;
+  }
 
-    @Override
-    public void setTag(int tag) {
-        this.tag = tag;
-    }
+  @Override
+  public void setTag(int tag) {
+    this.tag = tag;
+  }
 
-    public int getFileDescriptor() {
-        return fileDescriptor;
-    }
+  public int getFileDescriptor() {
+    return fileDescriptor;
+  }
 
-    public void setFileDescriptor(int fileDescriptor) {
-        this.fileDescriptor = fileDescriptor;
-    }
+  public void setFileDescriptor(int fileDescriptor) {
+    this.fileDescriptor = fileDescriptor;
+  }
 
-    public byte getMode() {
-        return mode;
-    }
+  public byte getMode() {
+    return mode;
+  }
 
-    public void setMode(byte mode) {
-        this.mode = mode;
-    }
+  public void setMode(byte mode) {
+    this.mode = mode;
+  }
 
-    @Override
-    public Message toMessage() {
-        Message retVal = new Message();
-        retVal.messageType = P9Protocol.TOPEN;
-        retVal.tag = tag;
-        retVal.messageContent = new byte[P9Protocol.MSG_FID_SIZE + P9Protocol.MSG_TYPE_SIZE];
-        ByteEncoder.encodeInt(getFileDescriptor(), retVal.messageContent, 0);
-        retVal.messageContent[P9Protocol.MSG_FID_SIZE] = mode;
-        retVal.messageSize = MessageRaw.minSize + P9Protocol.MSG_FID_SIZE + P9Protocol.MSG_TYPE_SIZE;
-        return retVal;
-    }
+  @Override
+  public Message toMessage() {
+    Message retVal = new Message();
+    retVal.messageType = P9Protocol.TOPEN;
+    retVal.tag = tag;
+    retVal.messageContent = new byte[P9Protocol.MSG_FID_SIZE + P9Protocol.MSG_TYPE_SIZE];
+    ByteEncoder.encodeInt(getFileDescriptor(), retVal.messageContent, 0);
+    retVal.messageContent[P9Protocol.MSG_FID_SIZE] = mode;
+    retVal.messageSize = MessageRaw.minSize + P9Protocol.MSG_FID_SIZE + P9Protocol.MSG_TYPE_SIZE;
+    return retVal;
+  }
 }

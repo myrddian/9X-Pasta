@@ -16,57 +16,60 @@
 
 package protocol.messages.response;
 
-import protocol.*;
-import protocol.messages.*;
+import protocol.ByteEncoder;
+import protocol.P9Protocol;
+import protocol.QID;
+import protocol.messages.Message;
+import protocol.messages.TransactionMessage;
 
 public class CreateResponse implements TransactionMessage {
 
-    private int tag;
-    private QID serverResource;
-    private int ioSize = P9Protocol.MAX_MSG_CONTENT_SIZE;
+  private int tag;
+  private QID serverResource;
+  private int ioSize = P9Protocol.MAX_MSG_CONTENT_SIZE;
 
-    @Override
-    public void setTransactionId(int transactionId) {
-        setTag(transactionId);
-    }
+  @Override
+  public void setTransactionId(int transactionId) {
+    setTag(transactionId);
+  }
 
-    @Override
-    public int getTag() {
-        return tag;
-    }
+  @Override
+  public int getTag() {
+    return tag;
+  }
 
-    @Override
-    public Message toMessage() {
-        Message rtr = new Message();
-        rtr.messageType = P9Protocol.RCREATE;
-        rtr.tag = tag;
-        int size = P9Protocol.MSG_INT_SIZE +  P9Protocol.MSG_QID_SIZE;
-        int ptr = 0;
-        rtr.messageContent = new byte[size];
-        ByteEncoder.encodeQID(serverResource, rtr.messageContent, 0);
-        ByteEncoder.encodeInt(ioSize, rtr.messageContent, P9Protocol.MSG_QID_SIZE);
-        rtr.messageSize = size + P9Protocol.MIN_MSG_SIZE;
-        return rtr;
-    }
+  @Override
+  public void setTag(int tag) {
+    this.tag = tag;
+  }
 
-    @Override
-    public void setTag(int tag) {
-        this.tag = tag;
-    }
+  @Override
+  public Message toMessage() {
+    Message rtr = new Message();
+    rtr.messageType = P9Protocol.RCREATE;
+    rtr.tag = tag;
+    int size = P9Protocol.MSG_INT_SIZE + P9Protocol.MSG_QID_SIZE;
+    int ptr = 0;
+    rtr.messageContent = new byte[size];
+    ByteEncoder.encodeQID(serverResource, rtr.messageContent, 0);
+    ByteEncoder.encodeInt(ioSize, rtr.messageContent, P9Protocol.MSG_QID_SIZE);
+    rtr.messageSize = size + P9Protocol.MIN_MSG_SIZE;
+    return rtr;
+  }
 
-    public QID getServerResource() {
-        return serverResource;
-    }
+  public QID getServerResource() {
+    return serverResource;
+  }
 
-    public void setServerResource(QID serverResource) {
-        this.serverResource = serverResource;
-    }
+  public void setServerResource(QID serverResource) {
+    this.serverResource = serverResource;
+  }
 
-    public int getIoSize() {
-        return ioSize;
-    }
+  public int getIoSize() {
+    return ioSize;
+  }
 
-    public void setIoSize(int ioSize) {
-        this.ioSize = ioSize;
-    }
+  public void setIoSize(int ioSize) {
+    this.ioSize = ioSize;
+  }
 }

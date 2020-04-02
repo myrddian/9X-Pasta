@@ -21,45 +21,44 @@ import ciotola.ServiceStatus;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class PooledServiceRunner implements Runnable{
+public class PooledServiceRunner implements Runnable {
 
-    private final Logger logger = LoggerFactory.getLogger(PooledServiceRunner.class);
-    private CiotolaServiceInterface javaService;
-    private ServiceStatus serviceStatus;
-    private int serviceId = 0;
+  private final Logger logger = LoggerFactory.getLogger(PooledServiceRunner.class);
+  private CiotolaServiceInterface javaService;
+  private ServiceStatus serviceStatus;
+  private int serviceId = 0;
 
+  public PooledServiceRunner(CiotolaServiceInterface service, int id) {
+    javaService = service;
+    javaService.startUp();
+    serviceId = id;
+    serviceStatus = ServiceStatus.SERVICE_START;
+  }
 
-    public PooledServiceRunner(CiotolaServiceInterface service, int id) {
-        javaService = service;
-        javaService.startUp();
-        serviceId = id;
-        serviceStatus = ServiceStatus.SERVICE_START;
-    }
+  @Override
+  public void run() {
+    serviceStatus = ServiceStatus.SERVICE_RUNNING;
+    logger.trace("[" + Integer.toString(serviceId) + "] - Running " + javaService.serviceName());
+    javaService.run();
+    logger.trace("[" + Integer.toString(serviceId) + "] - Stopped " + javaService.serviceName());
+    serviceStatus = ServiceStatus.SERVICE_STOP;
+  }
 
-    @Override
-    public void run() {
-        serviceStatus = ServiceStatus.SERVICE_RUNNING;
-        logger.trace("["+Integer.toString(serviceId)+"] - Running "+ javaService.serviceName());
-        javaService.run();
-        logger.trace("["+Integer.toString(serviceId)+"] - Stopped "+ javaService.serviceName());
-        serviceStatus = ServiceStatus.SERVICE_STOP;
-    }
+  public void stop() {
+    logger.trace("[" + Integer.toString(serviceId) + "] - Stopping " + javaService.serviceName());
+    javaService.shutdown();
+  }
 
-    public void stop() {
-        logger.trace("["+Integer.toString(serviceId)+"] - Stopping "+ javaService.serviceName());
-        javaService.shutdown();
-    }
+  public void start() {
+    logger.trace("[" + Integer.toString(serviceId) + "] - Starting " + javaService.serviceName());
+    javaService.startUp();
+  }
 
-    public void start() {
-        logger.trace("["+Integer.toString(serviceId)+"] - Starting "+ javaService.serviceName());
-        javaService.startUp();
-    }
+  public String serviceName() {
+    return javaService.serviceName();
+  }
 
-    public String serviceName() {
-        return javaService.serviceName();
-    }
-
-    public ServiceStatus getStatus() {
-        return serviceStatus;
-    }
+  public ServiceStatus getStatus() {
+    return serviceStatus;
+  }
 }

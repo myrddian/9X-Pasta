@@ -16,45 +16,46 @@
 
 package protocol.messages.response;
 
-import protocol.*;
-import protocol.messages.*;
+import protocol.ByteEncoder;
+import protocol.P9Protocol;
+import protocol.messages.Message;
+import protocol.messages.TransactionMessage;
 
 public class WriteResponse implements TransactionMessage {
-    private int tag;
-    private int bytesWritten;
+  private int tag;
+  private int bytesWritten;
 
+  @Override
+  public void setTransactionId(int transactionId) {
+    setTag(transactionId);
+  }
 
-    @Override
-    public void setTransactionId(int transactionId) {
-        setTag(transactionId);
-    }
+  @Override
+  public int getTag() {
+    return tag;
+  }
 
-    @Override
-    public int getTag() {
-        return tag;
-    }
+  @Override
+  public void setTag(int tag) {
+    this.tag = tag;
+  }
 
-    @Override
-    public Message toMessage() {
-        Message rtr = new Message();
-        rtr.tag  = tag;
-        rtr.messageType = P9Protocol.RWRITE;
-        rtr.messageSize = P9Protocol.MIN_MSG_SIZE + P9Protocol.MSG_INT_SIZE;
-        rtr.messageContent = new byte[P9Protocol.MSG_INT_SIZE];
-        ByteEncoder.encodeInt(bytesWritten, rtr.messageContent, 0);
-        return rtr;
-    }
+  @Override
+  public Message toMessage() {
+    Message rtr = new Message();
+    rtr.tag = tag;
+    rtr.messageType = P9Protocol.RWRITE;
+    rtr.messageSize = P9Protocol.MIN_MSG_SIZE + P9Protocol.MSG_INT_SIZE;
+    rtr.messageContent = new byte[P9Protocol.MSG_INT_SIZE];
+    ByteEncoder.encodeInt(bytesWritten, rtr.messageContent, 0);
+    return rtr;
+  }
 
-    @Override
-    public void setTag(int tag) {
-        this.tag = tag;
-    }
+  public int getBytesWritten() {
+    return bytesWritten;
+  }
 
-    public int getBytesWritten() {
-        return bytesWritten;
-    }
-
-    public void setBytesWritten(int bytesWritten) {
-        this.bytesWritten = bytesWritten;
-    }
+  public void setBytesWritten(int bytesWritten) {
+    this.bytesWritten = bytesWritten;
+  }
 }

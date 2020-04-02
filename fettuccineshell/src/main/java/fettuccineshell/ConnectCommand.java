@@ -15,6 +15,7 @@
  */
 
 package fettuccineshell;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.shell.standard.ShellComponent;
 import org.springframework.shell.standard.ShellMethod;
@@ -22,22 +23,19 @@ import org.springframework.shell.standard.ShellOption;
 
 @ShellComponent
 public class ConnectCommand {
-    @Autowired
-    ShellConnection shellConnection;
+  @Autowired ShellConnection shellConnection;
 
-    @Autowired
-    FettuccineShellHelper shellHelper;
+  @Autowired FettuccineShellHelper shellHelper;
 
-    @ShellMethod("Connect to a target Service")
-    public void connect(@ShellOption({"-S", "--server"}) String server,
-                           @ShellOption({"-P", "--port"}) int port,
-                           @ShellOption({"-U", "--user"}) String user) {
+  @ShellMethod("Connect to a target Service")
+  public void connect(
+      @ShellOption({"-S", "--server"}) String server,
+      @ShellOption({"-P", "--port"}) int port,
+      @ShellOption({"-U", "--user"}) String user) {
 
-        if(!shellConnection.connect(server,port, user)) {
-            shellHelper.printError("Unable to connect");
-        }
-        shellHelper.printSuccess("Connected!");
+    if (!shellConnection.connect(server, port, user)) {
+      shellHelper.printError("Unable to connect");
     }
+    shellHelper.printSuccess("Connected!");
+  }
 }
-
-

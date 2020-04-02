@@ -1,4 +1,3 @@
-
 /*
  *   Copyright (c) 2020. Enzo Reyes
  *
@@ -17,9 +16,4 @@
 
 package fettuccine;
 
-import org.junit.jupiter.api.Test;
-import static org.junit.jupiter.api.Assertions.*;
-
-class AppTest {
-
-}
+class AppTest {}

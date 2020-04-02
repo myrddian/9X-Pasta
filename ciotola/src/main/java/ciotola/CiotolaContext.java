@@ -22,18 +22,27 @@ import java.util.concurrent.ExecutorService;
 
 public interface CiotolaContext {
 
-    Collection<CiotolaServiceInterface> getServices();
-    void addService(CiotolaServiceInterface newService);
-    void addService(Object newService);
-    void injectService(CiotolaServiceInterface newService);
-    void injectService(Object newService);
-    boolean startContainer();
-    void setPathToJarDelegate(CiotolaPathDelegateHelper pathToJarDelegate);
-    CiotolaPathDelegateHelper getPathToJarDelegate();
-    List<String> getLoadedJars();
-    void addAnnotation(Class annotation);
-    List<String> getAnnotations();
-    void submitJob(Runnable job);
-    ExecutorService getExecutorService();
-    void setExecutorService(ExecutorService executorService);
+  Collection<CiotolaServiceInterface> getServices();
+
+  void addService(CiotolaServiceInterface newService);
+
+  void addService(Object newService);
+
+  void injectService(CiotolaServiceInterface newService);
+
+  void injectService(Object newService);
+
+  boolean startContainer();
+
+  List<String> getLoadedJars();
+
+  void addAnnotation(Class annotation);
+
+  List<String> getAnnotations();
+
+  void submitJob(Runnable job);
+
+  ExecutorService getExecutorService();
+
+  void setExecutorService(ExecutorService executorService);
 }

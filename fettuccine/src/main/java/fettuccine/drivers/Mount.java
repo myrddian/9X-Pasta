@@ -16,5 +16,4 @@
 
 package fettuccine.drivers;
 
-public class Mount {
-}
+public class Mount {}

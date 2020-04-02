@@ -16,42 +16,46 @@
 
 package fettuccine.drivers.proc;
 
-import fettuccine.*;
-import gelato.*;
+import fettuccine.FettuccineService;
+import gelato.GelatoConnection;
+import gelato.GelatoFileDescriptor;
 import gelato.server.GelatoServerManager;
-import gelato.server.manager.implementation.*;
-import gelato.server.manager.response.*;
-import org.slf4j.*;
-import protocol.messages.response.*;
+import gelato.server.manager.implementation.SimpleDirectoryServelet;
+import gelato.server.manager.response.ResponseAttachHandler;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import protocol.messages.response.AttachResponse;
 
 public class ProcDriver implements ResponseAttachHandler {
 
-    private ProcDir procDir;
-    private GelatoServerManager serveletManager;
-    private final Logger logger = LoggerFactory.getLogger(ProcDriver.class);
+  private final Logger logger = LoggerFactory.getLogger(ProcDriver.class);
+  private ProcDir procDir;
+  private GelatoServerManager serveletManager;
 
-    public ProcDriver(GelatoServerManager gelatoServerManager) {
-        procDir = new ProcDir();
-        serveletManager = gelatoServerManager;
-        serveletManager.getSessionHandler().setResponseAttachHandler(this);
-        serveletManager.addResource(procDir);
-    }
+  public ProcDriver(GelatoServerManager gelatoServerManager) {
+    procDir = new ProcDir();
+    serveletManager = gelatoServerManager;
+    serveletManager.getSessionHandler().setResponseAttachHandler(this);
+    serveletManager.addResource(procDir);
+  }
 
+  @Override
+  public synchronized boolean writeResponse(
+      GelatoConnection connection, GelatoFileDescriptor fileDescriptor, AttachResponse response) {
+    logger.info("Mapping Session to PROC");
+    SimpleDirectoryServelet connectionDir =
+        new SimpleDirectoryServelet(
+            fileDescriptor.getDescriptorId(), Long.toString(fileDescriptor.getDescriptorId()));
+    connectionDir.setUid(FettuccineService.FETTUCCINE_SVC_NAME);
+    connectionDir.setGid(FettuccineService.FETTUCCINE_SVC_GRP);
+    connectionDir.setMuid(FettuccineService.FETTUCCINE_SVC_NAME);
+    procDir.addDirectory(connectionDir);
+    serveletManager.addResource(connectionDir);
+    connection.sendMessage(fileDescriptor, response.toMessage());
+    return true;
+  }
 
-    @Override
-    public synchronized boolean writeResponse(GelatoConnection connection, GelatoFileDescriptor fileDescriptor, AttachResponse response) {
-        logger.info("Mapping Session to PROC");
-        SimpleDirectoryServelet connectionDir = new SimpleDirectoryServelet(fileDescriptor.getDescriptorId(), Long.toString(fileDescriptor.getDescriptorId()));
-        connectionDir.setUid(FettuccineService.FETTUCCINE_SVC_NAME);
-        connectionDir.setGid(FettuccineService.FETTUCCINE_SVC_GRP);
-        connectionDir.setMuid(FettuccineService.FETTUCCINE_SVC_NAME);
-        procDir.addDirectory(connectionDir);
-        serveletManager.addResource(connectionDir);
-        connection.sendMessage(fileDescriptor, response.toMessage());
-        return true;
-    }
-
-    public ProcDir getProcDir() {
-        return procDir;
-    }
+  public ProcDir getProcDir() {
+    return procDir;
+  }
 }

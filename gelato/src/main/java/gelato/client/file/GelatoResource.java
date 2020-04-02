@@ -17,8 +17,11 @@
 package gelato.client.file;
 
 public interface GelatoResource {
-    String getName();
-    String getPath();
-    String getFullName();
-    long   getSize();
+  String getName();
+
+  String getPath();
+
+  String getFullName();
+
+  long getSize();
 }

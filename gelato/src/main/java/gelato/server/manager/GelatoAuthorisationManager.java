@@ -16,14 +16,24 @@
 
 package gelato.server.manager;
 
-import gelato.*;
-import protocol.*;
-import protocol.messages.request.*;
+import gelato.GelatoConnection;
+import gelato.GelatoFileDescriptor;
+import gelato.GelatoSession;
+import protocol.QID;
+import protocol.messages.request.AuthRequest;
 
 public interface GelatoAuthorisationManager {
 
-    boolean requireAuth();
-    boolean processAuthRequest(GelatoConnection connection, GelatoFileDescriptor descriptor, GelatoSession session, AuthRequest request);
-    QID authoriseQID(GelatoFileDescriptor descriptor);
-    GelatoFileDescriptor getAuthorisedDescriptor(GelatoConnection connection, GelatoFileDescriptor descriptor);
+  boolean requireAuth();
+
+  boolean processAuthRequest(
+      GelatoConnection connection,
+      GelatoFileDescriptor descriptor,
+      GelatoSession session,
+      AuthRequest request);
+
+  QID authoriseQID(GelatoFileDescriptor descriptor);
+
+  GelatoFileDescriptor getAuthorisedDescriptor(
+      GelatoConnection connection, GelatoFileDescriptor descriptor);
 }

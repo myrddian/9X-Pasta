@@ -16,19 +16,25 @@
 
 package gelato.server.manager.implementation;
 
-import gelato.*;
-import gelato.server.manager.requests.*;
-import protocol.messages.*;
-import protocol.messages.response.*;
+import gelato.GelatoConnection;
+import gelato.GelatoFileDescriptor;
+import gelato.GelatoSession;
+import gelato.server.manager.requests.GenericRequestHandler;
+import protocol.messages.Message;
+import protocol.messages.response.ErrorMessage;
 
 public class GenericUnknownHandler implements GenericRequestHandler {
 
-    @Override
-    public boolean processRequest(GelatoConnection connection, GelatoFileDescriptor descriptor, GelatoSession session, Message request) {
-        ErrorMessage errorMessage = new ErrorMessage();
-        errorMessage.setTag(request.tag);
-        errorMessage.setErrorMessage("Unknown Request - Error");
-        connection.sendMessage(descriptor, errorMessage.toMessage());
-        return true;
-    }
+  @Override
+  public boolean processRequest(
+      GelatoConnection connection,
+      GelatoFileDescriptor descriptor,
+      GelatoSession session,
+      Message request) {
+    ErrorMessage errorMessage = new ErrorMessage();
+    errorMessage.setTag(request.tag);
+    errorMessage.setErrorMessage("Unknown Request - Error");
+    connection.sendMessage(descriptor, errorMessage.toMessage());
+    return true;
+  }
 }
