@@ -27,7 +27,7 @@ import gelato.GelatoConnection;
 import gelato.GelatoDescriptorManager;
 import gelato.GelatoFileDescriptor;
 import gelato.client.ClientTCPTransport;
-import gelato.server.v2.V2TCPTransport;
+import gelato.server.manager.v2.V2TCPTransport;
 import gelato.transport.GelatoTransport;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

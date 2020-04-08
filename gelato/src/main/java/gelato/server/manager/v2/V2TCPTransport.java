@@ -14,7 +14,7 @@
  *    limitations under the License.
  */
 
-package gelato.server.v2;
+package gelato.server.manager.v2;
 
 import ciotola.annotations.CiotolaAutowire;
 import ciotola.annotations.CiotolaServiceRun;

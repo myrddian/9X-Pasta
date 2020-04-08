@@ -24,7 +24,7 @@ import gelato.GelatoConnection;
 import gelato.GelatoDescriptorManager;
 import gelato.GelatoFileDescriptor;
 import gelato.GelatoSession;
-import gelato.server.v2.V2Message;
+import gelato.server.manager.v2.V2Message;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import protocol.P9Protocol;
