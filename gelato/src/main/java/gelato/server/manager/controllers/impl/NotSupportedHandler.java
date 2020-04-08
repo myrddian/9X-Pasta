@@ -29,65 +29,91 @@ import gelato.server.manager.processchain.WriteRequestHandler;
 import gelato.server.manager.processchain.WriteStatRequestHandler;
 import protocol.StatStruct;
 
-public class NotSupportedHandler implements CloseRequestHandler, CreateRequestHandler,
-        OpenRequestHandler, ReadRequestHandler, RemoveRequestHandler, StatRequestHandler,
-        WalkRequestHandler, WriteRequestHandler, WriteStatRequestHandler {
+public class NotSupportedHandler
+    implements CloseRequestHandler,
+        CreateRequestHandler,
+        OpenRequestHandler,
+        ReadRequestHandler,
+        RemoveRequestHandler,
+        StatRequestHandler,
+        WalkRequestHandler,
+        WriteRequestHandler,
+        WriteStatRequestHandler {
 
-    private void sendError(RequestConnection connection) {
-        connection.getResourceController().sendErrorMessage(connection, "This operation is not supported");
-    }
+  private void sendError(RequestConnection connection) {
+    connection
+        .getResourceController()
+        .sendErrorMessage(connection, "This operation is not supported");
+  }
 
-    @Override
-    public boolean closeRequest(RequestConnection connection, GelatoFileDescriptor clientFileDescriptor) {
-        sendError(connection);
-        return true;
-    }
+  @Override
+  public boolean closeRequest(
+      RequestConnection connection, GelatoFileDescriptor clientFileDescriptor) {
+    sendError(connection);
+    return true;
+  }
 
-    @Override
-    public boolean createRequest(RequestConnection connection, String fileName, int permission, byte mode) {
-        sendError(connection);
-        return true;
-    }
+  @Override
+  public boolean createRequest(
+      RequestConnection connection, String fileName, int permission, byte mode) {
+    sendError(connection);
+    return true;
+  }
 
-    @Override
-    public boolean openRequest(RequestConnection connection, GelatoFileDescriptor clientFileDescriptor, byte mode) {
-        sendError(connection);
-        return true;
-    }
+  @Override
+  public boolean openRequest(
+      RequestConnection connection, GelatoFileDescriptor clientFileDescriptor, byte mode) {
+    sendError(connection);
+    return true;
+  }
 
-    @Override
-    public boolean readRequest(RequestConnection connection, GelatoFileDescriptor clientFileDescriptor, long offset, int numberOfBytes) {
-        sendError(connection);
-        return true;
-    }
+  @Override
+  public boolean readRequest(
+      RequestConnection connection,
+      GelatoFileDescriptor clientFileDescriptor,
+      long offset,
+      int numberOfBytes) {
+    sendError(connection);
+    return true;
+  }
 
-    @Override
-    public boolean removeRequest(RequestConnection connection, GelatoFileDescriptor clientFileDescriptor) {
-        sendError(connection);
-        return true;
-    }
+  @Override
+  public boolean removeRequest(
+      RequestConnection connection, GelatoFileDescriptor clientFileDescriptor) {
+    sendError(connection);
+    return true;
+  }
 
-    @Override
-    public boolean statRequest(RequestConnection connection, GelatoFileDescriptor clientFileDescriptor) {
-        sendError(connection);
-        return true;
-    }
+  @Override
+  public boolean statRequest(
+      RequestConnection connection, GelatoFileDescriptor clientFileDescriptor) {
+    sendError(connection);
+    return true;
+  }
 
-    @Override
-    public boolean walkRequest(RequestConnection connection, String fileName, GelatoFileDescriptor newDescriptor) {
-        sendError(connection);
-        return true;
-    }
+  @Override
+  public boolean walkRequest(
+      RequestConnection connection, String fileName, GelatoFileDescriptor newDescriptor) {
+    sendError(connection);
+    return true;
+  }
 
-    @Override
-    public boolean writeRequest(RequestConnection connection, GelatoFileDescriptor clientFileDescriptor, long offset, byte[] data) {
-        sendError(connection);
-        return true;
-    }
+  @Override
+  public boolean writeRequest(
+      RequestConnection connection,
+      GelatoFileDescriptor clientFileDescriptor,
+      long offset,
+      byte[] data) {
+    sendError(connection);
+    return true;
+  }
 
-    @Override
-    public boolean writeStatRequest(RequestConnection connection, GelatoFileDescriptor clientFileDescriptor, StatStruct newStruct) {
-        sendError(connection);
-        return true;
-    }
+  @Override
+  public boolean writeStatRequest(
+      RequestConnection connection,
+      GelatoFileDescriptor clientFileDescriptor,
+      StatStruct newStruct) {
+    sendError(connection);
+    return true;
+  }
 }

@@ -20,9 +20,9 @@ import gelato.GelatoFileDescriptor;
 import gelato.server.manager.RequestConnection;
 
 public interface ReadRequestHandler {
-   boolean readRequest(
-            RequestConnection connection,
-            GelatoFileDescriptor clientFileDescriptor,
-            long offset,
-            int numberOfBytes);
+  boolean readRequest(
+      RequestConnection connection,
+      GelatoFileDescriptor clientFileDescriptor,
+      long offset,
+      int numberOfBytes);
 }

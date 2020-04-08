@@ -49,390 +49,400 @@ import protocol.messages.response.WalkResponse;
 import java.util.HashMap;
 import java.util.Map;
 
-public class GelatoDirectoryControllerImpl implements GelatoDirectoryController,
+public class GelatoDirectoryControllerImpl
+    implements GelatoDirectoryController,
         WalkRequestHandler,
         ReadRequestHandler,
         OpenRequestHandler,
         StatRequestHandler {
 
-    private final Logger logger =
-            LoggerFactory.getLogger(GelatoDirectoryControllerImpl.class);
-    private Map<String, GelatoDirectoryController> directories = new HashMap<>();
-    private Map<String, GelatoFileController> files = new HashMap<>();
-    private GelatoResourceController resourceController = new GelatoResourceControllerImpl();
-    private StatStruct parentDir = new StatStruct();
+  private final Logger logger = LoggerFactory.getLogger(GelatoDirectoryControllerImpl.class);
+  private Map<String, GelatoDirectoryController> directories = new HashMap<>();
+  private Map<String, GelatoFileController> files = new HashMap<>();
+  private GelatoResourceController resourceController = new GelatoResourceControllerImpl();
+  private StatStruct parentDir = new StatStruct();
 
-    public GelatoDirectoryControllerImpl() {
-        resourceController.setWalkRequestHandler(this);
-        resourceController.setReadRequestHandler(this);
-        resourceController.setOpenRequestHandler(this);
-        resourceController.setStatRequestHandler(this);
+  public GelatoDirectoryControllerImpl() {
+    resourceController.setWalkRequestHandler(this);
+    resourceController.setReadRequestHandler(this);
+    resourceController.setOpenRequestHandler(this);
+    resourceController.setStatRequestHandler(this);
+  }
+
+  private long calculateSize() {
+    long count = 0;
+    for (String dirName : directories.keySet()) {
+      GelatoDirectoryController dirHandler = directories.get(dirName);
+      if (dirName.equals(PARENT_DIR)) {
+        count += parentDir.getStatSize();
+      } else {
+        count += dirHandler.getResourceController().getStat().getStatSize();
+      }
     }
 
-    private long calculateSize() {
-        long count = 0;
-        for (String dirName : directories.keySet()) {
-            GelatoDirectoryController dirHandler = directories.get(dirName);
-            if (dirName.equals(PARENT_DIR)) {
-                count += parentDir.getStatSize();
-            } else {
-                count += dirHandler.getResourceController().getStat().getStatSize();
-            }
+    for (GelatoFileController fileHandler : files.values()) {
+      count += fileHandler.getResource().getStat().getStatSize();
+    }
+    return count;
+  }
+
+  // Directory Functionality
+
+  @Override
+  public GelatoResourceController getResourceController() {
+    return resourceController;
+  }
+
+  @Override
+  public void setResourceController(GelatoResourceController resourceController) {
+    this.resourceController = resourceController;
+  }
+
+  @Override
+  public String getDirectoryName() {
+    return resourceController.resourceName();
+  }
+
+  @Override
+  public void setDirectoryName(String name) {
+    resourceController.setResourceName(name);
+  }
+
+  @Override
+  public boolean containsResource(String resourceName) {
+    if (directories.containsKey(resourceName) || files.containsKey(resourceName)) {
+      return true;
+    }
+    return false;
+  }
+
+  @Override
+  public GelatoResourceController getResource(String resourceName) {
+    if (!containsResource(resourceName)) {
+      return null;
+    }
+    if (directories.containsKey(resourceName)) {
+      return directories.get(resourceName).getResourceController();
+    } else {
+      return files.get(resourceName).getResource();
+    }
+  }
+
+  @Override
+  public void mapPaths(GelatoDirectoryController parentDir) {
+    directories.put(GelatoDirectoryController.PARENT_DIR, parentDir);
+    this.parentDir = parentDir.getResourceController().getStat().duplicate();
+    this.parentDir.setName(GelatoDirectoryController.PARENT_DIR);
+    this.parentDir.updateSize();
+  }
+
+  @Override
+  public void addDirectory(GelatoDirectoryController newDirectory) {
+    if (files.containsKey(newDirectory.getDirectoryName())) {
+      logger.error("Cannot add the a Directory Handler which is a file");
+      return;
+    }
+    if (directories.containsKey(newDirectory.getDirectoryName())) {
+      logger.error("Cannot add the same directory twice");
+      return;
+    }
+    directories.put(newDirectory.getDirectoryName(), newDirectory);
+    newDirectory.mapPaths(this);
+  }
+
+  @Override
+  public void addFile(GelatoFileController newFile) {
+    if (files.containsKey(newFile.getResource().resourceName())) {
+      logger.error("Cannot add the a File Handler which is a Directory");
+      return;
+    }
+    if (directories.containsKey(newFile.getResource().resourceName())) {
+      logger.error("Cannot add the same file twice");
+      return;
+    }
+    files.put(newFile.getResource().resourceName(), newFile);
+  }
+
+  // Provided built in functionality that can be overridden
+
+  @Override
+  public boolean walkRequest(
+      RequestConnection connection, String fileName, GelatoFileDescriptor newDescriptor) {
+    if (!containsResource(fileName)) {
+      sendErrorMessage(connection, "File not found");
+      return false;
+    }
+    GelatoResourceController resourceHandler = getResource(fileName);
+    connection.getSession().getManager().mapQID(newDescriptor, resourceHandler.getFileDescriptor());
+    WalkResponse response = new WalkResponse();
+    response.setQID(resourceHandler.getQID());
+    connection.reply(response);
+    return true;
+  }
+
+  @Override
+  public boolean readRequest(
+      RequestConnection connection,
+      GelatoFileDescriptor clientFileDescriptor,
+      long offset,
+      int numberOfBytes) {
+    if (directories.size() == 0 && files.size() == 0) {
+      ReadResponse readResponse = new ReadResponse();
+      connection.reply(readResponse);
+    }
+
+    // Serialise the whole struct to memory
+    byte[] statBuff = new byte[numberOfBytes];
+    int ptr = 0;
+    byte[] encodedStat = null;
+
+    for (String dirName : directories.keySet()) {
+      GelatoResourceController dir = directories.get(dirName);
+      StatStruct statStruct = dir.getStat();
+      if (dirName.equals(GelatoDirectoryController.PARENT_DIR)) {
+        statStruct = this.parentDir;
+      }
+      encodedStat = statStruct.EncodeStat();
+      ByteEncoder.copyBytesTo(encodedStat, statBuff, ptr, encodedStat.length);
+      ptr += encodedStat.length;
+    }
+
+    for (GelatoFileController files : files.values()) {
+      StatStruct statStruct = files.getResource().getStat();
+      encodedStat = statStruct.EncodeStat();
+      ByteEncoder.copyBytesTo(encodedStat, statBuff, ptr, encodedStat.length);
+      ptr += encodedStat.length;
+    }
+
+    if (statBuff.length < P9Protocol.MAX_MSG_CONTENT_SIZE) {
+      ReadResponse readResponse = new ReadResponse();
+      readResponse.setData(statBuff);
+      connection.reply(readResponse);
+    } else {
+      ptr = 0;
+      while (ptr < statBuff.length) {
+        int copy = statBuff.length - ptr;
+        if (copy > P9Protocol.MAX_MSG_CONTENT_SIZE) {
+          copy = P9Protocol.MAX_MSG_CONTENT_SIZE;
         }
-
-        for (GelatoFileController fileHandler : files.values()) {
-            count += fileHandler.getResource().getStat().getStatSize();
-        }
-        return count;
+        encodedStat = new byte[copy];
+        ReadResponse readResponse = new ReadResponse();
+        ByteEncoder.copyBytesTo(encodedStat, statBuff, ptr, copy);
+        readResponse.setData(encodedStat);
+        connection.reply(readResponse);
+        ptr += copy;
+      }
     }
+    return true;
+  }
 
-    //Directory Functionality
-
-    @Override
-    public GelatoResourceController getResourceController() {
-        return resourceController;
+  @Override
+  public boolean openRequest(
+      RequestConnection connection, GelatoFileDescriptor clientFileDescriptor, byte mode) {
+    if (mode == P9Protocol.OPEN_MODE_OREAD) {
+      OpenResponse response = new OpenResponse();
+      response.setFileQID(getQID());
+      connection.reply(response);
+      return false;
     }
+    sendErrorMessage(connection, "Only READ mode is allowed");
+    return true;
+  }
 
-    @Override
-    public void setResourceController(GelatoResourceController resourceController) {
-        this.resourceController = resourceController;
-    }
+  @Override
+  public boolean statRequest(
+      RequestConnection connection, GelatoFileDescriptor clientFileDescriptor) {
+    StatStruct selfStat = getStat();
+    selfStat.setLength(calculateSize());
+    StatResponse response = new StatResponse();
+    response.setStatStruct(selfStat);
+    connection.reply(response);
+    return true;
+  }
 
-    @Override
-    public String getDirectoryName() {
-        return resourceController.resourceName();
-    }
+  // ResourceController Proxy
 
-    @Override
-    public void setDirectoryName(String name) {
-        resourceController.setResourceName(name);
-    }
+  @Override
+  public QID getQID() {
+    return resourceController.getQID();
+  }
 
-    @Override
-    public boolean containsResource(String resourceName) {
-        if (directories.containsKey(resourceName) || files.containsKey(resourceName)) {
-            return true;
-        }
-        return false;
-    }
+  @Override
+  public void setQID(QID value) {
+    resourceController.setQID(value);
+  }
 
-    @Override
-    public GelatoResourceController getResource(String resourceName) {
-        if (!containsResource(resourceName)) {
-            return null;
-        }
-        if (directories.containsKey(resourceName)) {
-            return directories.get(resourceName).getResourceController();
-        } else {
-            return files.get(resourceName).getResource();
-        }
-    }
+  @Override
+  public String resourceName() {
+    return resourceController.resourceName();
+  }
 
-    @Override
-    public void mapPaths(GelatoDirectoryController parentDir) {
-        directories.put(GelatoDirectoryController.PARENT_DIR, parentDir);
-        this.parentDir = parentDir.getResourceController().getStat().duplicate();
-        this.parentDir.setName(GelatoDirectoryController.PARENT_DIR);
-        this.parentDir.updateSize();
-    }
+  @Override
+  public StatStruct getStat() {
+    return resourceController.getStat();
+  }
 
-    @Override
-    public void addDirectory(GelatoDirectoryController newDirectory) {
-        if (files.containsKey(newDirectory.getDirectoryName())) {
-            logger.error("Cannot add the a Directory Handler which is a file");
-            return;
-        }
-        if (directories.containsKey(newDirectory.getDirectoryName())) {
-            logger.error("Cannot add the same directory twice");
-            return;
-        }
-        directories.put(newDirectory.getDirectoryName(), newDirectory);
-        newDirectory.mapPaths(this);
-    }
+  @Override
+  public void setStat(StatStruct newStat) {
+    resourceController.setStat(newStat);
+  }
 
-    @Override
-    public void addFile(GelatoFileController newFile) {
-        if (files.containsKey(newFile.getResource().resourceName())) {
-            logger.error("Cannot add the a File Handler which is a Directory");
-            return;
-        }
-        if (directories.containsKey(newFile.getResource().resourceName())) {
-            logger.error("Cannot add the same file twice");
-            return;
-        }
-        files.put(newFile.getResource().resourceName(), newFile);
-    }
+  @Override
+  public GelatoFileDescriptor getFileDescriptor() {
+    return resourceController.getFileDescriptor();
+  }
 
-    //Provided built in functionality that can be overridden
+  @Override
+  public void setFileDescriptor(GelatoFileDescriptor descriptor) {
+    resourceController.setFileDescriptor(descriptor);
+  }
 
-    @Override
-    public boolean walkRequest(RequestConnection connection, String fileName, GelatoFileDescriptor newDescriptor) {
-        if (!containsResource(fileName)) {
-            sendErrorMessage(connection, "File not found");
-            return false;
-        }
-        GelatoResourceController resourceHandler = getResource(fileName);
-        connection.getSession().getManager().mapQID(newDescriptor, resourceHandler.getFileDescriptor());
-        WalkResponse response = new WalkResponse();
-        response.setQID(resourceHandler.getQID());
-        connection.reply(response);
-        return true;
-    }
+  @Override
+  public void setResourceName(String newName) {
+    resourceController.setResourceName(newName);
+  }
 
-    @Override
-    public boolean readRequest(
-            RequestConnection connection,
-            GelatoFileDescriptor clientFileDescriptor,
-            long offset,
-            int numberOfBytes) {
-        if (directories.size() == 0 && files.size() == 0) {
-            ReadResponse readResponse = new ReadResponse();
-            connection.reply(readResponse);
-        }
+  @Override
+  public void setQidManager(GelatoQIDManager newManager) {
+    resourceController.setQidManager(newManager);
+  }
 
-        // Serialise the whole struct to memory
-        byte[] statBuff = new byte[numberOfBytes];
-        int ptr = 0;
-        byte[] encodedStat = null;
+  @Override
+  public GelatoQIDManager getResourceManager() {
+    return resourceController.getResourceManager();
+  }
 
-        for (String dirName : directories.keySet()) {
-            GelatoResourceController dir = directories.get(dirName);
-            StatStruct statStruct = dir.getStat();
-            if (dirName.equals(GelatoDirectoryController.PARENT_DIR)) {
-                statStruct = this.parentDir;
-            }
-            encodedStat = statStruct.EncodeStat();
-            ByteEncoder.copyBytesTo(encodedStat, statBuff, ptr, encodedStat.length);
-            ptr += encodedStat.length;
-        }
+  @Override
+  public void sendErrorMessage(RequestConnection connection, String message) {
+    resourceController.sendErrorMessage(connection, message);
+  }
 
-        for (GelatoFileController files : files.values()) {
-            StatStruct statStruct = files.getResource().getStat();
-            encodedStat = statStruct.EncodeStat();
-            ByteEncoder.copyBytesTo(encodedStat, statBuff, ptr, encodedStat.length);
-            ptr += encodedStat.length;
-        }
+  @Override
+  public void sendErrorMessage(
+      GelatoConnection connection, GelatoFileDescriptor descriptor, int tag, String message) {
+    resourceController.sendErrorMessage(connection, descriptor, tag, message);
+  }
 
-        if (statBuff.length < P9Protocol.MAX_MSG_CONTENT_SIZE) {
-            ReadResponse readResponse = new ReadResponse();
-            readResponse.setData(statBuff);
-            connection.reply(readResponse);
-        } else {
-            ptr = 0;
-            while (ptr < statBuff.length) {
-                int copy = statBuff.length - ptr;
-                if (copy > P9Protocol.MAX_MSG_CONTENT_SIZE) {
-                    copy = P9Protocol.MAX_MSG_CONTENT_SIZE;
-                }
-                encodedStat = new byte[copy];
-                ReadResponse readResponse = new ReadResponse();
-                ByteEncoder.copyBytesTo(encodedStat, statBuff, ptr, copy);
-                readResponse.setData(encodedStat);
-                connection.reply(readResponse);
-                ptr += copy;
-            }
-        }
-        return true;
-    }
+  @Override
+  public RequestConnection createConnection(
+      GelatoConnection connection,
+      GelatoFileDescriptor descriptor,
+      GelatoSession session,
+      int tag) {
+    return resourceController.createConnection(connection, descriptor, session, tag);
+  }
 
-    @Override
-    public boolean openRequest(RequestConnection connection, GelatoFileDescriptor clientFileDescriptor, byte mode) {
-        if (mode == P9Protocol.OPEN_MODE_OREAD) {
-            OpenResponse response = new OpenResponse();
-            response.setFileQID(getQID());
-            connection.reply(response);
-            return false;
-        }
-        sendErrorMessage(connection, "Only READ mode is allowed");
-        return true;
-    }
+  @Override
+  public CloseRequestHandler getCloseRequestHandler() {
+    return resourceController.getCloseRequestHandler();
+  }
 
-    @Override
-    public boolean statRequest(RequestConnection connection, GelatoFileDescriptor clientFileDescriptor) {
-        StatStruct selfStat = getStat();
-        selfStat.setLength(calculateSize());
-        StatResponse response = new StatResponse();
-        response.setStatStruct(selfStat);
-        connection.reply(response);
-        return true;
-    }
+  @Override
+  public void setCloseRequestHandler(CloseRequestHandler closeRequestHandler) {
+    resourceController.setCloseRequestHandler(closeRequestHandler);
+  }
 
-    //ResourceController Proxy
+  @Override
+  public CreateRequestHandler getCreateRequestHandler() {
+    return resourceController.getCreateRequestHandler();
+  }
 
-    @Override
-    public QID getQID() {
-        return resourceController.getQID();
-    }
+  @Override
+  public void setCreateRequestHandler(CreateRequestHandler createRequestHandler) {
+    resourceController.setCreateRequestHandler(createRequestHandler);
+  }
 
-    @Override
-    public void setQID(QID value) {
-        resourceController.setQID(value);
-    }
+  @Override
+  public OpenRequestHandler getOpenRequestHandler() {
+    return resourceController.getOpenRequestHandler();
+  }
 
-    @Override
-    public String resourceName() {
-        return resourceController.resourceName();
-    }
+  @Override
+  public void setOpenRequestHandler(OpenRequestHandler openRequestHandler) {
+    resourceController.setOpenRequestHandler(openRequestHandler);
+  }
 
-    @Override
-    public StatStruct getStat() {
-        return resourceController.getStat();
-    }
+  @Override
+  public RemoveRequestHandler getRemoveRequestHandler() {
+    return resourceController.getRemoveRequestHandler();
+  }
 
-    @Override
-    public void setStat(StatStruct newStat) {
-        resourceController.setStat(newStat);
-    }
+  @Override
+  public void setRemoveRequestHandler(RemoveRequestHandler removeRequestHandler) {
+    resourceController.setRemoveRequestHandler(removeRequestHandler);
+  }
 
-    @Override
-    public GelatoFileDescriptor getFileDescriptor() {
-        return resourceController.getFileDescriptor();
-    }
+  @Override
+  public StatRequestHandler getStatRequestHandler() {
+    return resourceController.getStatRequestHandler();
+  }
 
-    @Override
-    public void setFileDescriptor(GelatoFileDescriptor descriptor) {
-        resourceController.setFileDescriptor(descriptor);
-    }
+  @Override
+  public void setStatRequestHandler(StatRequestHandler statRequestHandler) {
+    resourceController.setStatRequestHandler(statRequestHandler);
+  }
 
-    @Override
-    public void setResourceName(String newName) {
-        resourceController.setResourceName(newName);
-    }
+  @Override
+  public WalkRequestHandler getWalkRequestHandler() {
+    return resourceController.getWalkRequestHandler();
+  }
 
-    @Override
-    public void setQidManager(GelatoQIDManager newManager) {
-        resourceController.setQidManager(newManager);
-    }
+  @Override
+  public void setWalkRequestHandler(WalkRequestHandler walkRequestHandler) {
+    resourceController.setWalkRequestHandler(walkRequestHandler);
+  }
 
-    @Override
-    public GelatoQIDManager getResourceManager() {
-        return resourceController.getResourceManager();
-    }
+  @Override
+  public WriteRequestHandler getWriteRequestHandler() {
+    return resourceController.getWriteRequestHandler();
+  }
 
-    @Override
-    public void sendErrorMessage(RequestConnection connection, String message) {
-        resourceController.sendErrorMessage(connection,message);
-    }
+  @Override
+  public void setWriteRequestHandler(WriteRequestHandler writeRequestHandler) {
+    resourceController.setWriteRequestHandler(writeRequestHandler);
+  }
 
-    @Override
-    public void sendErrorMessage(GelatoConnection connection, GelatoFileDescriptor descriptor, int tag, String message) {
-        resourceController.sendErrorMessage(connection,descriptor,tag,message);
-    }
+  @Override
+  public WriteStatRequestHandler getWriteStatRequestHandler() {
+    return resourceController.getWriteStatRequestHandler();
+  }
 
-    @Override
-    public RequestConnection createConnection(GelatoConnection connection, GelatoFileDescriptor descriptor, GelatoSession session, int tag) {
-        return resourceController.createConnection(connection,descriptor,session,tag);
-    }
+  @Override
+  public void setWriteStatRequestHandler(WriteStatRequestHandler writeStatRequestHandler) {
+    resourceController.setWriteStatRequestHandler(writeStatRequestHandler);
+  }
 
-    @Override
-    public void setCloseRequestHandler(CloseRequestHandler closeRequestHandler) {
-        resourceController.setCloseRequestHandler(closeRequestHandler);
-    }
+  @Override
+  public GelatoFileDescriptor generateDescriptor(QID qid, int descriptor) {
+    return resourceController.generateDescriptor(qid, descriptor);
+  }
 
-    @Override
-    public void setCreateRequestHandler(CreateRequestHandler createRequestHandler) {
-        resourceController.setCreateRequestHandler(createRequestHandler);
-    }
+  @Override
+  public RequestFlushHandler getFlushHandler() {
+    return resourceController.getFlushHandler();
+  }
 
-    @Override
-    public void setOpenRequestHandler(OpenRequestHandler openRequestHandler) {
-        resourceController.setOpenRequestHandler(openRequestHandler);
-    }
+  @Override
+  public void setFlushHandler(RequestFlushHandler flushHandler) {
+    resourceController.setFlushHandler(flushHandler);
+  }
 
-    @Override
-    public void setRemoveRequestHandler(RemoveRequestHandler removeRequestHandler) {
-        resourceController.setRemoveRequestHandler(removeRequestHandler);
-    }
+  @Override
+  public ReadRequestHandler getReadRequestHandler() {
+    return resourceController.getReadRequestHandler();
+  }
 
-    @Override
-    public void setStatRequestHandler(StatRequestHandler statRequestHandler) {
-        resourceController.setStatRequestHandler(statRequestHandler);
-    }
+  @Override
+  public void setReadRequestHandler(ReadRequestHandler readRequestHandler) {
+    resourceController.setReadRequestHandler(readRequestHandler);
+  }
 
-    @Override
-    public void setWalkRequestHandler(WalkRequestHandler walkRequestHandler) {
-        resourceController.setWalkRequestHandler(walkRequestHandler);
-    }
-
-    @Override
-    public void setWriteRequestHandler(WriteRequestHandler writeRequestHandler) {
-        resourceController.setWriteRequestHandler(writeRequestHandler);
-    }
-
-    @Override
-    public void setWriteStatRequestHandler(WriteStatRequestHandler writeStatRequestHandler) {
-        resourceController.setWriteStatRequestHandler(writeStatRequestHandler);
-    }
-
-    @Override
-    public void setReadRequestHandler(ReadRequestHandler readRequestHandler) {
-        resourceController.setReadRequestHandler(readRequestHandler);
-    }
-
-    @Override
-    public CloseRequestHandler getCloseRequestHandler() {
-        return resourceController.getCloseRequestHandler();
-    }
-
-    @Override
-    public CreateRequestHandler getCreateRequestHandler() {
-        return resourceController.getCreateRequestHandler();
-    }
-
-    @Override
-    public OpenRequestHandler getOpenRequestHandler() {
-        return resourceController.getOpenRequestHandler();
-    }
-
-    @Override
-    public RemoveRequestHandler getRemoveRequestHandler() {
-        return resourceController.getRemoveRequestHandler();
-    }
-
-    @Override
-    public StatRequestHandler getStatRequestHandler() {
-        return resourceController.getStatRequestHandler();
-    }
-
-    @Override
-    public WalkRequestHandler getWalkRequestHandler() {
-        return resourceController.getWalkRequestHandler();
-    }
-
-    @Override
-    public WriteRequestHandler getWriteRequestHandler() {
-        return resourceController.getWriteRequestHandler();
-    }
-
-    @Override
-    public WriteStatRequestHandler getWriteStatRequestHandler() {
-        return resourceController.getWriteStatRequestHandler();
-    }
-
-    @Override
-    public GelatoFileDescriptor generateDescriptor(QID qid, int descriptor) {
-        return resourceController.generateDescriptor(qid,descriptor);
-    }
-
-    @Override
-    public RequestFlushHandler getFlushHandler() {
-        return resourceController.getFlushHandler();
-    }
-
-    @Override
-    public void setFlushHandler(RequestFlushHandler flushHandler) {
-        resourceController.setFlushHandler(flushHandler);
-    }
-
-    @Override
-    public ReadRequestHandler getReadRequestHandler() {
-        return resourceController.getReadRequestHandler();
-    }
-
-    @Override
-    public boolean processRequest(GelatoConnection connection, GelatoFileDescriptor descriptor, GelatoSession session, Message request) {
-        return resourceController.processRequest(connection,descriptor,session,request);
-    }
-
-
+  @Override
+  public boolean processRequest(
+      GelatoConnection connection,
+      GelatoFileDescriptor descriptor,
+      GelatoSession session,
+      Message request) {
+    return resourceController.processRequest(connection, descriptor, session, request);
+  }
 }

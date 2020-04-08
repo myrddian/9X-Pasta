@@ -73,5 +73,4 @@ public class RequestConnection {
   public void setResourceController(GelatoResourceController resourceController) {
     this.resourceController = resourceController;
   }
-
 }

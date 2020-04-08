@@ -17,15 +17,12 @@
 package fettuccine.drivers.proc;
 
 import fettuccine.FettuccineService;
-import gelato.GelatoFileDescriptor;
-import gelato.server.manager.RequestConnection;
 import gelato.server.manager.controllers.impl.GelatoDirectoryControllerImpl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import protocol.P9Protocol;
 import protocol.QID;
 import protocol.StatStruct;
-import protocol.messages.response.OpenResponse;
 
 import java.time.Instant;
 
@@ -54,5 +51,4 @@ public class ProcDir extends GelatoDirectoryControllerImpl {
     setQID(qid);
     setStat(newStat);
   }
-
 }

@@ -23,12 +23,12 @@ public interface P9Protocol {
   public static final long KILO_BYTE = 1024;
   public static final long MEGA_BYTE = 1024 * KILO_BYTE;
   public static final int DEFAULT_MSG_SIZE = 65535;
-  public static final int MIN_MSG_SIZE =
-          P9Protocol.MSG_SIZE_HEADER + P9Protocol.MSG_TYPE_SIZE + P9Protocol.MSG_TAG_SIZE;
   public static final int MAX_MSG_CONTENT_SIZE = DEFAULT_MSG_SIZE - MIN_MSG_SIZE;
   public static final int MSG_TYPE_SIZE = 1;
   public static final int MSG_SIZE_HEADER = 4;
   public static final int MSG_TAG_SIZE = 2;
+  public static final int MIN_MSG_SIZE =
+      P9Protocol.MSG_SIZE_HEADER + P9Protocol.MSG_TYPE_SIZE + P9Protocol.MSG_TAG_SIZE;
   public static final int MSG_FID_SIZE = 4;
   public static final int MSG_QID_SIZE = 13;
   public static final int MSG_INT_SIZE = 4;

@@ -16,25 +16,25 @@
 
 package gelato.server.manager.controllers;
 
-public interface GelatoDirectoryController extends GelatoResourceController{
-    String PARENT_DIR = "..";
-    String CURRENT_DIR = ".";
+public interface GelatoDirectoryController extends GelatoResourceController {
+  String PARENT_DIR = "..";
+  String CURRENT_DIR = ".";
 
-    GelatoResourceController getResourceController();
+  GelatoResourceController getResourceController();
 
-    void setResourceController(GelatoResourceController resourceController);
+  void setResourceController(GelatoResourceController resourceController);
 
-    String getDirectoryName();
+  String getDirectoryName();
 
-    void setDirectoryName(String name);
+  void setDirectoryName(String name);
 
-    boolean containsResource(String resourceName);
+  boolean containsResource(String resourceName);
 
-    GelatoResourceController getResource(String resourceName);
+  GelatoResourceController getResource(String resourceName);
 
-    void mapPaths(GelatoDirectoryController parentDir);
+  void mapPaths(GelatoDirectoryController parentDir);
 
-    void addDirectory(GelatoDirectoryController newDirectory);
+  void addDirectory(GelatoDirectoryController newDirectory);
 
-    void addFile(GelatoFileController newFile);
+  void addFile(GelatoFileController newFile);
 }

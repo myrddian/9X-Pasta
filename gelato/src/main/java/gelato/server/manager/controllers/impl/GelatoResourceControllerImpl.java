@@ -50,266 +50,289 @@ import protocol.messages.request.WriteRequest;
 import protocol.messages.request.WriteStatRequest;
 import protocol.messages.response.ErrorMessage;
 
-
 public class GelatoResourceControllerImpl implements GelatoResourceController {
 
-    private final Logger logger = LoggerFactory.getLogger(GelatoResourceControllerImpl.class);
-    private GelatoFileDescriptor fileDescriptor = new GelatoFileDescriptor();
-    private StatStruct resourceStat = new StatStruct();
-    private GelatoQIDManager resourceManager;
-    private CloseRequestHandler closeRequestHandler = new NotSupportedHandler();
-    private CreateRequestHandler createRequestHandler = new NotSupportedHandler();
-    private OpenRequestHandler openRequestHandler = new NotSupportedHandler();
-    private RemoveRequestHandler removeRequestHandler = new NotSupportedHandler();
-    private StatRequestHandler statRequestHandler = new DefaultStatHandler();
-    private WalkRequestHandler walkRequestHandler = new NotSupportedHandler();
-    private WriteRequestHandler writeRequestHandler = new NotSupportedHandler();
-    private WriteStatRequestHandler writeStatRequestHandler = new NotSupportedHandler();
-    private RequestFlushHandler flushHandler = new DefaultFlushHandler();
-    private ReadRequestHandler readRequestHandler = new NotSupportedHandler();
+  private final Logger logger = LoggerFactory.getLogger(GelatoResourceControllerImpl.class);
+  private GelatoFileDescriptor fileDescriptor = new GelatoFileDescriptor();
+  private StatStruct resourceStat = new StatStruct();
+  private GelatoQIDManager resourceManager;
+  private CloseRequestHandler closeRequestHandler = new NotSupportedHandler();
+  private CreateRequestHandler createRequestHandler = new NotSupportedHandler();
+  private OpenRequestHandler openRequestHandler = new NotSupportedHandler();
+  private RemoveRequestHandler removeRequestHandler = new NotSupportedHandler();
+  private StatRequestHandler statRequestHandler = new DefaultStatHandler();
+  private WalkRequestHandler walkRequestHandler = new NotSupportedHandler();
+  private WriteRequestHandler writeRequestHandler = new NotSupportedHandler();
+  private WriteStatRequestHandler writeStatRequestHandler = new NotSupportedHandler();
+  private RequestFlushHandler flushHandler = new DefaultFlushHandler();
+  private ReadRequestHandler readRequestHandler = new NotSupportedHandler();
 
-    @Override
-    public QID getQID() {
-        return fileDescriptor.getQid();
+  @Override
+  public QID getQID() {
+    return fileDescriptor.getQid();
+  }
+
+  @Override
+  public void setQID(QID value) {
+    fileDescriptor.setQid(value);
+  }
+
+  @Override
+  public String resourceName() {
+    return getStat().getName();
+  }
+
+  @Override
+  public StatStruct getStat() {
+    return resourceStat;
+  }
+
+  @Override
+  public void setStat(StatStruct newStat) {
+    resourceStat = newStat;
+  }
+
+  @Override
+  public GelatoFileDescriptor getFileDescriptor() {
+    return fileDescriptor;
+  }
+
+  @Override
+  public void setFileDescriptor(GelatoFileDescriptor descriptor) {
+    fileDescriptor = descriptor;
+  }
+
+  @Override
+  public void setResourceName(String newName) {
+    getStat().setName(newName);
+  }
+
+  @Override
+  public void setQidManager(GelatoQIDManager newManager) {
+    resourceManager = newManager;
+  }
+
+  @Override
+  public GelatoQIDManager getResourceManager() {
+    return resourceManager;
+  }
+
+  @Override
+  public boolean processRequest(
+      GelatoConnection connection,
+      GelatoFileDescriptor descriptor,
+      GelatoSession session,
+      Message request) {
+    RequestConnection requestConnection = new RequestConnection();
+    requestConnection.setConnection(connection);
+    requestConnection.setDescriptor(descriptor);
+    requestConnection.setSession(session);
+    requestConnection.setResourceController(this);
+    requestConnection.setTransactionId(request.tag);
+
+    if (request.messageType == P9Protocol.TOPEN) {
+      OpenRequest openRequest = Decoder.decodeOpenRequest(request);
+      GelatoFileDescriptor clientDescriptor = new GelatoFileDescriptor();
+      clientDescriptor.setQid(getQID());
+      clientDescriptor.setRawFileDescriptor(openRequest.getFileDescriptor());
+      return openRequestHandler.openRequest(
+          requestConnection, clientDescriptor, openRequest.getMode());
+    } else if (request.messageType == P9Protocol.TWALK) {
+      WalkRequest walkRequest = Decoder.decodeWalkRequest(request);
+      GelatoFileDescriptor clientDescriptor =
+          generateDescriptor(getQID(), walkRequest.getNewDecriptor());
+      return walkRequestHandler.walkRequest(
+          requestConnection, walkRequest.getTargetFile(), clientDescriptor);
+    } else if (request.messageType == P9Protocol.TFLUSH) {
+      return flushHandler.processRequest(
+          connection, descriptor, session, Decoder.decodeFlushRequest(request));
+    } else if (request.messageType == P9Protocol.TREMOVE) {
+      RemoveRequest removeRequest = Decoder.decodeRemoveRequest(request);
+      GelatoFileDescriptor descriptor1 =
+          generateDescriptor(getQID(), removeRequest.getFileDescriptor());
+      return removeRequestHandler.removeRequest(requestConnection, descriptor1);
+    } else if (request.messageType == P9Protocol.TWSTAT) {
+      WriteStatRequest writeStatRequest = Decoder.decodeStatWriteRequest(request);
+      GelatoFileDescriptor descriptor1 =
+          generateDescriptor(getQID(), writeStatRequest.getFileDescriptor());
+      return writeStatRequestHandler.writeStatRequest(
+          requestConnection, descriptor1, writeStatRequest.getStatStruct());
+    } else if (request.messageType == P9Protocol.TWRITE) {
+      WriteRequest writeRequest = Decoder.decodeWriteRequest(request);
+      GelatoFileDescriptor descriptor1 =
+          generateDescriptor(getQID(), writeRequest.getFileDescriptor());
+      return writeRequestHandler.writeRequest(
+          requestConnection,
+          descriptor1,
+          writeRequest.getFileOffset(),
+          writeRequest.getWriteData());
+    } else if (request.messageType == P9Protocol.TCLOSE) {
+      CloseRequest closeRequest = Decoder.decodeCloseRequest(request);
+      GelatoFileDescriptor descriptor1 = generateDescriptor(getQID(), closeRequest.getFileID());
+      return closeRequestHandler.closeRequest(requestConnection, descriptor1);
+    } else if (request.messageType == P9Protocol.TREAD) {
+      ReadRequest readRequest = Decoder.decodeReadRequest(request);
+      GelatoFileDescriptor descriptor1 =
+          generateDescriptor(getQID(), readRequest.getFileDescriptor());
+      return readRequestHandler.readRequest(
+          requestConnection,
+          descriptor1,
+          readRequest.getFileOffset(),
+          readRequest.getBytesToRead());
+    } else if (request.messageType == P9Protocol.TSTAT) {
+      StatRequest statRequest = Decoder.decodeStatRequest(request);
+      GelatoFileDescriptor descriptor1 =
+          generateDescriptor(getQID(), statRequest.getFileDescriptor());
+      return statRequestHandler.statRequest(requestConnection, descriptor1);
+    } else if (request.messageType == P9Protocol.TCREATE) {
+      CreateRequest createRequest = Decoder.decodeCreateRequest(request);
+      return createRequestHandler.createRequest(
+          requestConnection,
+          createRequest.getFileName(),
+          createRequest.getPermission(),
+          createRequest.getMode());
     }
 
-    @Override
-    public void setQID(QID value) {
-        fileDescriptor.setQid(value);
-    }
+    logger.error("Unable to Process Request");
+    return false;
+  }
 
-    @Override
-    public String resourceName() {
-        return getStat().getName();
-    }
+  @Override
+  public void sendErrorMessage(RequestConnection connection, String message) {
+    ErrorMessage msg = new ErrorMessage();
+    msg.setTag(connection.getTransactionId());
+    msg.setErrorMessage(message);
+    connection.reply(msg);
+  }
 
-    @Override
-    public StatStruct getStat() {
-        return resourceStat;
-    }
+  @Override
+  public void sendErrorMessage(
+      GelatoConnection connection, GelatoFileDescriptor descriptor, int tag, String message) {
+    ErrorMessage msg = new ErrorMessage();
+    msg.setTag(tag);
+    msg.setErrorMessage(message);
+    connection.sendMessage(descriptor, msg.toMessage());
+  }
 
-    @Override
-    public void setStat(StatStruct newStat) {
-        resourceStat = newStat;
-    }
+  @Override
+  public RequestConnection createConnection(
+      GelatoConnection connection,
+      GelatoFileDescriptor descriptor,
+      GelatoSession session,
+      int tag) {
+    RequestConnection con = new RequestConnection();
+    con.setConnection(connection);
+    con.setDescriptor(descriptor);
+    con.setSession(session);
+    con.setTransactionId(tag);
+    return con;
+  }
 
-    @Override
-    public GelatoFileDescriptor getFileDescriptor() {
-        return fileDescriptor;
-    }
+  @Override
+  public CloseRequestHandler getCloseRequestHandler() {
+    return closeRequestHandler;
+  }
 
-    @Override
-    public void setFileDescriptor(GelatoFileDescriptor descriptor) {
-        fileDescriptor = descriptor;
-    }
+  @Override
+  public void setCloseRequestHandler(CloseRequestHandler closeRequestHandler) {
+    this.closeRequestHandler = closeRequestHandler;
+  }
 
-    @Override
-    public void setResourceName(String newName) {
-        getStat().setName(newName);
-    }
+  @Override
+  public CreateRequestHandler getCreateRequestHandler() {
+    return createRequestHandler;
+  }
 
-    @Override
-    public void setQidManager(GelatoQIDManager newManager) {
-        resourceManager = newManager;
-    }
+  @Override
+  public void setCreateRequestHandler(CreateRequestHandler createRequestHandler) {
+    this.createRequestHandler = createRequestHandler;
+  }
 
-    @Override
-    public GelatoQIDManager getResourceManager() {
-        return resourceManager;
-    }
+  @Override
+  public OpenRequestHandler getOpenRequestHandler() {
+    return openRequestHandler;
+  }
 
-    @Override
-    public boolean processRequest(GelatoConnection connection, GelatoFileDescriptor descriptor, GelatoSession session, Message request) {
-        RequestConnection requestConnection = new RequestConnection();
-        requestConnection.setConnection(connection);
-        requestConnection.setDescriptor(descriptor);
-        requestConnection.setSession(session);
-        requestConnection.setResourceController(this);
-        requestConnection.setTransactionId(request.tag);
+  @Override
+  public void setOpenRequestHandler(OpenRequestHandler openRequestHandler) {
+    this.openRequestHandler = openRequestHandler;
+  }
 
-        if (request.messageType == P9Protocol.TOPEN) {
-            OpenRequest openRequest = Decoder.decodeOpenRequest(request);
-            GelatoFileDescriptor clientDescriptor = new GelatoFileDescriptor();
-            clientDescriptor.setQid(getQID());
-            clientDescriptor.setRawFileDescriptor(openRequest.getFileDescriptor());
-            return openRequestHandler.openRequest(requestConnection,clientDescriptor,openRequest.getMode());
-        } else if (request.messageType == P9Protocol.TWALK) {
-            WalkRequest walkRequest = Decoder.decodeWalkRequest(request);
-            GelatoFileDescriptor clientDescriptor = generateDescriptor(getQID(), walkRequest.getNewDecriptor());
-            return walkRequestHandler.walkRequest(requestConnection, walkRequest.getTargetFile(), clientDescriptor);
-        } else if (request.messageType == P9Protocol.TFLUSH) {
-            return flushHandler.processRequest(connection, descriptor, session, Decoder.decodeFlushRequest(request));
-        } else if (request.messageType == P9Protocol.TREMOVE) {
-            RemoveRequest removeRequest = Decoder.decodeRemoveRequest(request);
-            GelatoFileDescriptor descriptor1 = generateDescriptor(getQID(), removeRequest.getFileDescriptor());
-            return removeRequestHandler.removeRequest(requestConnection, descriptor1);
-        } else if (request.messageType == P9Protocol.TWSTAT) {
-            WriteStatRequest writeStatRequest = Decoder.decodeStatWriteRequest(request);
-            GelatoFileDescriptor descriptor1 = generateDescriptor(getQID(), writeStatRequest.getFileDescriptor());
-            return writeStatRequestHandler.writeStatRequest(requestConnection, descriptor1, writeStatRequest.getStatStruct());
-        } else if (request.messageType == P9Protocol.TWRITE) {
-            WriteRequest writeRequest = Decoder.decodeWriteRequest(request);
-            GelatoFileDescriptor descriptor1 = generateDescriptor(getQID(), writeRequest.getFileDescriptor());
-            return writeRequestHandler.writeRequest(requestConnection, descriptor1, writeRequest.getFileOffset(), writeRequest.getWriteData());
-        } else if (request.messageType == P9Protocol.TCLOSE) {
-            CloseRequest closeRequest = Decoder.decodeCloseRequest(request);
-            GelatoFileDescriptor descriptor1 = generateDescriptor(getQID(), closeRequest.getFileID());
-            return closeRequestHandler.closeRequest(requestConnection,descriptor1);
-        } else if (request.messageType == P9Protocol.TREAD) {
-            ReadRequest readRequest =  Decoder.decodeReadRequest(request);
-            GelatoFileDescriptor descriptor1 = generateDescriptor(getQID(), readRequest.getFileDescriptor());
-            return readRequestHandler.readRequest(requestConnection,descriptor1, readRequest.getFileOffset(), readRequest.getBytesToRead());
-        } else if (request.messageType == P9Protocol.TSTAT) {
-            StatRequest statRequest = Decoder.decodeStatRequest(request);
-            GelatoFileDescriptor descriptor1 = generateDescriptor(getQID(), statRequest.getFileDescriptor());
-            return statRequestHandler.statRequest(requestConnection,descriptor1);
-        } else if (request.messageType == P9Protocol.TCREATE) {
-            CreateRequest createRequest = Decoder.decodeCreateRequest(request);
-            return createRequestHandler.createRequest(requestConnection, createRequest.getFileName(),
-                    createRequest.getPermission(), createRequest.getMode());
-        }
+  @Override
+  public RemoveRequestHandler getRemoveRequestHandler() {
+    return removeRequestHandler;
+  }
 
-        logger.error("Unable to Process Request");
-        return false;
-    }
+  @Override
+  public void setRemoveRequestHandler(RemoveRequestHandler removeRequestHandler) {
+    this.removeRequestHandler = removeRequestHandler;
+  }
 
-    @Override
-    public void sendErrorMessage(RequestConnection connection, String message) {
-        ErrorMessage msg = new ErrorMessage();
-        msg.setTag(connection.getTransactionId());
-        msg.setErrorMessage(message);
-        connection.reply(msg);
-    }
+  @Override
+  public StatRequestHandler getStatRequestHandler() {
+    return statRequestHandler;
+  }
 
-    @Override
-    public void sendErrorMessage(
-            GelatoConnection connection, GelatoFileDescriptor descriptor, int tag, String message) {
-        ErrorMessage msg = new ErrorMessage();
-        msg.setTag(tag);
-        msg.setErrorMessage(message);
-        connection.sendMessage(descriptor, msg.toMessage());
-    }
+  @Override
+  public void setStatRequestHandler(StatRequestHandler statRequestHandler) {
+    this.statRequestHandler = statRequestHandler;
+  }
 
-    @Override
-    public RequestConnection createConnection(
-            GelatoConnection connection,
-            GelatoFileDescriptor descriptor,
-            GelatoSession session,
-            int tag) {
-        RequestConnection con = new RequestConnection();
-        con.setConnection(connection);
-        con.setDescriptor(descriptor);
-        con.setSession(session);
-        con.setTransactionId(tag);
-        return con;
-    }
+  @Override
+  public WalkRequestHandler getWalkRequestHandler() {
+    return walkRequestHandler;
+  }
 
-    @Override
-    public void setCloseRequestHandler(CloseRequestHandler closeRequestHandler) {
-        this.closeRequestHandler = closeRequestHandler;
-    }
+  @Override
+  public void setWalkRequestHandler(WalkRequestHandler walkRequestHandler) {
+    this.walkRequestHandler = walkRequestHandler;
+  }
 
-    @Override
-    public void setCreateRequestHandler(CreateRequestHandler createRequestHandler) {
-        this.createRequestHandler = createRequestHandler;
-    }
+  @Override
+  public WriteRequestHandler getWriteRequestHandler() {
+    return writeRequestHandler;
+  }
 
-    @Override
-    public void setOpenRequestHandler(OpenRequestHandler openRequestHandler) {
-        this.openRequestHandler = openRequestHandler;
-    }
+  @Override
+  public void setWriteRequestHandler(WriteRequestHandler writeRequestHandler) {
+    this.writeRequestHandler = writeRequestHandler;
+  }
 
-    @Override
-    public void setRemoveRequestHandler(RemoveRequestHandler removeRequestHandler) {
-        this.removeRequestHandler = removeRequestHandler;
-    }
+  @Override
+  public WriteStatRequestHandler getWriteStatRequestHandler() {
+    return writeStatRequestHandler;
+  }
 
-    @Override
-    public void setStatRequestHandler(StatRequestHandler statRequestHandler) {
-        this.statRequestHandler = statRequestHandler;
-    }
+  @Override
+  public void setWriteStatRequestHandler(WriteStatRequestHandler writeStatRequestHandler) {
+    this.writeStatRequestHandler = writeStatRequestHandler;
+  }
 
-    @Override
-    public void setWalkRequestHandler(WalkRequestHandler walkRequestHandler) {
-        this.walkRequestHandler = walkRequestHandler;
-    }
+  @Override
+  public GelatoFileDescriptor generateDescriptor(QID qid, int descriptor) {
+    GelatoFileDescriptor clientDescriptor = new GelatoFileDescriptor();
+    clientDescriptor.setQid(getQID());
+    clientDescriptor.setRawFileDescriptor(descriptor);
+    return clientDescriptor;
+  }
 
-    @Override
-    public void setWriteRequestHandler(WriteRequestHandler writeRequestHandler) {
-        this.writeRequestHandler = writeRequestHandler;
-    }
+  @Override
+  public RequestFlushHandler getFlushHandler() {
+    return flushHandler;
+  }
 
-    @Override
-    public void setWriteStatRequestHandler(WriteStatRequestHandler writeStatRequestHandler) {
-        this.writeStatRequestHandler = writeStatRequestHandler;
-    }
+  @Override
+  public void setFlushHandler(RequestFlushHandler flushHandler) {
+    this.flushHandler = flushHandler;
+  }
 
-    @Override
-    public void setReadRequestHandler(ReadRequestHandler readRequestHandler) {
-        this.readRequestHandler = readRequestHandler;
-    }
+  @Override
+  public ReadRequestHandler getReadRequestHandler() {
+    return readRequestHandler;
+  }
 
-    @Override
-    public CloseRequestHandler getCloseRequestHandler() {
-        return closeRequestHandler;
-    }
-
-    @Override
-    public CreateRequestHandler getCreateRequestHandler() {
-        return createRequestHandler;
-    }
-
-    @Override
-    public OpenRequestHandler getOpenRequestHandler() {
-        return openRequestHandler;
-    }
-
-    @Override
-    public RemoveRequestHandler getRemoveRequestHandler() {
-        return removeRequestHandler;
-    }
-
-    @Override
-    public StatRequestHandler getStatRequestHandler() {
-        return statRequestHandler;
-    }
-
-    @Override
-    public WalkRequestHandler getWalkRequestHandler() {
-        return walkRequestHandler;
-    }
-
-    @Override
-    public WriteRequestHandler getWriteRequestHandler() {
-        return writeRequestHandler;
-    }
-
-    @Override
-    public WriteStatRequestHandler getWriteStatRequestHandler() {
-        return writeStatRequestHandler;
-    }
-
-    @Override
-    public GelatoFileDescriptor generateDescriptor(QID qid, int descriptor) {
-        GelatoFileDescriptor clientDescriptor = new GelatoFileDescriptor();
-        clientDescriptor.setQid(getQID());
-        clientDescriptor.setRawFileDescriptor(descriptor);
-        return clientDescriptor;
-    }
-
-    @Override
-    public RequestFlushHandler getFlushHandler() {
-        return flushHandler;
-    }
-
-    @Override
-    public void setFlushHandler(RequestFlushHandler flushHandler) {
-        this.flushHandler = flushHandler;
-    }
-
-    @Override
-    public ReadRequestHandler getReadRequestHandler() {
-        return readRequestHandler;
-    }
-
+  @Override
+  public void setReadRequestHandler(ReadRequestHandler readRequestHandler) {
+    this.readRequestHandler = readRequestHandler;
+  }
 }

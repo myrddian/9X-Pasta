@@ -23,53 +23,49 @@ import gelato.server.manager.controllers.GelatoResourceController;
 import protocol.messages.Message;
 
 public class ParallelRequest {
-    private Message message;
-    private GelatoResourceController handler;
-    private GelatoSession session;
+  private Message message;
+  private GelatoResourceController handler;
+  private GelatoSession session;
+  private GelatoConnection connection;
+  private GelatoFileDescriptor descriptor;
 
-    public GelatoConnection getConnection() {
-        return connection;
-    }
+  public GelatoConnection getConnection() {
+    return connection;
+  }
 
-    public void setConnection(GelatoConnection connection) {
-        this.connection = connection;
-    }
+  public void setConnection(GelatoConnection connection) {
+    this.connection = connection;
+  }
 
-    private GelatoConnection connection;
+  public Message getMessage() {
+    return message;
+  }
 
-    public Message getMessage() {
-        return message;
-    }
+  public void setMessage(Message message) {
+    this.message = message;
+  }
 
-    public void setMessage(Message message) {
-        this.message = message;
-    }
+  public GelatoResourceController getHandler() {
+    return handler;
+  }
 
-    public GelatoResourceController getHandler() {
-        return handler;
-    }
+  public void setHandler(GelatoResourceController handler) {
+    this.handler = handler;
+  }
 
-    public void setHandler(GelatoResourceController handler) {
-        this.handler = handler;
-    }
+  public GelatoSession getSession() {
+    return session;
+  }
 
-    public GelatoSession getSession() {
-        return session;
-    }
+  public void setSession(GelatoSession session) {
+    this.session = session;
+  }
 
-    public void setSession(GelatoSession session) {
-        this.session = session;
-    }
+  public GelatoFileDescriptor getDescriptor() {
+    return descriptor;
+  }
 
-    public GelatoFileDescriptor getDescriptor() {
-        return descriptor;
-    }
-
-    public void setDescriptor(GelatoFileDescriptor descriptor) {
-        this.descriptor = descriptor;
-    }
-
-    private GelatoFileDescriptor descriptor;
-
-
+  public void setDescriptor(GelatoFileDescriptor descriptor) {
+    this.descriptor = descriptor;
+  }
 }

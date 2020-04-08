@@ -45,14 +45,14 @@ public class GelatoParallelRequestHandler implements GenericRequestHandler {
 
   public GelatoParallelRequestHandler(Gelato library, GelatoQIDManager qidManager) {
     resources = qidManager;
-    this.library = library;;
+    this.library = library;
+    ;
 
-    for(int i=0; i < library.threadCapacity(); ++i) {
+    for (int i = 0; i < library.threadCapacity(); ++i) {
       ParallelHandler handler = new ParallelHandler();
       workers.add(handler);
       Ciotola.getInstance().injectService(handler);
     }
-
   }
 
   public RequestFlushHandler getFlushResponseHandler() {
@@ -77,7 +77,8 @@ public class GelatoParallelRequestHandler implements GenericRequestHandler {
       requestedResource.setRawFileDescriptor(
           Decoder.decodeWalkRequest(request).getBaseDescriptor());
     } else if (request.messageType == P9Protocol.TFLUSH) {
-      return flushResponseHandler.processRequest(connection, descriptor, session, Decoder.decodeFlushRequest(request));
+      return flushResponseHandler.processRequest(
+          connection, descriptor, session, Decoder.decodeFlushRequest(request));
     } else if (request.messageType == P9Protocol.TREMOVE) {
       requestedResource.setRawFileDescriptor(
           Decoder.decodeRemoveRequest(request).getFileDescriptor());

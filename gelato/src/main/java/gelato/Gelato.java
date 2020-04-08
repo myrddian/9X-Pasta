@@ -25,7 +25,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 public class Gelato {
-    public static final int BUFFER_SIZE = 4096;;
+  public static final int BUFFER_SIZE = 4096;;
   final Logger logger = LoggerFactory.getLogger(Gelato.class);;
   private ExecutorService executorService;
   private GelatoTagManager tagManager = new GelatoTagManager();
@@ -71,10 +71,12 @@ public class Gelato {
   public int threadCapacity() {
     return Runtime.getRuntime().availableProcessors();
   }
-public enum TRANSPORT {
+
+  public enum TRANSPORT {
     GELATO_TCP
   }
-public enum MODE {
+
+  public enum MODE {
     SERVER,
     CLIENT
   }

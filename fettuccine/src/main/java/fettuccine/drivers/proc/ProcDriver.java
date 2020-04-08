@@ -42,7 +42,7 @@ public class ProcDriver implements ResponseAttachHandler {
   @Override
   public synchronized boolean writeResponse(
       GelatoConnection connection, GelatoFileDescriptor fileDescriptor, AttachResponse response) {
-    logger.info("Mapping Session " + Long.toString(fileDescriptor.getDescriptorId())+ " to PROC");
+    logger.info("Mapping Session " + Long.toString(fileDescriptor.getDescriptorId()) + " to PROC");
     SimpleDirectoryServelet connectionDir =
         new SimpleDirectoryServelet(
             fileDescriptor.getDescriptorId(), Long.toString(fileDescriptor.getDescriptorId()));

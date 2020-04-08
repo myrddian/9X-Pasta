@@ -21,8 +21,8 @@ import gelato.server.manager.RequestConnection;
 import protocol.StatStruct;
 
 public interface WriteStatRequestHandler {
-    boolean writeStatRequest(
-            RequestConnection connection,
-            GelatoFileDescriptor clientFileDescriptor,
-            StatStruct newStruct);
+  boolean writeStatRequest(
+      RequestConnection connection,
+      GelatoFileDescriptor clientFileDescriptor,
+      StatStruct newStruct);
 }

@@ -20,6 +20,5 @@ import gelato.GelatoFileDescriptor;
 import gelato.server.manager.RequestConnection;
 
 public interface StatRequestHandler {
-    boolean statRequest(
-            RequestConnection connection, GelatoFileDescriptor clientFileDescriptor);
+  boolean statRequest(RequestConnection connection, GelatoFileDescriptor clientFileDescriptor);
 }

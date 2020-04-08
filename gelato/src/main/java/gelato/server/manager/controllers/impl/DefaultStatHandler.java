@@ -23,12 +23,13 @@ import protocol.StatStruct;
 import protocol.messages.response.StatResponse;
 
 public class DefaultStatHandler implements StatRequestHandler {
-    @Override
-    public boolean statRequest(RequestConnection connection, GelatoFileDescriptor clientFileDescriptor) {
-        StatStruct selfStat = connection.getResourceController().getStat();
-        StatResponse response = new StatResponse();
-        response.setStatStruct(selfStat);
-        connection.reply(response);
-        return true;
-    }
+  @Override
+  public boolean statRequest(
+      RequestConnection connection, GelatoFileDescriptor clientFileDescriptor) {
+    StatStruct selfStat = connection.getResourceController().getStat();
+    StatResponse response = new StatResponse();
+    response.setStatStruct(selfStat);
+    connection.reply(response);
+    return true;
+  }
 }

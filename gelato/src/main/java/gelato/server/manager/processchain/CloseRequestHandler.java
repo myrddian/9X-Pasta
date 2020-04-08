@@ -20,6 +20,5 @@ import gelato.GelatoFileDescriptor;
 import gelato.server.manager.RequestConnection;
 
 public interface CloseRequestHandler {
-    boolean closeRequest(
-            RequestConnection connection, GelatoFileDescriptor clientFileDescriptor);
+  boolean closeRequest(RequestConnection connection, GelatoFileDescriptor clientFileDescriptor);
 }

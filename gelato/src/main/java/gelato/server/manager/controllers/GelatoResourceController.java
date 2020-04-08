@@ -36,65 +36,73 @@ import protocol.QID;
 import protocol.StatStruct;
 
 public interface GelatoResourceController extends GenericRequestHandler {
-    QID getQID();
+  QID getQID();
 
-    void setQID(QID value);
+  void setQID(QID value);
 
-    String resourceName();
+  String resourceName();
 
-    StatStruct getStat();
+  StatStruct getStat();
 
-    void setStat(StatStruct newStat);
+  void setStat(StatStruct newStat);
 
-    GelatoFileDescriptor getFileDescriptor();
+  GelatoFileDescriptor getFileDescriptor();
 
-    void setFileDescriptor(GelatoFileDescriptor descriptor);
+  void setFileDescriptor(GelatoFileDescriptor descriptor);
 
-    void setResourceName(String newName);
+  void setResourceName(String newName);
 
-    void setQidManager(GelatoQIDManager newManager);
+  void setQidManager(GelatoQIDManager newManager);
 
-    GelatoQIDManager getResourceManager();
+  GelatoQIDManager getResourceManager();
 
-    void sendErrorMessage(RequestConnection connection, String message);
+  void sendErrorMessage(RequestConnection connection, String message);
 
-    void sendErrorMessage(
-            GelatoConnection connection, GelatoFileDescriptor descriptor, int tag, String message);
+  void sendErrorMessage(
+      GelatoConnection connection, GelatoFileDescriptor descriptor, int tag, String message);
 
-    RequestConnection createConnection(
-            GelatoConnection connection,
-            GelatoFileDescriptor descriptor,
-            GelatoSession session,
-            int tag);
+  RequestConnection createConnection(
+      GelatoConnection connection, GelatoFileDescriptor descriptor, GelatoSession session, int tag);
 
-    void setCloseRequestHandler(CloseRequestHandler closeRequestHandler);
-    void setCreateRequestHandler(CreateRequestHandler createRequestHandler);
-    void setOpenRequestHandler(OpenRequestHandler openRequestHandler);
-    void setRemoveRequestHandler(RemoveRequestHandler removeRequestHandler);
-    void setStatRequestHandler(StatRequestHandler statRequestHandler);
-    void setWalkRequestHandler(WalkRequestHandler walkRequestHandler);
-    void setWriteRequestHandler(WriteRequestHandler writeRequestHandler);
-    void setWriteStatRequestHandler(WriteStatRequestHandler writeStatRequestHandler);
-    void setReadRequestHandler(ReadRequestHandler readRequestHandler);
+  CloseRequestHandler getCloseRequestHandler();
 
-     CloseRequestHandler getCloseRequestHandler();
+  void setCloseRequestHandler(CloseRequestHandler closeRequestHandler);
 
-     CreateRequestHandler getCreateRequestHandler();
+  CreateRequestHandler getCreateRequestHandler();
 
-     OpenRequestHandler getOpenRequestHandler();
+  void setCreateRequestHandler(CreateRequestHandler createRequestHandler);
 
-     RemoveRequestHandler getRemoveRequestHandler();
+  OpenRequestHandler getOpenRequestHandler();
 
-     StatRequestHandler getStatRequestHandler();
+  void setOpenRequestHandler(OpenRequestHandler openRequestHandler);
 
-     WalkRequestHandler getWalkRequestHandler();
+  RemoveRequestHandler getRemoveRequestHandler();
 
-     WriteRequestHandler getWriteRequestHandler();
+  void setRemoveRequestHandler(RemoveRequestHandler removeRequestHandler);
 
-     WriteStatRequestHandler getWriteStatRequestHandler();
+  StatRequestHandler getStatRequestHandler();
 
-     GelatoFileDescriptor generateDescriptor(QID qid, int descriptor);
-    RequestFlushHandler getFlushHandler();
-    void setFlushHandler(RequestFlushHandler flushHandler);
-    ReadRequestHandler getReadRequestHandler();
+  void setStatRequestHandler(StatRequestHandler statRequestHandler);
+
+  WalkRequestHandler getWalkRequestHandler();
+
+  void setWalkRequestHandler(WalkRequestHandler walkRequestHandler);
+
+  WriteRequestHandler getWriteRequestHandler();
+
+  void setWriteRequestHandler(WriteRequestHandler writeRequestHandler);
+
+  WriteStatRequestHandler getWriteStatRequestHandler();
+
+  void setWriteStatRequestHandler(WriteStatRequestHandler writeStatRequestHandler);
+
+  GelatoFileDescriptor generateDescriptor(QID qid, int descriptor);
+
+  RequestFlushHandler getFlushHandler();
+
+  void setFlushHandler(RequestFlushHandler flushHandler);
+
+  ReadRequestHandler getReadRequestHandler();
+
+  void setReadRequestHandler(ReadRequestHandler readRequestHandler);
 }

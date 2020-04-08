@@ -26,47 +26,50 @@ import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 
 public class ParallelHandler {
-    private final Logger logger = LoggerFactory.getLogger(ParallelHandler.class);
-    private BlockingQueue<ParallelRequest> readMessageQueue = new LinkedBlockingQueue<>();
-    private boolean isRunning = true;
+  private final Logger logger = LoggerFactory.getLogger(ParallelHandler.class);
+  private BlockingQueue<ParallelRequest> readMessageQueue = new LinkedBlockingQueue<>();
+  private boolean isRunning = true;
 
-    public void addMessage(ParallelRequest request) {
-        try {
-            readMessageQueue.put(request);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
+  public void addMessage(ParallelRequest request) {
+    try {
+      readMessageQueue.put(request);
+    } catch (InterruptedException e) {
+      e.printStackTrace();
+    }
+  }
+
+  @CiotolaServiceStart
+  public synchronized void startService() {
+    isRunning = true;
+  }
+
+  @CiotolaServiceStop
+  public synchronized void stopService() {
+    isRunning = false;
+  }
+
+  public synchronized boolean isRunning() {
+    return isRunning;
+  }
+
+  @CiotolaServiceRun
+  public void run() {
+    while (isRunning()) {
+      ParallelRequest request = null;
+      try {
+        request = readMessageQueue.take();
+        if (!request
+            .getHandler()
+            .processRequest(
+                request.getConnection(),
+                request.getDescriptor(),
+                request.getSession(),
+                request.getMessage())) {
+          logger.error("Failed to process Request");
         }
+      } catch (InterruptedException e) {
+        e.printStackTrace();
+      }
     }
-
-    @CiotolaServiceStart
-    public synchronized void startService() {
-        isRunning = true;
-    }
-
-    @CiotolaServiceStop
-    public synchronized void stopService() {
-        isRunning = false;
-    }
-
-    public synchronized boolean isRunning(){
-        return isRunning;
-    }
-
-    @CiotolaServiceRun
-    public void run() {
-        while(isRunning()) {
-            ParallelRequest request = null;
-            try {
-                request = readMessageQueue.take();
-                if (!request.getHandler().processRequest(request.getConnection(), request.getDescriptor(),
-                        request.getSession(), request.getMessage()) ) {
-                    logger.error("Failed to process Request");
-                }
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
-        }
-    }
-
-
+  }
 }

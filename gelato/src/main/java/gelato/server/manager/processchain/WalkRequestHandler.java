@@ -20,6 +20,6 @@ import gelato.GelatoFileDescriptor;
 import gelato.server.manager.RequestConnection;
 
 public interface WalkRequestHandler {
-    boolean walkRequest(
-            RequestConnection connection, String fileName, GelatoFileDescriptor newDescriptor);
+  boolean walkRequest(
+      RequestConnection connection, String fileName, GelatoFileDescriptor newDescriptor);
 }

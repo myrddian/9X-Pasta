@@ -51,6 +51,7 @@ public class V2TCPTransport implements GelatoTransport {
   private V2TransportProxy proxy = new V2TransportProxy(this);
   private Socket clientSocket;
   private GelatoFileDescriptor descriptor;
+
   public V2TCPTransport(Socket cliSocket, GelatoFileDescriptor connectionDescriptor) {
     descriptor = connectionDescriptor;
     clientSocket = cliSocket;

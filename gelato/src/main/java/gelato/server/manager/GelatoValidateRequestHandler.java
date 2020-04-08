@@ -69,7 +69,8 @@ public class GelatoValidateRequestHandler implements GenericRequestHandler {
       requestedResource.setRawFileDescriptor(
           Decoder.decodeWalkRequest(request).getBaseDescriptor());
     } else if (request.messageType == P9Protocol.TFLUSH) {
-      return flushResponseHandler.processRequest(connection, descriptor, session, Decoder.decodeFlushRequest(request));
+      return flushResponseHandler.processRequest(
+          connection, descriptor, session, Decoder.decodeFlushRequest(request));
     } else if (request.messageType == P9Protocol.TREMOVE) {
       requestedResource.setRawFileDescriptor(
           Decoder.decodeRemoveRequest(request).getFileDescriptor());

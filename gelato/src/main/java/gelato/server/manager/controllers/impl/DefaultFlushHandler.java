@@ -24,12 +24,16 @@ import protocol.messages.request.FlushRequest;
 import protocol.messages.response.FlushResponse;
 
 public class DefaultFlushHandler implements RequestFlushHandler {
-    @Override
-    public boolean processRequest(GelatoConnection connection, GelatoFileDescriptor descriptor, GelatoSession session, FlushRequest request) {
-        FlushResponse response = new FlushResponse();
-        response.setTransactionId(request.getTag());
-        response.setTag(request.getOldtag());
-        connection.sendMessage(descriptor,response.toMessage());
-        return true;
-    }
+  @Override
+  public boolean processRequest(
+      GelatoConnection connection,
+      GelatoFileDescriptor descriptor,
+      GelatoSession session,
+      FlushRequest request) {
+    FlushResponse response = new FlushResponse();
+    response.setTransactionId(request.getTag());
+    response.setTag(request.getOldtag());
+    connection.sendMessage(descriptor, response.toMessage());
+    return true;
+  }
 }
