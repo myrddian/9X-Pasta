@@ -14,14 +14,21 @@
  *    limitations under the License.
  */
 
-package gelato.server.manager.response;
+package gelato.server.manager.controllers.impl;
 
-import gelato.GelatoConnection;
 import gelato.GelatoFileDescriptor;
-import protocol.messages.response.AttachResponse;
+import gelato.server.manager.RequestConnection;
+import gelato.server.manager.processchain.StatRequestHandler;
+import protocol.StatStruct;
+import protocol.messages.response.StatResponse;
 
-public interface ResponseAttachHandler {
-
-  boolean writeResponse(
-      GelatoConnection connection, GelatoFileDescriptor fileDescriptor, AttachResponse response);
+public class DefaultStatHandler implements StatRequestHandler {
+    @Override
+    public boolean statRequest(RequestConnection connection, GelatoFileDescriptor clientFileDescriptor) {
+        StatStruct selfStat = connection.getResourceController().getStat();
+        StatResponse response = new StatResponse();
+        response.setStatStruct(selfStat);
+        connection.reply(response);
+        return true;
+    }
 }

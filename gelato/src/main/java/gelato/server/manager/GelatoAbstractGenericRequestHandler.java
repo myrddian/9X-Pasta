@@ -19,7 +19,6 @@ package gelato.server.manager;
 import gelato.GelatoConnection;
 import gelato.GelatoFileDescriptor;
 import gelato.GelatoSession;
-import gelato.server.manager.requests.GenericRequestHandler;
 import protocol.messages.response.ErrorMessage;
 
 public abstract class GelatoAbstractGenericRequestHandler implements GenericRequestHandler {

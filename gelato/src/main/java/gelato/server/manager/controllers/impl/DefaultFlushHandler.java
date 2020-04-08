@@ -14,17 +14,22 @@
  *    limitations under the License.
  */
 
-package gelato.server.manager.requests;
+package gelato.server.manager.controllers.impl;
 
 import gelato.GelatoConnection;
 import gelato.GelatoFileDescriptor;
 import gelato.GelatoSession;
-import protocol.messages.request.CloseRequest;
+import gelato.server.manager.implementation.requests.RequestFlushHandler;
+import protocol.messages.request.FlushRequest;
+import protocol.messages.response.FlushResponse;
 
-public interface RequestCloseHandler {
-  boolean processRequest(
-      GelatoConnection connection,
-      GelatoFileDescriptor descriptor,
-      GelatoSession session,
-      CloseRequest request);
+public class DefaultFlushHandler implements RequestFlushHandler {
+    @Override
+    public boolean processRequest(GelatoConnection connection, GelatoFileDescriptor descriptor, GelatoSession session, FlushRequest request) {
+        FlushResponse response = new FlushResponse();
+        response.setTransactionId(request.getTag());
+        response.setTag(request.getOldtag());
+        connection.sendMessage(descriptor,response.toMessage());
+        return true;
+    }
 }

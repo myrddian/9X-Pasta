@@ -19,12 +19,12 @@ package gelato.server.manager.implementation;
 import gelato.GelatoConnection;
 import gelato.GelatoFileDescriptor;
 import gelato.GelatoSession;
-import gelato.server.manager.GelatoGelatoAbstractResourcetHandler;
+import gelato.server.manager.controllers.GelatoResourceController;
 import protocol.messages.Message;
 
 public class ParallelRequest {
     private Message message;
-    private GelatoGelatoAbstractResourcetHandler handler;
+    private GelatoResourceController handler;
     private GelatoSession session;
 
     public GelatoConnection getConnection() {
@@ -45,11 +45,11 @@ public class ParallelRequest {
         this.message = message;
     }
 
-    public GelatoGelatoAbstractResourcetHandler getHandler() {
+    public GelatoResourceController getHandler() {
         return handler;
     }
 
-    public void setHandler(GelatoGelatoAbstractResourcetHandler handler) {
+    public void setHandler(GelatoResourceController handler) {
         this.handler = handler;
     }
 

@@ -19,7 +19,7 @@ package gelato.server.manager.implementation;
 import gelato.GelatoConnection;
 import gelato.GelatoFileDescriptor;
 import gelato.GelatoSession;
-import gelato.server.manager.requests.GenericRequestHandler;
+import gelato.server.manager.GenericRequestHandler;
 import protocol.messages.Message;
 import protocol.messages.response.ErrorMessage;
 

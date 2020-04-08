@@ -14,6 +14,13 @@
  *    limitations under the License.
  */
 
-package gelato.server.manager.response;
+package gelato.server.manager.implementation.response;
 
-public interface FlushResponseHandler {}
+import gelato.GelatoConnection;
+import gelato.GelatoFileDescriptor;
+import protocol.messages.VersionRequest;
+
+public interface VersionResponseHandler {
+  boolean writeResponse(
+      GelatoConnection connection, GelatoFileDescriptor fileDescriptor, VersionRequest response);
+}

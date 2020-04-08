@@ -19,9 +19,9 @@ package gelato.server.manager;
 import gelato.GelatoConnection;
 import gelato.GelatoFileDescriptor;
 import gelato.GelatoSession;
+import gelato.server.manager.controllers.impl.DefaultFlushHandler;
 import gelato.server.manager.implementation.GenericUnknownHandler;
-import gelato.server.manager.implementation.IgnoreFlushRequests;
-import gelato.server.manager.requests.GenericRequestHandler;
+import gelato.server.manager.implementation.requests.RequestFlushHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import protocol.Decoder;
@@ -34,6 +34,15 @@ public class GelatoValidateRequestHandler implements GenericRequestHandler {
 
   private GenericRequestHandler unknownHandler = new GenericUnknownHandler();
   private GenericRequestHandler nextHandler;
+  private RequestFlushHandler flushResponseHandler = new DefaultFlushHandler();
+
+  public RequestFlushHandler getFlushResponseHandler() {
+    return flushResponseHandler;
+  }
+
+  public void setFlushResponseHandler(RequestFlushHandler flushResponseHandler) {
+    this.flushResponseHandler = flushResponseHandler;
+  }
 
   @Override
   public boolean processRequest(
@@ -60,8 +69,7 @@ public class GelatoValidateRequestHandler implements GenericRequestHandler {
       requestedResource.setRawFileDescriptor(
           Decoder.decodeWalkRequest(request).getBaseDescriptor());
     } else if (request.messageType == P9Protocol.TFLUSH) {
-      return IgnoreFlushRequests.sendFlushResponse(
-          connection, descriptor, session, Decoder.decodeFlushRequest(request));
+      return flushResponseHandler.processRequest(connection, descriptor, session, Decoder.decodeFlushRequest(request));
     } else if (request.messageType == P9Protocol.TREMOVE) {
       requestedResource.setRawFileDescriptor(
           Decoder.decodeRemoveRequest(request).getFileDescriptor());

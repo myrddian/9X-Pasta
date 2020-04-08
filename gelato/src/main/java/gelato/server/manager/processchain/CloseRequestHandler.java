@@ -14,17 +14,12 @@
  *    limitations under the License.
  */
 
-package gelato.server.manager.requests;
+package gelato.server.manager.processchain;
 
-import gelato.GelatoConnection;
 import gelato.GelatoFileDescriptor;
-import gelato.GelatoSession;
-import protocol.messages.request.OpenRequest;
+import gelato.server.manager.RequestConnection;
 
-public interface RequestOpenHandler {
-  boolean processRequest(
-      GelatoConnection connection,
-      GelatoFileDescriptor descriptor,
-      GelatoSession session,
-      OpenRequest request);
+public interface CloseRequestHandler {
+    boolean closeRequest(
+            RequestConnection connection, GelatoFileDescriptor clientFileDescriptor);
 }

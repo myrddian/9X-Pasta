@@ -14,17 +14,9 @@
  *    limitations under the License.
  */
 
-package gelato.server.manager.requests;
+package gelato.server.manager.controllers;
 
-import gelato.GelatoConnection;
-import gelato.GelatoFileDescriptor;
-import gelato.GelatoSession;
-import protocol.messages.request.AttachRequest;
-
-public interface RequestAttachHandler {
-  boolean processRequest(
-      GelatoConnection connection,
-      GelatoFileDescriptor descriptor,
-      GelatoSession session,
-      AttachRequest request);
+public interface GelatoFileController extends GelatoResourceController {
+    void setResourceController(GelatoResourceController resourceController);
+    GelatoResourceController getResource();
 }

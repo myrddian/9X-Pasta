@@ -21,12 +21,12 @@ import gelato.Gelato;
 import gelato.GelatoConnection;
 import gelato.GelatoFileDescriptor;
 import gelato.server.manager.GelatoDescriptorHandler;
-import gelato.server.manager.GelatoGelatoAbstractDirectoryServelet;
-import gelato.server.manager.GelatoGelatoAbstractResourcetHandler;
 import gelato.server.manager.GelatoParallelRequestHandler;
 import gelato.server.manager.GelatoQIDManager;
 import gelato.server.manager.GelatoSessionHandler;
 import gelato.server.manager.GelatoValidateRequestHandler;
+import gelato.server.manager.controllers.GelatoDirectoryController;
+import gelato.server.manager.controllers.GelatoResourceController;
 import gelato.server.manager.implementation.QIDInMemoryManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -60,16 +60,16 @@ public class GelatoServerManager {
   }
 
   public void addResource(
-      GelatoFileDescriptor fileDescriptor, GelatoGelatoAbstractResourcetHandler newServerResource) {
+      GelatoFileDescriptor fileDescriptor, GelatoResourceController newServerResource) {
     newServerResource.setFileDescriptor(fileDescriptor);
     qidManager.mapResourceHandler(fileDescriptor, newServerResource);
   }
 
-  public void addResource(GelatoGelatoAbstractResourcetHandler newServerResource) {
+  public void addResource(GelatoResourceController newServerResource) {
     qidManager.mapResourceHandler(newServerResource.getFileDescriptor(), newServerResource);
   }
 
-  public void setRootDirectory(GelatoGelatoAbstractDirectoryServelet rootDirectory) {
+  public void setRootDirectory(GelatoDirectoryController rootDirectory) {
     sessionHandler.setRootAttach(rootDirectory);
     addResource(rootDirectory);
     rootDirectory.setDirectoryName("/");

@@ -14,17 +14,15 @@
  *    limitations under the License.
  */
 
-package gelato.server.manager.requests;
+package gelato.server.manager.processchain;
 
-import gelato.GelatoConnection;
 import gelato.GelatoFileDescriptor;
-import gelato.GelatoSession;
-import protocol.messages.request.WriteStatRequest;
+import gelato.server.manager.RequestConnection;
 
-public interface RequestStatWriteHandler {
-  boolean processRequest(
-      GelatoConnection connection,
-      GelatoFileDescriptor descriptor,
-      GelatoSession session,
-      WriteStatRequest request);
+public interface WriteRequestHandler {
+    boolean writeRequest(
+            RequestConnection connection,
+            GelatoFileDescriptor clientFileDescriptor,
+            long offset,
+            byte[] data);
 }

@@ -14,17 +14,17 @@
  *    limitations under the License.
  */
 
-package gelato.server.manager.requests;
+package gelato.server.manager.implementation.requests;
 
 import gelato.GelatoConnection;
 import gelato.GelatoFileDescriptor;
 import gelato.GelatoSession;
-import protocol.messages.request.RemoveRequest;
+import protocol.messages.request.AttachRequest;
 
-public interface RequestRemoveHandler {
+public interface RequestAttachHandler {
   boolean processRequest(
       GelatoConnection connection,
       GelatoFileDescriptor descriptor,
       GelatoSession session,
-      RemoveRequest request);
+      AttachRequest request);
 }

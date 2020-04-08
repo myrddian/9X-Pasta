@@ -21,10 +21,11 @@ import gelato.Gelato;
 import gelato.GelatoConnection;
 import gelato.GelatoFileDescriptor;
 import gelato.GelatoSession;
-import gelato.server.manager.implementation.IgnoreFlushRequests;
+import gelato.server.manager.controllers.GelatoResourceController;
+import gelato.server.manager.controllers.impl.DefaultFlushHandler;
 import gelato.server.manager.implementation.ParallelHandler;
 import gelato.server.manager.implementation.ParallelRequest;
-import gelato.server.manager.requests.GenericRequestHandler;
+import gelato.server.manager.implementation.requests.RequestFlushHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import protocol.Decoder;
@@ -40,6 +41,7 @@ public class GelatoParallelRequestHandler implements GenericRequestHandler {
   private Gelato library;
   private GelatoQIDManager resources;
   private List<ParallelHandler> workers = new ArrayList<>();
+  private RequestFlushHandler flushResponseHandler = new DefaultFlushHandler();
 
   public GelatoParallelRequestHandler(Gelato library, GelatoQIDManager qidManager) {
     resources = qidManager;
@@ -51,6 +53,14 @@ public class GelatoParallelRequestHandler implements GenericRequestHandler {
       Ciotola.getInstance().injectService(handler);
     }
 
+  }
+
+  public RequestFlushHandler getFlushResponseHandler() {
+    return flushResponseHandler;
+  }
+
+  public void setFlushResponseHandler(RequestFlushHandler flushResponseHandler) {
+    this.flushResponseHandler = flushResponseHandler;
   }
 
   @Override
@@ -67,8 +77,7 @@ public class GelatoParallelRequestHandler implements GenericRequestHandler {
       requestedResource.setRawFileDescriptor(
           Decoder.decodeWalkRequest(request).getBaseDescriptor());
     } else if (request.messageType == P9Protocol.TFLUSH) {
-      return IgnoreFlushRequests.sendFlushResponse(
-          connection, descriptor, session, Decoder.decodeFlushRequest(request));
+      return flushResponseHandler.processRequest(connection, descriptor, session, Decoder.decodeFlushRequest(request));
     } else if (request.messageType == P9Protocol.TREMOVE) {
       requestedResource.setRawFileDescriptor(
           Decoder.decodeRemoveRequest(request).getFileDescriptor());
@@ -92,7 +101,7 @@ public class GelatoParallelRequestHandler implements GenericRequestHandler {
     }
     GelatoFileDescriptor serverResource =
         session.getManager().getServerDescriptor(requestedResource);
-    GelatoGelatoAbstractResourcetHandler handler = resources.getHandler(serverResource);
+    GelatoResourceController handler = resources.getHandler(serverResource);
 
     int scheduleGroup =
         Math.abs((int) (serverResource.getQid().getLongFileId() % library.threadCapacity()));

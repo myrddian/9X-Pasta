@@ -19,6 +19,7 @@ package gelato.server.manager;
 import gelato.GelatoConnection;
 import gelato.GelatoFileDescriptor;
 import gelato.GelatoSession;
+import gelato.server.manager.controllers.GelatoResourceController;
 import protocol.messages.TransactionMessage;
 
 public class RequestConnection {
@@ -26,6 +27,7 @@ public class RequestConnection {
   private GelatoConnection connection;
   private GelatoFileDescriptor descriptor;
   private int transactionId;
+  private GelatoResourceController resourceController;
 
   public void reply(TransactionMessage msg) {
     msg.setTag(getTransactionId());
@@ -63,4 +65,13 @@ public class RequestConnection {
   public void setTransactionId(int transactionId) {
     this.transactionId = transactionId;
   }
+
+  public GelatoResourceController getResourceController() {
+    return resourceController;
+  }
+
+  public void setResourceController(GelatoResourceController resourceController) {
+    this.resourceController = resourceController;
+  }
+
 }

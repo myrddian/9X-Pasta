@@ -20,10 +20,10 @@ import gelato.GelatoConnection;
 import gelato.GelatoDescriptorManager;
 import gelato.GelatoFileDescriptor;
 import gelato.GelatoSession;
+import gelato.server.manager.controllers.GelatoDirectoryController;
 import gelato.server.manager.implementation.NullAuthorisation;
-import gelato.server.manager.requests.GenericRequestHandler;
-import gelato.server.manager.requests.RequestAttachHandler;
-import gelato.server.manager.response.ResponseAttachHandler;
+import gelato.server.manager.implementation.requests.RequestAttachHandler;
+import gelato.server.manager.implementation.response.ResponseAttachHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import protocol.ByteEncoder;
@@ -43,7 +43,7 @@ public class GelatoSessionHandler extends GelatoAbstractGenericRequestHandler
   private GelatoQIDManager qidManager;
   private GenericRequestHandler handler;
   private GelatoAuthorisationManager authorisationManager;
-  private GelatoGelatoAbstractResourcetHandler rootAttach;
+  private GelatoDirectoryController rootAttach;
   private ResponseAttachHandler responseAttachHandler = this;
 
   public GelatoSessionHandler(GelatoQIDManager gelatoQIDManager, GenericRequestHandler handler) {
@@ -55,7 +55,7 @@ public class GelatoSessionHandler extends GelatoAbstractGenericRequestHandler
   public GelatoSessionHandler(
       GelatoQIDManager gelatoQIDManager,
       GenericRequestHandler handler,
-      GelatoGelatoAbstractResourcetHandler root) {
+      GelatoDirectoryController root) {
     qidManager = gelatoQIDManager;
     this.handler = handler;
     authorisationManager = new NullAuthorisation();
@@ -66,7 +66,7 @@ public class GelatoSessionHandler extends GelatoAbstractGenericRequestHandler
       GelatoQIDManager gelatoQIDManager,
       GenericRequestHandler nextHandler,
       GelatoAuthorisationManager authorisationManager,
-      GelatoGelatoAbstractResourcetHandler root) {
+      GelatoDirectoryController root) {
     qidManager = gelatoQIDManager;
     handler = nextHandler;
     this.authorisationManager = authorisationManager;
@@ -261,11 +261,11 @@ public class GelatoSessionHandler extends GelatoAbstractGenericRequestHandler
     this.authorisationManager = authorisationManager;
   }
 
-  public GelatoGelatoAbstractResourcetHandler getRootAttach() {
+  public GelatoDirectoryController getRootAttach() {
     return rootAttach;
   }
 
-  public void setRootAttach(GelatoGelatoAbstractResourcetHandler rootAttach) {
+  public void setRootAttach(GelatoDirectoryController rootAttach) {
     this.rootAttach = rootAttach;
   }
 

@@ -17,8 +17,9 @@
 package gelato.server.manager.implementation;
 
 import gelato.GelatoFileDescriptor;
-import gelato.server.manager.GelatoGelatoAbstractDirectoryServelet;
 import gelato.server.manager.RequestConnection;
+import gelato.server.manager.controllers.GelatoDirectoryController;
+import gelato.server.manager.controllers.impl.GelatoDirectoryControllerImpl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import protocol.P9Protocol;
@@ -28,7 +29,7 @@ import protocol.messages.response.OpenResponse;
 
 import java.time.Instant;
 
-public class SimpleDirectoryServelet extends GelatoGelatoAbstractDirectoryServelet {
+public class SimpleDirectoryServelet extends GelatoDirectoryControllerImpl {
 
   private final Logger logger = LoggerFactory.getLogger(SimpleDirectoryServelet.class);
 
@@ -65,35 +66,4 @@ public class SimpleDirectoryServelet extends GelatoGelatoAbstractDirectoryServel
     getStat().updateSize();
   }
 
-  @Override
-  public void openRequest(
-      RequestConnection connection, GelatoFileDescriptor clientFileDescriptor, byte mode) {
-    if (mode == P9Protocol.OPEN_MODE_OREAD) {
-      OpenResponse response = new OpenResponse();
-      response.setFileQID(getQID());
-      connection.reply(response);
-      return;
-    }
-    sendErrorMessage(connection, "Only READ mode is allowed");
-  }
-
-  @Override
-  public void createRequest(
-      RequestConnection connection, String fileName, int permission, byte mode) {
-    sendErrorMessage(connection, "This operation is not supported");
-  }
-
-  @Override
-  public void removeRequest(
-      RequestConnection connection, GelatoFileDescriptor clientFileDescriptor) {
-    sendErrorMessage(connection, "This operation is not supported");
-  }
-
-  @Override
-  public void writeStatRequest(
-      RequestConnection connection,
-      GelatoFileDescriptor clientFileDescriptor,
-      StatStruct newStruct) {
-    sendErrorMessage(connection, "This operation is not supported");
-  }
 }

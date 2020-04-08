@@ -21,7 +21,7 @@ import gelato.GelatoFileDescriptor;
 import gelato.GelatoSession;
 import gelato.client.file.GelatoDirectory;
 import gelato.client.file.GelatoFile;
-import gelato.server.manager.GelatoGelatoAbstractDirectoryServelet;
+import gelato.server.manager.controllers.GelatoDirectoryController;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import protocol.ByteEncoder;
@@ -113,11 +113,11 @@ public class GelatoDirectoryImpl implements GelatoDirectory {
 
   @Override
   public GelatoDirectory getDirectory(String name) {
-    if (name.equals(GelatoGelatoAbstractDirectoryServelet.CURRENT_DIR)) {
+    if (name.equals(GelatoDirectoryController.CURRENT_DIR)) {
       this.cacheValidate();
       return this;
     }
-    if (name.equals(GelatoGelatoAbstractDirectoryServelet.PARENT_DIR)) {
+    if (name.equals(GelatoDirectoryController.PARENT_DIR)) {
       parent.cacheValidate();
       return parent;
     }
@@ -247,8 +247,8 @@ public class GelatoDirectoryImpl implements GelatoDirectory {
     }
 
     for (StatStruct entry : statEntries) {
-      if (entry.getName().equals(GelatoGelatoAbstractDirectoryServelet.CURRENT_DIR)
-          || entry.getName().equals(GelatoGelatoAbstractDirectoryServelet.PARENT_DIR)) {
+      if (entry.getName().equals(GelatoDirectoryController.CURRENT_DIR)
+          || entry.getName().equals(GelatoDirectoryController.PARENT_DIR)) {
         continue;
       }
       if (entry.getQid().getType() == P9Protocol.QID_DIR

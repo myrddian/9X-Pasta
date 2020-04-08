@@ -14,13 +14,15 @@
  *    limitations under the License.
  */
 
-package gelato.server.manager.response;
+package gelato.server.manager.processchain;
 
-import gelato.GelatoConnection;
 import gelato.GelatoFileDescriptor;
-import protocol.messages.VersionRequest;
+import gelato.server.manager.RequestConnection;
+import protocol.StatStruct;
 
-public interface VersionResponseHandler {
-  boolean writeResponse(
-      GelatoConnection connection, GelatoFileDescriptor fileDescriptor, VersionRequest response);
+public interface WriteStatRequestHandler {
+    boolean writeStatRequest(
+            RequestConnection connection,
+            GelatoFileDescriptor clientFileDescriptor,
+            StatStruct newStruct);
 }

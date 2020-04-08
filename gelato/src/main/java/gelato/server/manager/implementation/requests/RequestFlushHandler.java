@@ -14,33 +14,17 @@
  *    limitations under the License.
  */
 
-package gelato.server.manager.implementation;
+package gelato.server.manager.implementation.requests;
 
 import gelato.GelatoConnection;
 import gelato.GelatoFileDescriptor;
 import gelato.GelatoSession;
-import gelato.server.manager.GelatoGelatoAbstractResourcetHandler;
 import protocol.messages.request.FlushRequest;
-import protocol.messages.response.FlushResponse;
 
-public abstract class IgnoreFlushRequests extends GelatoGelatoAbstractResourcetHandler {
-  public static boolean sendFlushResponse(
+public interface RequestFlushHandler {
+  boolean processRequest(
       GelatoConnection connection,
       GelatoFileDescriptor descriptor,
       GelatoSession session,
-      FlushRequest request) {
-    FlushResponse ret = new FlushResponse();
-    ret.setTag(request.getTag());
-    connection.sendMessage(descriptor, ret.toMessage());
-    return true;
-  }
-
-  @Override
-  public boolean processRequest(
-      GelatoConnection connection,
-      GelatoFileDescriptor descriptor,
-      GelatoSession session,
-      FlushRequest request) {
-    return sendFlushResponse(connection, descriptor, session, request);
-  }
+      FlushRequest request);
 }

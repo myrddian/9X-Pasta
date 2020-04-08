@@ -14,13 +14,13 @@
  *    limitations under the License.
  */
 
-package gelato.server.manager.requests;
+package gelato.server.manager.processchain;
 
-import gelato.GelatoConnection;
 import gelato.GelatoFileDescriptor;
-import protocol.messages.VersionRequest;
+import gelato.server.manager.RequestConnection;
 
-public interface RequestVersionHandler {
-  boolean processRequest(
-      GelatoConnection connection, GelatoFileDescriptor descriptor, VersionRequest request);
+public interface RemoveRequestHandler {
+    boolean removeRequest(
+            RequestConnection connection, GelatoFileDescriptor clientFileDescriptor);
+
 }

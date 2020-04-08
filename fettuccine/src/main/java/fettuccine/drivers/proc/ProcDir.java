@@ -18,8 +18,8 @@ package fettuccine.drivers.proc;
 
 import fettuccine.FettuccineService;
 import gelato.GelatoFileDescriptor;
-import gelato.server.manager.GelatoGelatoAbstractDirectoryServelet;
 import gelato.server.manager.RequestConnection;
+import gelato.server.manager.controllers.impl.GelatoDirectoryControllerImpl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import protocol.P9Protocol;
@@ -29,7 +29,7 @@ import protocol.messages.response.OpenResponse;
 
 import java.time.Instant;
 
-public class ProcDir extends GelatoGelatoAbstractDirectoryServelet {
+public class ProcDir extends GelatoDirectoryControllerImpl {
 
   public static final long PROC_ID = 100l;
   public static final String PROC_NAME = "proc";
@@ -37,6 +37,7 @@ public class ProcDir extends GelatoGelatoAbstractDirectoryServelet {
   private final Logger logger = LoggerFactory.getLogger(ProcDir.class);
 
   public ProcDir() {
+    super();
     setResourceName(PROC_NAME);
     StatStruct newStat = getStat();
     newStat.setAccessTime(Instant.now().getEpochSecond());
@@ -54,35 +55,4 @@ public class ProcDir extends GelatoGelatoAbstractDirectoryServelet {
     setStat(newStat);
   }
 
-  @Override
-  public void openRequest(
-      RequestConnection connection, GelatoFileDescriptor clientFileDescriptor, byte mode) {
-    if (mode == P9Protocol.OPEN_MODE_OREAD) {
-      OpenResponse response = new OpenResponse();
-      response.setFileQID(getQID());
-      connection.reply(response);
-      return;
-    }
-    sendErrorMessage(connection, "Only READ mode is allowed");
-  }
-
-  @Override
-  public void createRequest(
-      RequestConnection connection, String fileName, int permission, byte mode) {
-    sendErrorMessage(connection, "This operation is not supported");
-  }
-
-  @Override
-  public void removeRequest(
-      RequestConnection connection, GelatoFileDescriptor clientFileDescriptor) {
-    sendErrorMessage(connection, "This operation is not supported");
-  }
-
-  @Override
-  public void writeStatRequest(
-      RequestConnection connection,
-      GelatoFileDescriptor clientFileDescriptor,
-      StatStruct newStruct) {
-    sendErrorMessage(connection, "This operation is not supported");
-  }
 }
