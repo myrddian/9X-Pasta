@@ -16,6 +16,8 @@
 
 package ciotola;
 
+import ciotola.pools.CiotolaConnectionService;
+
 import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
@@ -30,7 +32,11 @@ public interface CiotolaContext {
 
   void injectService(CiotolaServiceInterface newService);
 
+  void injectService(CiotolaServiceInterface newService, boolean skipInjection);
+
   void injectService(Object newService);
+  void injectDependencies(Object newService);
+  void injectService(Object newService, boolean skipInjection);
 
   boolean startContainer();
 
@@ -45,4 +51,9 @@ public interface CiotolaContext {
   ExecutorService getExecutorService();
 
   void setExecutorService(ExecutorService executorService);
+
+  int threadCapacity();
+
+  void execute(Runnable job, long key);
+  void execute(CiotolaConnectionService connectionService);
 }

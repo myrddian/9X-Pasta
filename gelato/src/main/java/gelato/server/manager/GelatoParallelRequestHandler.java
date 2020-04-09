@@ -17,13 +17,11 @@
 package gelato.server.manager;
 
 import ciotola.Ciotola;
-import gelato.Gelato;
 import gelato.GelatoConnection;
 import gelato.GelatoFileDescriptor;
 import gelato.GelatoSession;
 import gelato.server.manager.controllers.GelatoResourceController;
 import gelato.server.manager.controllers.impl.DefaultFlushHandler;
-import gelato.server.manager.implementation.ParallelHandler;
 import gelato.server.manager.implementation.ParallelRequest;
 import gelato.server.manager.implementation.requests.RequestFlushHandler;
 import org.slf4j.Logger;
@@ -32,27 +30,14 @@ import protocol.Decoder;
 import protocol.P9Protocol;
 import protocol.messages.Message;
 
-import java.util.ArrayList;
-import java.util.List;
-
 public class GelatoParallelRequestHandler implements GenericRequestHandler {
 
   private final Logger logger = LoggerFactory.getLogger(GelatoParallelRequestHandler.class);
-  private Gelato library;
   private GelatoQIDManager resources;
-  private List<ParallelHandler> workers = new ArrayList<>();
   private RequestFlushHandler flushResponseHandler = new DefaultFlushHandler();
 
-  public GelatoParallelRequestHandler(Gelato library, GelatoQIDManager qidManager) {
+  public GelatoParallelRequestHandler(GelatoQIDManager qidManager) {
     resources = qidManager;
-    this.library = library;
-    ;
-
-    for (int i = 0; i < library.threadCapacity(); ++i) {
-      ParallelHandler handler = new ParallelHandler();
-      workers.add(handler);
-      Ciotola.getInstance().injectService(handler);
-    }
   }
 
   public RequestFlushHandler getFlushResponseHandler() {
@@ -104,16 +89,13 @@ public class GelatoParallelRequestHandler implements GenericRequestHandler {
         session.getManager().getServerDescriptor(requestedResource);
     GelatoResourceController handler = resources.getHandler(serverResource);
 
-    int scheduleGroup =
-        Math.abs((int) (serverResource.getQid().getLongFileId() % library.threadCapacity()));
-
     ParallelRequest parallelRequest = new ParallelRequest();
     parallelRequest.setConnection(connection);
     parallelRequest.setHandler(handler);
     parallelRequest.setDescriptor(descriptor);
     parallelRequest.setSession(session);
     parallelRequest.setMessage(request);
-    workers.get(scheduleGroup).addMessage(parallelRequest);
+    Ciotola.getInstance().execute(parallelRequest,serverResource.getQid().getLongFileId());
     return true;
   }
 }

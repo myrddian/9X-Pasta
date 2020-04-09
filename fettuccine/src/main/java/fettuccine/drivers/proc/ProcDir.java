@@ -33,7 +33,7 @@ public class ProcDir extends GelatoDirectoryControllerImpl {
 
   private final Logger logger = LoggerFactory.getLogger(ProcDir.class);
 
-  public ProcDir() {
+    public ProcDir() {
     super();
     setResourceName(PROC_NAME);
     StatStruct newStat = getStat();

@@ -112,7 +112,8 @@ public class GelatoServerConnection implements GelatoConnection {
             "Connected Client - File Descriptor: "
                 + Long.toString(fileDescriptor.getDescriptorId()));
         V2TCPTransport tcpTransport = new V2TCPTransport(clientSocket, fileDescriptor);
-        context.injectService(tcpTransport);
+        context.injectDependencies(tcpTransport);
+        context.execute(tcpTransport);
       } catch (IOException e) {
         logger.error("Unable to handle connections ", e);
       }

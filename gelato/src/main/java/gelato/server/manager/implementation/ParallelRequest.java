@@ -22,7 +22,7 @@ import gelato.GelatoSession;
 import gelato.server.manager.controllers.GelatoResourceController;
 import protocol.messages.Message;
 
-public class ParallelRequest {
+public class ParallelRequest implements  Runnable{
   private Message message;
   private GelatoResourceController handler;
   private GelatoSession session;
@@ -67,5 +67,10 @@ public class ParallelRequest {
 
   public void setDescriptor(GelatoFileDescriptor descriptor) {
     this.descriptor = descriptor;
+  }
+
+  @Override
+  public void run() {
+    handler.processRequest(connection,descriptor,session,message);
   }
 }

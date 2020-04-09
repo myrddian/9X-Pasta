@@ -49,14 +49,8 @@ public class GelatoServerManager {
     qidManager = new QIDInMemoryManager();
     sessionHandler = new GelatoSessionHandler(qidManager, validateRequestHandler);
     descriptorHandler = new GelatoDescriptorHandler(library, connection, sessionHandler);
-    parallelRequestHandler = new GelatoParallelRequestHandler(library, qidManager);
+    parallelRequestHandler = new GelatoParallelRequestHandler(qidManager);
     validateRequestHandler.setNextHandler(parallelRequestHandler);
-    if (this.connection.isStarted() == false) {
-      this.connection.begin();
-    }
-    serviceContainer.setExecutorService(library.getExecutorService());
-    serviceContainer.addService(descriptorHandler);
-    serviceContainer.addService(connection);
   }
 
   public void addResource(
@@ -76,7 +70,8 @@ public class GelatoServerManager {
   }
 
   public void start() {
-    this.serviceContainer.start();
+    serviceContainer.injectService(descriptorHandler);
+    serviceContainer.injectService(connection);
   }
 
   public void hold() {

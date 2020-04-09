@@ -20,6 +20,7 @@ import ciotola.annotations.CiotolaAutowire;
 import ciotola.annotations.CiotolaServiceRun;
 import ciotola.annotations.CiotolaServiceStart;
 import ciotola.annotations.CiotolaServiceStop;
+import ciotola.pools.CiotolaConnectionService;
 import gelato.GelatoFileDescriptor;
 import gelato.server.manager.GelatoDescriptorHandler;
 import gelato.transport.GelatoTransport;
@@ -34,10 +35,11 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.Socket;
+import java.time.LocalDateTime;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 
-public class V2TCPTransport implements GelatoTransport {
+public class V2TCPTransport implements GelatoTransport, CiotolaConnectionService {
 
   final Logger logger = LoggerFactory.getLogger(V2TCPTransport.class);
 
@@ -51,6 +53,7 @@ public class V2TCPTransport implements GelatoTransport {
   private V2TransportProxy proxy = new V2TransportProxy(this);
   private Socket clientSocket;
   private GelatoFileDescriptor descriptor;
+  private long processTime = System.currentTimeMillis();
 
   public V2TCPTransport(Socket cliSocket, GelatoFileDescriptor connectionDescriptor) {
     descriptor = connectionDescriptor;
@@ -61,6 +64,7 @@ public class V2TCPTransport implements GelatoTransport {
   public synchronized void close() {
     logger.debug("Closing Connection");
     closeConnction = true;
+    closeStream();
   }
 
   @Override
@@ -94,26 +98,14 @@ public class V2TCPTransport implements GelatoTransport {
     return readMessageQueue.size();
   }
 
-  @CiotolaServiceRun
-  public void run() {
-    try {
-      processMessages();
-    } catch (IOException e) {
-      logger.error("IOException has occurred in the thread -", e);
-    } catch (InterruptedException e) {
-      logger.error("Interrupted", e);
-    }
-  }
 
   private void processOutbound(OutputStream os) throws InterruptedException, IOException {
-    int messages = writeMessageQueue.size();
-    // Process outbound
-    for (int counter = 0; counter < messages; ++counter) {
-      Message outbound = writeMessageQueue.take();
-      MessageRaw raw = outbound.toRaw();
-      byte[] outBytes = Encoder.messageToBytes(raw);
-      os.write(outBytes);
-    }
+
+    Message outbound = writeMessageQueue.take();
+    MessageRaw raw = outbound.toRaw();
+    byte[] outBytes = Encoder.messageToBytes(raw);
+    os.write(outBytes);
+
   }
 
   private void processInbound(InputStream is) throws InterruptedException, IOException {
@@ -154,17 +146,6 @@ public class V2TCPTransport implements GelatoTransport {
     descriptorHandler.addMessage(newMessage);
   }
 
-  private void processMessages() throws IOException, InterruptedException {
-    InputStream is = getSocketInputStream();
-    OutputStream os = getSocketOutputStream();
-    while (isOpen()) {
-      processOutbound(os);
-      processInbound(is);
-      Thread.sleep(50);
-    }
-    closeStream();
-  }
-
   public InputStream getSocketInputStream() {
     try {
       return clientSocket.getInputStream();
@@ -183,7 +164,7 @@ public class V2TCPTransport implements GelatoTransport {
     return null;
   }
 
-  @CiotolaServiceStop
+
   public void closeStream() {
     try {
       clientSocket.close();
@@ -192,8 +173,56 @@ public class V2TCPTransport implements GelatoTransport {
     }
   }
 
-  @CiotolaServiceStart
-  public void serviceStart() {
-    logger.debug("Starting TCP Transport");
+
+  @Override
+  public int bytesToProcessInbound() throws IOException {
+    return getSocketInputStream().available();
+  }
+
+  @Override
+  public int messagesToProcessOutbound() {
+    return writeMessageQueue.size();
+  }
+
+  @Override
+  public long getConnectionId() {
+    return descriptor.getDescriptorId();
+  }
+
+  @Override
+  public void processInbound() throws IOException, InterruptedException {
+    InputStream is = getSocketInputStream();
+    processInbound(is);
+  }
+
+  @Override
+  public void processOutbound() throws IOException, InterruptedException {
+    OutputStream os = getSocketOutputStream();
+    processOutbound(os);
+  }
+
+  @Override
+  public void notifyClose() {
+    close();
+  }
+
+  @Override
+  public boolean isRunning() {
+    return !closeConnction;
+  }
+
+  @Override
+  public void setProcessedTime(long time) {
+    processTime = time;
+  }
+
+  @Override
+  public long getProcessedTime() {
+    return processTime;
+  }
+
+  @Override
+  public boolean isClosed() {
+    return closeConnction;
   }
 }

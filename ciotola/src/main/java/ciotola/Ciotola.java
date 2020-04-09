@@ -17,6 +17,7 @@
 package ciotola;
 
 import ciotola.implementation.DefaultCiotolaContainer;
+import ciotola.pools.CiotolaConnectionService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -98,8 +99,23 @@ public class Ciotola implements CiotolaContext {
   }
 
   @Override
+  public void injectService(CiotolaServiceInterface newService, boolean skipInjection) {
+    serviceContainer.injectService(newService, skipInjection);
+  }
+
+  @Override
   public void injectService(Object newService) {
     serviceContainer.injectService(newService);
+  }
+
+  @Override
+  public void injectDependencies(Object newService) {
+    serviceContainer.injectDependencies(newService);
+  }
+
+  @Override
+  public void injectService(Object newService, boolean skipInjection) {
+    serviceContainer.injectService(newService, skipInjection);
   }
 
   @Override
@@ -136,4 +152,20 @@ public class Ciotola implements CiotolaContext {
   public void setExecutorService(ExecutorService executorService) {
     serviceContainer.setExecutorService(executorService);
   }
+
+  @Override
+  public int threadCapacity() {
+    return serviceContainer.threadCapacity();
+  }
+
+  @Override
+  public void execute(Runnable job, long key) {
+    serviceContainer.execute(job,key);
+  }
+
+  @Override
+  public void execute(CiotolaConnectionService connectionService) {
+    serviceContainer.execute(connectionService);
+  }
+
 }

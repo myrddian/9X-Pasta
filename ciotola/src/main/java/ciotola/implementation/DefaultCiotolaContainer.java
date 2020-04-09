@@ -21,6 +21,9 @@ import ciotola.CiotolaContext;
 import ciotola.CiotolaServiceInterface;
 import ciotola.annotations.CiotolaAutowire;
 import ciotola.annotations.CiotolaService;
+import ciotola.pools.CiotolaConnectionPool;
+import ciotola.pools.CiotolaConnectionService;
+import ciotola.pools.CiotolaKeyPool;
 import io.github.classgraph.ClassGraph;
 import io.github.classgraph.ClassInfo;
 import io.github.classgraph.ClassInfoList;
@@ -44,7 +47,7 @@ public class DefaultCiotolaContainer implements CiotolaContext {
 
   private final Logger logger = LoggerFactory.getLogger(DefaultCiotolaContainer.class);
 
-  private ExecutorService executorService = Executors.newWorkStealingPool();
+  private ExecutorService executorService = Executors.newCachedThreadPool();
   private Map<String, CiotolaServiceInterface> serviceInterfaceMap = new HashMap<>();
   private Map<String, Class> candidateService = new HashMap<>();
   private Map<String, Object> autoWires = new HashMap<>();
@@ -52,6 +55,8 @@ public class DefaultCiotolaContainer implements CiotolaContext {
   private List<String> loadedJars = new ArrayList<>();
   private List<String> scanAnnotations = new ArrayList<>();
   private List<PooledServiceRunner> serviceRunners = new ArrayList<>();
+  private CiotolaKeyPool keyPoolExecutor = new CiotolaKeyPool();
+  private CiotolaConnectionPool connectionPool = new CiotolaConnectionPool();
 
   public DefaultCiotolaContainer() {
     resetDefaults();
@@ -94,19 +99,41 @@ public class DefaultCiotolaContainer implements CiotolaContext {
   }
 
   @Override
-  public void injectService(CiotolaServiceInterface newService) {
-    serviceInterfaceMap.put(newService.serviceName(), newService);
+  public void injectService(CiotolaServiceInterface newService, boolean skipInjection) {
+
     int svcCounter = serviceRunners.size() + 1;
     PooledServiceRunner runner = new PooledServiceRunner(newService, svcCounter);
-    processInjection(newService.serviceName());
-    executorService.submit(runner);
+
+    if(!skipInjection) {
+      serviceInterfaceMap.put(newService.serviceName(), newService);
+      processInjection(newService.serviceName());
+    } else {
+      logger.debug("No injection for " + newService.serviceName() + " Mapped to ID [ " + Integer.toString(svcCounter) + " ] ");
+    }
+    runner.start();
+    executorService.execute(runner);
     serviceRunners.add(runner);
   }
 
   @Override
+  public void injectService(CiotolaServiceInterface newService) {
+    injectService(newService,false);
+  }
+
+  @Override
   public void injectService(Object newService) {
+    injectService(newService, false);
+  }
+
+  @Override
+  public void injectDependencies(Object newService) {
+    processInjection(newService);
+  }
+
+  @Override
+  public void injectService(Object newService, boolean skipInjection) {
     AnnotatedJavaServiceRunner runner = new AnnotatedJavaServiceRunner(newService);
-    injectService(runner);
+    injectService(runner, skipInjection);
   }
 
   @Override
@@ -117,6 +144,25 @@ public class DefaultCiotolaContainer implements CiotolaContext {
   @Override
   public void setExecutorService(ExecutorService executorService) {
     this.executorService = executorService;
+  }
+
+  @Override
+  public int threadCapacity() {
+    int capacity = Runtime.getRuntime().availableProcessors() / 2;
+    if(capacity < 1) {
+      return  1;
+    }
+    return capacity;
+  }
+
+  @Override
+  public void execute(Runnable job, long key) {
+    keyPoolExecutor.addJob(job,key);
+  }
+
+  @Override
+  public void execute(CiotolaConnectionService connectionService) {
+    connectionPool.addConnection(connectionService);
   }
 
   @Override
@@ -152,7 +198,7 @@ public class DefaultCiotolaContainer implements CiotolaContext {
     for (String key : serviceInterfaceMap.keySet()) {
       PooledServiceRunner runner = new PooledServiceRunner(serviceInterfaceMap.get(key), counter);
       runner.start();
-      executorService.submit(runner);
+      executorService.execute(runner);
       ++counter;
       serviceRunners.add(runner);
     }
@@ -178,8 +224,7 @@ public class DefaultCiotolaContainer implements CiotolaContext {
     return true;
   }
 
-  private boolean processInjection(String serviceClass) {
-    Object wiringComponent = serviceInterfaceMap.get(serviceClass).getObject();
+  private boolean processInjection(Object wiringComponent) {
     for (Field objField : wiringComponent.getClass().getDeclaredFields()) {
       objField.setAccessible(true);
       for (Annotation annotation : objField.getDeclaredAnnotations()) {
@@ -197,13 +242,13 @@ public class DefaultCiotolaContainer implements CiotolaContext {
             autoWrite = runner.getObject();
           }
           logger.debug(
-              "Autowiring: "
-                  + wiringComponent.getClass().getName()
-                  + "( "
-                  + objField.getName()
-                  + " , "
-                  + autoWrite.getClass().getName()
-                  + " )");
+                  "Autowiring: "
+                          + wiringComponent.getClass().getName()
+                          + " ( "
+                          + objField.getName()
+                          + " , "
+                          + autoWrite.getClass().getName()
+                          + " )");
           try {
             objField.set(wiringComponent, autoWrite);
           } catch (IllegalAccessException e) {
@@ -214,6 +259,11 @@ public class DefaultCiotolaContainer implements CiotolaContext {
       }
     }
     return true;
+  }
+
+  private boolean processInjection(String serviceClass) {
+    Object wiringComponent = serviceInterfaceMap.get(serviceClass).getObject();
+    return processInjection(wiringComponent);
   }
 
   private boolean processDependencies() {
@@ -233,5 +283,6 @@ public class DefaultCiotolaContainer implements CiotolaContext {
     scanAnnotations.clear();
     scanAnnotations.add(CiotolaAutowire.class.getName());
     scanAnnotations.add(CiotolaService.class.getName());
+    connectionPool.setIdleTimeout(240);
   }
 }
