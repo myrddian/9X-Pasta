@@ -136,7 +136,6 @@ public class GelatoDirectoryImpl implements GelatoDirectory {
 
   @Override
   public String getName() {
-    cacheValidate();
     return directoryStat.getName();
   }
 

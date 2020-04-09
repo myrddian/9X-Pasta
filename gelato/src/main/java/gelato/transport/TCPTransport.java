@@ -95,7 +95,7 @@ public abstract class TCPTransport implements GelatoTransport, Runnable {
 
   private void processOutbound(OutputStream os) throws InterruptedException, IOException {
     int messages = writeMessageQueue.size();
-    // Process outbound
+    if(messages == 0 ) return;
     for (int counter = 0; counter < messages; ++counter) {
       Message outbound = writeMessageQueue.take();
       MessageRaw raw = outbound.toRaw();
@@ -144,7 +144,6 @@ public abstract class TCPTransport implements GelatoTransport, Runnable {
     while (isOpen()) {
       processOutbound(os);
       processInbound(is);
-      Thread.sleep(50);
     }
     closeStream();
   }
