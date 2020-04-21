@@ -9,7 +9,7 @@
 plugins {
     // Apply the java plugin to add support for Java
     id 'java'
-    id("maven-publish") apply false
+    id("maven-publish") 
 }
 
 repositories {
