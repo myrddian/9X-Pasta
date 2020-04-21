@@ -44,6 +44,11 @@ public class OpenResponse implements TransactionMessage {
   }
 
   @Override
+  public byte messageType() {
+    return P9Protocol.ROPEN;
+  }
+
+  @Override
   public Message toMessage() {
     Message retMessage = new Message();
     int contentSize = P9Protocol.MSG_QID_SIZE + P9Protocol.MSG_INT_SIZE;

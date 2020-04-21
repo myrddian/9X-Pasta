@@ -46,6 +46,11 @@ public class WalkRequest implements TransactionMessage {
   }
 
   @Override
+  public byte messageType() {
+    return P9Protocol.TWALK;
+  }
+
+  @Override
   public Message toMessage() {
     Message returnMessage = new Message();
     returnMessage.tag = messageTag;

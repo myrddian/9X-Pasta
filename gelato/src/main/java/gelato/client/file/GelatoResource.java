@@ -24,4 +24,6 @@ public interface GelatoResource {
   String getFullName();
 
   long getSize();
+
+  boolean valid();
 }

@@ -45,6 +45,11 @@ public class WalkResponse implements TransactionMessage {
   }
 
   @Override
+  public byte messageType() {
+    return P9Protocol.RWALK;
+  }
+
+  @Override
   public Message toMessage() {
     Message retMessage = new Message();
     retMessage.messageType = P9Protocol.RWALK;

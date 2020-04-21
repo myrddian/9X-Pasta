@@ -16,6 +16,7 @@
 
 package protocol.messages.response;
 
+import protocol.P9Protocol;
 import protocol.messages.Encoder;
 import protocol.messages.Message;
 import protocol.messages.TransactionMessage;
@@ -37,6 +38,11 @@ public class FlushResponse implements TransactionMessage {
   @Override
   public void setTag(int tag) {
     this.tag = tag;
+  }
+
+  @Override
+  public byte messageType() {
+    return P9Protocol.RFLUSH;
   }
 
   @Override

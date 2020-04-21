@@ -44,6 +44,11 @@ public class CreateResponse implements TransactionMessage {
   }
 
   @Override
+  public byte messageType() {
+    return P9Protocol.RCLOSE;
+  }
+
+  @Override
   public Message toMessage() {
     Message rtr = new Message();
     rtr.messageType = P9Protocol.RCREATE;

@@ -42,6 +42,11 @@ public class OpenRequest implements TransactionMessage {
     this.tag = tag;
   }
 
+  @Override
+  public byte messageType() {
+    return P9Protocol.TOPEN;
+  }
+
   public int getFileDescriptor() {
     return fileDescriptor;
   }

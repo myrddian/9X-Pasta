@@ -64,6 +64,11 @@ public class VersionRequest implements TransactionMessage {
   }
 
   @Override
+  public byte messageType() {
+    return P9Protocol.TVERSION;
+  }
+
+  @Override
   public Message toMessage() {
     return Encoder.encodeVersionRequest(this).toMessage();
   }

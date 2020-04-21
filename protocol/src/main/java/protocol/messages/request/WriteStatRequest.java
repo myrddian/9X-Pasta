@@ -43,6 +43,11 @@ public class WriteStatRequest implements TransactionMessage {
   }
 
   @Override
+  public byte messageType() {
+    return P9Protocol.TWSTAT;
+  }
+
+  @Override
   public Message toMessage() {
 
     Message rtr = new Message();

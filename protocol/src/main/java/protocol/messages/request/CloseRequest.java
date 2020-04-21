@@ -38,6 +38,11 @@ public class CloseRequest implements TransactionMessage {
   }
 
   @Override
+  public byte messageType() {
+    return P9Protocol.TCLOSE;
+  }
+
+  @Override
   public Message toMessage() {
     Message rtr = new Message();
     rtr.messageType = P9Protocol.TCLOSE;

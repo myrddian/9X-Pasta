@@ -8,18 +8,14 @@ apply plugin: 'io.spring.dependency-management'
 apply plugin: 'java'
 sourceCompatibility = 11
 targetCompatibility = 11
+apply plugin: 'application'
+mainClassName = 'fettuccineshell.FettuccineshellApplication'
+
 jar {
     manifest {
         attributes 'Main-Class': 'fettuccineshell.FettuccineshellApplication'
     }
 }
-
-apply plugin: 'application'
-mainClassName = 'fettuccineshell.FettuccineshellApplication'
-
-version 'unspecified'
-
-sourceCompatibility = 1.8
 
 repositories {
     mavenCentral()
@@ -27,7 +23,12 @@ repositories {
 }
 
 dependencies {
-    implementation project(':gelato')
     implementation 'org.springframework.shell:spring-shell-starter:2.0.1.RELEASE'
+    implementation project(':gelato')
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
+}
+
+application {
+    // Define the main class for the application.
+    mainClassName = 'fettuccineshell.FettuccineshellApplication'
 }

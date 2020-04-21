@@ -72,6 +72,11 @@ public class AttachRequest implements TransactionMessage {
   }
 
   @Override
+  public byte messageType() {
+    return P9Protocol.TATTACH;
+  }
+
+  @Override
   public void setTransactionId(int transactionId) {
     setTag(transactionId);
   }

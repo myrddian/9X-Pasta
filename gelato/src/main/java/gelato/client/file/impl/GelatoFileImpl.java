@@ -94,4 +94,9 @@ public class GelatoFileImpl implements GelatoFile {
   public long getSize() {
     return 0;
   }
+
+  @Override
+  public boolean valid() {
+    return false;
+  }
 }

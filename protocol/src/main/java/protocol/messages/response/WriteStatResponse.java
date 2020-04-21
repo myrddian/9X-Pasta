@@ -39,6 +39,11 @@ public class WriteStatResponse implements TransactionMessage {
   }
 
   @Override
+  public byte messageType() {
+    return P9Protocol.RWSTAT;
+  }
+
+  @Override
   public Message toMessage() {
     Message rtr = new Message();
     rtr.tag = tag;

@@ -41,6 +41,11 @@ public class StatRequest implements TransactionMessage {
   }
 
   @Override
+  public byte messageType() {
+    return P9Protocol.TSTAT;
+  }
+
+  @Override
   public Message toMessage() {
 
     Message rtr = new Message();

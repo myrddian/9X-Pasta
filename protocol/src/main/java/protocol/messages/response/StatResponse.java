@@ -41,6 +41,11 @@ public class StatResponse implements TransactionMessage {
   }
 
   @Override
+  public byte messageType() {
+    return P9Protocol.RSTAT;
+  }
+
+  @Override
   public Message toMessage() {
     Message rtr = new Message();
     rtr.tag = tag;

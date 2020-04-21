@@ -54,6 +54,11 @@ public class Message implements TransactionMessage {
   }
 
   @Override
+  public byte messageType() {
+    return messageType;
+  }
+
+  @Override
   public Message toMessage() {
     return this;
   }

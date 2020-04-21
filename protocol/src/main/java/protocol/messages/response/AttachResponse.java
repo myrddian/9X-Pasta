@@ -51,6 +51,11 @@ public class AttachResponse implements TransactionMessage {
   }
 
   @Override
+  public byte messageType() {
+    return P9Protocol.RATTACH;
+  }
+
+  @Override
   public Message toMessage() {
     Message raw = new Message();
     raw.messageType = P9Protocol.RATTACH;

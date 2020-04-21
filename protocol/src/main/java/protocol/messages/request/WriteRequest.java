@@ -44,6 +44,11 @@ public class WriteRequest implements TransactionMessage {
   }
 
   @Override
+  public byte messageType() {
+    return P9Protocol.TWRITE;
+  }
+
+  @Override
   public Message toMessage() {
     if (writeData == null) {
       return null;

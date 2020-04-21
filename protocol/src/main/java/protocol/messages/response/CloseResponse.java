@@ -39,6 +39,11 @@ public class CloseResponse implements TransactionMessage {
   }
 
   @Override
+  public byte messageType() {
+    return P9Protocol.RCLOSE;
+  }
+
+  @Override
   public Message toMessage() {
     Message rtr = new Message();
     rtr.tag = tag;

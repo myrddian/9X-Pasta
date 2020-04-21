@@ -24,5 +24,7 @@ public interface TransactionMessage {
 
   public void setTag(int newTag);
 
+  public byte messageType();
+
   Message toMessage();
 }

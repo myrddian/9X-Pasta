@@ -25,5 +25,4 @@ public interface GelatoDirectory extends GelatoResource {
 
   GelatoDirectory getDirectory(String name);
 
-  boolean valid();
 }

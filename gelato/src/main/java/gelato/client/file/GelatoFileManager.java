@@ -16,10 +16,12 @@
 
 package gelato.client.file;
 
+import ciotola.Ciotola;
 import gelato.Gelato;
 import gelato.GelatoConnection;
 import gelato.GelatoFileDescriptor;
 import gelato.GelatoTagManager;
+import gelato.client.GelatoMessaging;
 import gelato.client.file.impl.GelatoDirectoryImpl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -34,6 +36,7 @@ public class GelatoFileManager {
   private GelatoTagManager tagManager;
   private GelatoFileDescriptor authDescriptor;
   private GelatoDirectoryImpl root;
+  private GelatoMessaging messaging;
 
   public GelatoFileManager(GelatoConnection con, Gelato library, String userName, String userAuth) {
     connection = con;
@@ -55,7 +58,9 @@ public class GelatoFileManager {
       logger.error("Unable to establish session");
       throw new RuntimeException("Unable to establish session");
     }
-    root = new GelatoDirectoryImpl(clientSession, connection, clientSession.getFileServiceRoot());
+    messaging = new GelatoMessaging(clientSession, connection);
+    Ciotola.getInstance().injectService(messaging);
+    root = new GelatoDirectoryImpl(clientSession, messaging, clientSession.getFileServiceRoot());
   }
 
   public GelatoDirectory getRoot() {
