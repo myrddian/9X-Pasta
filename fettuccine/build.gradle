@@ -29,6 +29,10 @@ jar {
     }
 }
 
+bootJar {
+    enabled = true
+}
+
 repositories {
     // Use jcenter for resolving dependencies.
     // You can declare any Maven/Ivy/file repository here.
@@ -36,8 +40,6 @@ repositories {
 }
 
 dependencies {
-    // This dependency is used by the application.
-    implementation 'com.google.guava:guava:28.0-jre'
     // https://mvnrepository.com/artifact/org.slf4j/slf4j-api
     implementation group: 'org.slf4j', name: 'slf4j-api', version: '1.7.28'
     // https://mvnrepository.com/artifact/ch.qos.logback/logback-classic

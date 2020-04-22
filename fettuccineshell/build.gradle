@@ -15,6 +15,11 @@ jar {
     manifest {
         attributes 'Main-Class': 'fettuccineshell.FettuccineshellApplication'
     }
+
+}
+
+bootJar {
+    enabled = true
 }
 
 repositories {
