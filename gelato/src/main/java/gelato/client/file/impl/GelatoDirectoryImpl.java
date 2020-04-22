@@ -196,19 +196,13 @@ public class GelatoDirectoryImpl implements GelatoDirectory {
               + Long.toString(newFileDescriptor.getDescriptorId())
               + " Path: "
               + newDir.getPath());
-
-  }
-
-  private void init() {
+      connection.close(walkRequest);
 
   }
 
   private List<StatStruct> refreshStatStruct() {
 
     List<StatStruct> statEntries = new ArrayList<>();
-
-    //logger.trace("Refreshing StatStruc for: " + directoryStat.getName());
-
     GelatoMessage<StatRequest, StatResponse> statRequest = connection.createStatTransaction();
     statRequest.getMessage().setFileDescriptor(descriptor.getRawFileDescriptor());
     connection.submitMessage(statRequest);

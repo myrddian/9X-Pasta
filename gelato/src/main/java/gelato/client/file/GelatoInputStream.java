@@ -14,7 +14,7 @@
  *    limitations under the License.
  */
 
-package gelato.client.file.impl;
+package gelato.client.file;
 
 import gelato.client.file.GelatoFile;
 import protocol.P9Protocol;

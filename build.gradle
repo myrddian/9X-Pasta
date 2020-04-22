@@ -6,21 +6,15 @@
  * User Manual available at https://docs.gradle.org/6.0.1/userguide/tutorial_java_projects.html
  */
 
-plugins {
+/*plugins {
     // Apply the java plugin to add support for Java
-    id 'java'
+    //id 'java'
     id("maven-publish") 
-}
+}*/
 
-repositories {
-    // Use jcenter for resolving dependencies.
-    // You can declare any Maven/Ivy/file repository here.
-    jcenter()
-}
 
-dependencies {
-    // This dependency is used by the application.
-    implementation 'com.google.guava:guava:28.0-jre'
+
+ /* dependencies {
 
     // https://mvnrepository.com/artifact/org.slf4j/slf4j-api
     implementation group: 'org.slf4j', name: 'slf4j-api', version: '1.7.28'
@@ -42,10 +36,18 @@ dependencies {
 test {
     // Use junit platform for unit tests
     useJUnitPlatform()
-}
+} */
 
 subprojects {
     apply plugin: "maven-publish"
+    apply plugin: 'java'
+
+    repositories {
+        // Use jcenter for resolving dependencies.
+        // You can declare any Maven/Ivy/file repository here.
+        jcenter()
+    }
+
     publishing {
         repositories {
             maven {
