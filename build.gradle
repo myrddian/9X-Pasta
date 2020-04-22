@@ -41,6 +41,7 @@ test {
 subprojects {
     apply plugin: "maven-publish"
     apply plugin: 'java'
+    version = "1.0.0-SNAPSHOT"
 
     repositories {
         // Use jcenter for resolving dependencies.
