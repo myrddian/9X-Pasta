@@ -80,4 +80,7 @@ public class Gelato {
     SERVER,
     CLIENT
   }
+
+  //256 KB buffer for network io
+  public final static int DEFAULT_NET_IO_MEM_BUFFER = 256*1024;
 }

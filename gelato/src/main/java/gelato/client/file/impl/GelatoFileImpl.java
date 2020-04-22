@@ -17,33 +17,24 @@
 package gelato.client.file.impl;
 
 import gelato.GelatoFileDescriptor;
+import gelato.client.GelatoMessage;
+import gelato.client.GelatoMessaging;
 import gelato.client.file.GelatoFile;
+import gelato.client.file.GelatoInputStream;
+import protocol.P9Protocol;
+import protocol.StatStruct;
+import protocol.messages.request.OpenRequest;
+import protocol.messages.response.OpenResponse;
 
 import java.io.InputStream;
 import java.io.OutputStream;
 
-public class GelatoFileImpl implements GelatoFile {
+public class GelatoFileImpl  extends GelatoResourceImpl implements GelatoFile {
 
-  private GelatoFileDescriptor descriptor;
-  private String fileName;
   private String filePath;
-  private long fileSize;
-  private int ioUnitSize;
 
-  public void setDescriptor(GelatoFileDescriptor newDescriptor) {
-    descriptor = newDescriptor;
-  }
-
-  public void setFileName(String newName) {
-    fileName = newName;
-  }
-
-  public void setIoSize(int newSize) {
-    ioUnitSize = newSize;
-  }
-
-  public void setFileSize(int newSize) {
-    fileSize = newSize;
+  public GelatoFileImpl(GelatoMessaging messaging, GelatoFileDescriptor descriptor) {
+    super(messaging, descriptor);
   }
 
   public void setFilePath(String newPath) {
@@ -51,33 +42,23 @@ public class GelatoFileImpl implements GelatoFile {
   }
 
   @Override
-  public GelatoFileDescriptor getFileDescriptor() {
-    return descriptor;
-  }
-
-  @Override
   public InputStream getFileInputStream() {
-    return null;
+
+    StatStruct localStruct = getStatStruct();
+    GelatoMessage<OpenRequest, OpenResponse> openRequest = getMessaging().createOpenTransaction();
+    openRequest.getMessage().setFileDescriptor(getFileDescriptor().getRawFileDescriptor());
+    openRequest.getMessage().setMode((byte) P9Protocol.OPEN_MODE_OREAD);
+    getMessaging().submitMessage(openRequest);
+    if(openRequest.getResponse() == null) {
+      throw new RuntimeException("ERROR OPENING FILE");
+    }
+    getMessaging().close(openRequest);
+    return new GelatoInputStream(getMessaging(),getFileDescriptor(),openRequest.getResponse().getSizeIO(),localStruct.getLength());
   }
 
   @Override
   public OutputStream getFileOutputStream() {
     return null;
-  }
-
-  @Override
-  public long fileSize() {
-    return fileSize;
-  }
-
-  @Override
-  public int ioSize() {
-    return ioUnitSize;
-  }
-
-  @Override
-  public String getName() {
-    return fileName;
   }
 
   @Override
@@ -87,16 +68,8 @@ public class GelatoFileImpl implements GelatoFile {
 
   @Override
   public String getFullName() {
-    return filePath + "/" + fileName;
+    return filePath + "/" + getName();
   }
 
-  @Override
-  public long getSize() {
-    return 0;
-  }
 
-  @Override
-  public boolean valid() {
-    return false;
-  }
 }

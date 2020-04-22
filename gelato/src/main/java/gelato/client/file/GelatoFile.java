@@ -22,14 +22,8 @@ import java.io.InputStream;
 import java.io.OutputStream;
 
 public interface GelatoFile extends GelatoResource {
-
-  GelatoFileDescriptor getFileDescriptor();
-
   InputStream getFileInputStream();
-
   OutputStream getFileOutputStream();
-
-  long fileSize();
-
-  int ioSize();
+  String getFullName();
+  String getPath();
 }

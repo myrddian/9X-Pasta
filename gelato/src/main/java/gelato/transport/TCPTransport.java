@@ -38,6 +38,10 @@ public abstract class TCPTransport implements GelatoTransport, Runnable {
   private int headerSize = MessageRaw.minSize;
   private int readSize = 0;
   private byte[] minHeaderBuffer = new byte[headerSize];
+  private long sleepCycle = 100;
+  private long dutyCycle = 0;
+  private long lastProcessed = 0;
+
 
   @Override
   public synchronized void close() {
@@ -95,13 +99,21 @@ public abstract class TCPTransport implements GelatoTransport, Runnable {
 
   private void processOutbound(OutputStream os) throws InterruptedException, IOException {
     int messages = writeMessageQueue.size();
-    if(messages == 0 ) return;
+    if(messages == 0 )  {
+      dutyCycle = System.currentTimeMillis()  - lastProcessed;
+      if(dutyCycle >= sleepCycle) {
+        dutyCycle = sleepCycle;
+      }
+      Thread.sleep(dutyCycle);
+      return;
+    }
     for (int counter = 0; counter < messages; ++counter) {
       Message outbound = writeMessageQueue.take();
       MessageRaw raw = outbound.toRaw();
       byte[] outBytes = Encoder.messageToBytes(raw);
       os.write(outBytes);
     }
+    lastProcessed = System.currentTimeMillis();
   }
 
   private void processInbound(InputStream is) throws InterruptedException, IOException {

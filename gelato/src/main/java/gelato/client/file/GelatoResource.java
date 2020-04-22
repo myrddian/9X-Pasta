@@ -16,14 +16,17 @@
 
 package gelato.client.file;
 
+import gelato.GelatoFileDescriptor;
+import protocol.StatStruct;
+
 public interface GelatoResource {
   String getName();
-
-  String getPath();
-
-  String getFullName();
-
   long getSize();
-
+  StatStruct getStatStruct();
+  GelatoFileDescriptor getFileDescriptor();
   boolean valid();
+  public void cacheValidate();
+  long getCacheLoaded();
+  void setCacheLoaded(long cacheLoaded);
+
 }

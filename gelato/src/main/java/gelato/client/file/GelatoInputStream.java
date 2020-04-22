@@ -16,20 +16,127 @@
 
 package gelato.client.file;
 
-import gelato.client.file.GelatoFile;
-import protocol.P9Protocol;
+import gelato.Gelato;
+import gelato.GelatoFileDescriptor;
+import gelato.client.GelatoMessage;
+import gelato.client.GelatoMessaging;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import protocol.ByteEncoder;
+import protocol.messages.request.CloseRequest;
+import protocol.messages.request.ReadRequest;
+import protocol.messages.response.CloseResponse;
+import protocol.messages.response.ReadResponse;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Iterator;
 
 public class GelatoInputStream extends InputStream {
 
-  private GelatoFile file;
+  private GelatoMessaging messaging;
+  private GelatoFileDescriptor fileDescriptor;
+
   private int currentLocation = 0;
-  private byte[] buffer = new byte[P9Protocol.DEFAULT_MSG_SIZE];
+  private long fileLocation = 0;
+  private byte[] buffer = new byte[Gelato.DEFAULT_NET_IO_MEM_BUFFER];
+  private long fileSize = 0;
+  private long ioNetworkSize = 0;
+  private final Logger logger = LoggerFactory.getLogger(GelatoInputStream.class);
+
+
+  private void initialise() throws IOException {
+    currentLocation = 0;
+    fileLocation = 0;
+    strategySelector();
+  }
+
+  private void strategySelector() throws IOException {
+    currentLocation = 0;
+    if(fileSize <= Gelato.DEFAULT_NET_IO_MEM_BUFFER) {
+      fitFileToBufferStrategy();
+    }
+  }
+
+
+  //Copy the stream to the memory buffer
+  private void fitFileToBufferStrategy() throws IOException {
+    GelatoMessage<ReadRequest, ReadResponse> readRequest = messaging.createReadTransaction();
+    readRequest.getMessage().setFileDescriptor(fileDescriptor.getRawFileDescriptor());
+    readRequest.getMessage().setBytesToRead((int)fileSize);
+    readRequest.getMessage().setFileOffset(0);
+    messaging.submitMessage(readRequest);
+
+    if(readRequest.getResponse() == null ) {
+      throw new IOException("Doble boom");
+    }
+
+    if(fileSize > ioNetworkSize) {
+      Iterator<ReadResponse> iterator = readRequest.iterator();
+      int location = 0;
+      while(iterator.hasNext()) {
+        ReadResponse readResponse = iterator.next();
+        ByteEncoder.copyBytesTo(
+                readResponse.getData(), buffer, location, readResponse.getData().length - 1);
+        location += readResponse.getData().length;
+      }
+      if(location != fileSize) {
+        logger.error("READ MISMATCH");
+        throw new RuntimeException("BLO");
+      }
+    } else {
+      ByteEncoder.copyBytesTo(readRequest.getResponse().getData(), buffer, 0, (int) fileSize);
+    }
+    messaging.close(readRequest);
+  }
+
+  public GelatoInputStream( GelatoMessaging messaging,
+    GelatoFileDescriptor descriptor, long ioSize, long fileSize) {
+
+    this.fileSize = fileSize;
+    this.messaging = messaging;
+    this.fileDescriptor = descriptor;
+    this.ioNetworkSize = ioSize;
+    try {
+      initialise();
+    } catch (IOException e) {
+      e.printStackTrace();
+    }
+  }
+
 
   @Override
-  public int read() throws IOException {
-    return 0;
+  public void close() {
+    GelatoMessage<CloseRequest, CloseResponse> closeRequest = messaging.createCloseTransaction();
+    closeRequest.getMessage().setFileID(fileDescriptor.getRawFileDescriptor());
+    messaging.submitMessage(closeRequest);
+    if(closeRequest.getResponse() == null ) {
+      logger.error("Error closing stream");
+    }
+    messaging.close(closeRequest);
   }
+
+  @Override
+  public int available() {
+    if(fileSize < Gelato.DEFAULT_NET_IO_MEM_BUFFER  ) {
+      return (int)fileSize;
+    }
+    return (Gelato.DEFAULT_NET_IO_MEM_BUFFER - currentLocation);
+  }
+
+  @Override
+  public synchronized int read() throws IOException {
+    int byteval = 0;
+    if(currentLocation >= Gelato.DEFAULT_NET_IO_MEM_BUFFER) {
+      strategySelector();
+    } else if( fileLocation >= fileSize) {
+      return -1;
+    }
+    byteval = buffer[currentLocation] & 0xFF;
+    currentLocation++;
+    fileLocation++;
+    return byteval;
+  }
+
+
 }

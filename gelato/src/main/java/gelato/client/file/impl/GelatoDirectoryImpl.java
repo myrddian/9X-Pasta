@@ -16,36 +16,29 @@
 
 package gelato.client.file.impl;
 
-import gelato.GelatoConnection;
 import gelato.GelatoFileDescriptor;
 import gelato.GelatoSession;
 import gelato.client.GelatoMessage;
 import gelato.client.GelatoMessaging;
+import gelato.client.file.GelatoClientCache;
 import gelato.client.file.GelatoDirectory;
 import gelato.client.file.GelatoFile;
 import gelato.server.manager.controllers.GelatoDirectoryController;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import protocol.ByteEncoder;
-import protocol.Decoder;
-import protocol.P9Protocol;
 import protocol.StatStruct;
-import protocol.messages.Message;
-import protocol.messages.request.ReadRequest;
 import protocol.messages.request.StatRequest;
 import protocol.messages.request.WalkRequest;
-import protocol.messages.response.ErrorMessage;
-import protocol.messages.response.ReadResponse;
 import protocol.messages.response.StatResponse;
 import protocol.messages.response.WalkResponse;
-
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
-public class GelatoDirectoryImpl implements GelatoDirectory {
+public class GelatoDirectoryImpl extends GelatoFileImpl implements GelatoDirectory{
 
   public static final String ERROR_INIT_STAT = "Unable to STAT Directory";
   public static final String ERROR_READ_SIZE_STAT =
@@ -53,45 +46,16 @@ public class GelatoDirectoryImpl implements GelatoDirectory {
   public static final String ERROR_WALK_READ = "Unable to WALK to target";
 
   private final Logger logger = LoggerFactory.getLogger(GelatoDirectoryImpl.class);
-  private int scanDepth = 3;
-  private GelatoSession session;
-  private GelatoMessaging connection;
-  private GelatoFileDescriptor descriptor;
-  private long cacheLoaded = (System.currentTimeMillis() / 1000);
-  private long cacheExpiry = 10;
-  private StatStruct directoryStat;
-  private Map<String, GelatoDirectoryImpl> directoryMap = new HashMap<>();
-  private Map<String, GelatoFile> fileMap = new HashMap<>();
-  private String path = "";
-  private boolean isValid = true;
+  private Map<String, GelatoDirectoryImpl> directoryMap = new ConcurrentHashMap<>();
+  private Map<String, GelatoFile> fileMap = new ConcurrentHashMap<>();
   private GelatoDirectoryImpl parent = this;
+  private GelatoSession session;
 
-  public GelatoDirectoryImpl(
-          GelatoSession session, GelatoMessaging connection, GelatoFileDescriptor descriptor) {
 
-    logger.trace("New Directory Entry");
+
+  public GelatoDirectoryImpl(GelatoSession session, GelatoMessaging messaging, GelatoFileDescriptor descriptor) {
+    super(messaging, descriptor);
     this.session = session;
-    this.connection = connection;
-    this.descriptor = descriptor;
-    refreshEntries();
-  }
-
-  public GelatoDirectoryImpl(
-      GelatoSession session,
-      GelatoMessaging connection,
-      GelatoFileDescriptor descriptor,
-      int currentDepth,
-      String parentPath) {
-    logger.trace(
-        "New Directory Entry parent: "
-            + parentPath
-            + " Current Depth: "
-            + Integer.toString(currentDepth));
-    this.session = session;
-    this.connection = connection;
-    this.descriptor = descriptor;
-    path = parentPath;
-    refreshEntries();
   }
 
   public GelatoDirectoryImpl getParent() {
@@ -104,65 +68,36 @@ public class GelatoDirectoryImpl implements GelatoDirectory {
 
   @Override
   public List<GelatoDirectory> getDirectories() {
-    cacheValidate();
     return new ArrayList<GelatoDirectory>(directoryMap.values());
   }
 
   @Override
   public List<GelatoFile> getFiles() {
-    cacheValidate();
     return new ArrayList<GelatoFile>(fileMap.values());
   }
 
   @Override
   public GelatoDirectory getDirectory(String name) {
     if (name.equals(GelatoDirectoryController.CURRENT_DIR)) {
-      this.cacheValidate();
       return this;
     }
     if (name.equals(GelatoDirectoryController.PARENT_DIR)) {
-      parent.cacheValidate();
       return parent;
     }
     if (directoryMap.containsKey(name)) {
       GelatoDirectoryImpl target = directoryMap.get(name);
-      target.cacheValidate();
       return target;
     }
     return null;
   }
 
   @Override
-  public boolean valid() {
-    return isValid;
-  }
-
-  @Override
-  public String getName() {
-    return directoryStat.getName();
-  }
-
-  @Override
-  public String getPath() {
-    return path;
-  }
-
-  @Override
-  public String getFullName() {
-    return path + "/" + getName();
-  }
-
-  @Override
-  public long getSize() {
-    cacheValidate();
-    return directoryStat.getLength();
-  }
-
-  private void refreshEntries() {
+  public void refreshSelf() {
+    super.refreshSelf();
     List<StatStruct> entries = refreshStatStruct();
     for (StatStruct entry : entries) {
       if (entry.getName().equals(GelatoDirectoryController.CURRENT_DIR)
-          || entry.getName().equals(GelatoDirectoryController.PARENT_DIR)) {
+              || entry.getName().equals(GelatoDirectoryController.PARENT_DIR)) {
         continue;
       }
       if (directoryMap.containsKey(entry.getName()) == false) {
@@ -174,20 +109,21 @@ public class GelatoDirectoryImpl implements GelatoDirectory {
   }
 
   private void walkToTarget(StatStruct newEntry) {
-    GelatoMessage<WalkRequest, WalkResponse> walkRequest = connection.createWalkTransaction();
+    GelatoMessage<WalkRequest, WalkResponse> walkRequest = getMessaging().createWalkTransaction();
     GelatoFileDescriptor newFileDescriptor = session.getManager().generateDescriptor();
     walkRequest.getMessage().setNewDecriptor(newFileDescriptor.getRawFileDescriptor());
-    walkRequest.getMessage().setBaseDescriptor(descriptor.getRawFileDescriptor());
+    walkRequest.getMessage().setBaseDescriptor(getFileDescriptor().getRawFileDescriptor());
     walkRequest.getMessage().setTargetFile(newEntry.getName());
 
-    connection.submitMessage(walkRequest);
+    getMessaging().submitMessage(walkRequest);
     WalkResponse walkResponse = walkRequest.getResponse();
      newFileDescriptor.setQid(walkResponse.getQID());
       session.getTags().closeTag(walkRequest.getTag());
       GelatoDirectoryImpl newDir =
-          new GelatoDirectoryImpl(
-              session, connection, newFileDescriptor, 0, path + directoryStat.getName() + "/");
+          new GelatoDirectoryImpl(session, getMessaging(), newFileDescriptor);
       newDir.setParent(this);
+      newDir.setFilePath(getPath() + getName() + "/" );
+      GelatoClientCache.getInstance().addResource(newDir);
       directoryMap.put(newEntry.getName(), newDir);
       logger.debug(
           "Found : "
@@ -196,36 +132,36 @@ public class GelatoDirectoryImpl implements GelatoDirectory {
               + Long.toString(newFileDescriptor.getDescriptorId())
               + " Path: "
               + newDir.getPath());
-      connection.close(walkRequest);
+      getMessaging().close(walkRequest);
 
   }
 
   private List<StatStruct> refreshStatStruct() {
 
     List<StatStruct> statEntries = new ArrayList<>();
-    GelatoMessage<StatRequest, StatResponse> statRequest = connection.createStatTransaction();
-    statRequest.getMessage().setFileDescriptor(descriptor.getRawFileDescriptor());
-    connection.submitMessage(statRequest);
+    GelatoMessage<StatRequest, StatResponse> statRequest = getMessaging().createStatTransaction();
+    statRequest.getMessage().setFileDescriptor(getFileDescriptor().getRawFileDescriptor());
+    getMessaging().submitMessage(statRequest);
     StatResponse response = statRequest.getResponse();
-    connection.close(statRequest);
+    getMessaging().close(statRequest);
     if(response == null) {
       logger.error(ERROR_INIT_STAT);
-      isValid = false;
+      setResourceValid(false);
       logger.error(statRequest.getErrorMessage());
       return statEntries;
     }
-    directoryStat = response.getStatStruct();
-
-    // Process the read request for Stat entries
+    StatStruct statStruct = response.getStatStruct();
+    setStatStruct(statStruct);
+        // Process the read request for Stat entries
 
     // directory is empty
     if (response.getStatStruct().getLength() == 0) {
       return statEntries;
     }
-    int sizeOfStatEntries = (int) directoryStat.getLength();
+    int sizeOfStatEntries = (int) statStruct.getLength();
     if (sizeOfStatEntries < 0) {
       logger.error(ERROR_READ_SIZE_STAT);
-      isValid = false;
+      setResourceValid(false);
       return statEntries;
     }
 
@@ -233,27 +169,19 @@ public class GelatoDirectoryImpl implements GelatoDirectory {
     byte[] statBuff = new byte[sizeOfStatEntries];
     int remaining = 0;
 
-    // Send read request
-    GelatoMessage<ReadRequest, ReadResponse> readDirectory = connection.createReadTransaction();
-    readDirectory.getMessage().setFileDescriptor(descriptor.getRawFileDescriptor());
-    readDirectory.getMessage().setBytesToRead((int) response.getStatStruct().getLength());
-    connection.submitMessage(readDirectory);
-
-    Iterator<ReadResponse> responseIterator = readDirectory.iterator();
-    // Read Bytes to buffer
-    while (responseIterator.hasNext()) {
-      ReadResponse readResponse = responseIterator.next();
-      ByteEncoder.copyBytesTo(
-          readResponse.getData(), statBuff, remaining, readResponse.getData().length - 1);
-      remaining += readResponse.getData().length;
+    InputStream readStream = getFileInputStream();
+    int content;
+    int location =0;
+    try {
+      while ((content = readStream.read()) != -1) {
+        statBuff[location] = (byte) content;
+        ++location;
+      }
+    } catch (IOException e) {
+      e.printStackTrace();
+      setResourceValid(false);
+      return statEntries;
     }
-
-    if(remaining != sizeOfStatEntries) {
-      logger.error("READ MISMATCH");
-      throw new RuntimeException("BLO");
-    }
-
-    connection.close(readDirectory);
 
     // Decode Stat structure into array for processing
     remaining = 0;
@@ -266,191 +194,5 @@ public class GelatoDirectoryImpl implements GelatoDirectory {
     }
 
     return statEntries;
-  }
-
- /* private void scanDirectory(int currentDepth) {
-
-    logger.trace("Scanning Directory depth: " + Integer.toString(currentDepth));
-    ErrorMessage err;
-    StatRequest requestRootStat = new StatRequest();
-    requestRootStat.setFileDescriptor(descriptor.getRawFileDescriptor());
-    requestRootStat.setTransactionId(session.getTags().generateTag());
-    connection.sendMessage(requestRootStat.toMessage());
-    Message response = connection.getMessage();
-    if (response.messageType != P9Protocol.RSTAT) {
-      logger.error(ERROR_INIT_STAT);
-      isValid = false;
-      if (response.messageType == P9Protocol.RERROR) {
-        err = Decoder.decodeError(response);
-        logger.error(err.getErrorMessage());
-      }
-      return;
-    }
-    StatResponse statResponse = Decoder.decodeStatResponse(response);
-    directoryStat = statResponse.getStatStruct();
-
-    // Process the read request for Stat entries
-
-    // directory is empty
-    if (statResponse.getStatStruct().getLength() == 0) {
-      return;
-    }
-    int sizeOfStatEntries = (int) directoryStat.getLength();
-    if (sizeOfStatEntries < 0) {
-      logger.error(ERROR_READ_SIZE_STAT);
-      isValid = false;
-      if (response.messageType == P9Protocol.RERROR) {
-        err = Decoder.decodeError(response);
-        logger.error(err.getErrorMessage());
-      }
-      return;
-    }
-
-    // Allocate buffer
-    byte[] statBuff = new byte[sizeOfStatEntries];
-    int remaining = 0;
-
-    // Send read request
-    ReadRequest requestDirEntries = new ReadRequest();
-
-    requestDirEntries.setTag(session.getTags().generateTag());
-    requestDirEntries.setFileDescriptor(descriptor.getRawFileDescriptor());
-    requestDirEntries.setBytesToRead((int) statResponse.getStatStruct().getLength());
-    connection.sendMessage(requestDirEntries.toMessage());
-
-    // Read Bytes to buffer
-    while (remaining < sizeOfStatEntries) {
-      response = connection.getMessage();
-      ReadResponse readResponse = Decoder.decodeReadResponse(response);
-      ByteEncoder.copyBytesTo(
-          readResponse.getData(), statBuff, remaining, readResponse.getData().length - 1);
-      remaining += readResponse.getData().length;
-    }
-
-    session.getTags().closeTag(requestDirEntries.getTag());
-
-    // Decode Stat structure into array for processing
-    List<StatStruct> statEntries = new ArrayList<>();
-    remaining = 0;
-
-    while (remaining < sizeOfStatEntries) {
-      StatStruct currStat = new StatStruct();
-      currStat = currStat.DecodeStat(statBuff, remaining);
-      statEntries.add(currStat);
-      remaining += currStat.getStatSize();
-    }
-
-    // Generate stat Map
-    Map<String, StatStruct> mappedValues = new HashMap<>();
-
-    // Check for new directories
-    for (StatStruct entry : statEntries) {
-      mappedValues.put(entry.getName(), entry);
-    }
-
-    logger.trace("Navigating Directory Tree for: " + directoryStat.getName());
-    // Attempt a walk and stat - Directories
-
-    // Check for Removals
-    for (GelatoDirectoryImpl directory : directoryMap.values()) {
-      directory.cacheValidate();
-      if (directory.isValid == false) {
-        directoryMap.remove(directory.directoryStat.getName());
-      }
-    }
-
-    if (currentDepth <= 0) {
-      return;
-    }
-
-    for (StatStruct entry : statEntries) {
-      if (entry.getName().equals(GelatoDirectoryController.CURRENT_DIR)
-          || entry.getName().equals(GelatoDirectoryController.PARENT_DIR)) {
-        continue;
-      }
-      if (entry.getQid().getType() == P9Protocol.QID_DIR
-          && directoryMap.containsKey(entry.getName()) == false) {
-        // Issue a new walk request
-        WalkRequest walkRequest = new WalkRequest();
-        GelatoFileDescriptor newFileDescriptor = session.getManager().generateDescriptor();
-        walkRequest.setNewDecriptor(newFileDescriptor.getRawFileDescriptor());
-        walkRequest.setBaseDescriptor(descriptor.getRawFileDescriptor());
-        walkRequest.setTargetFile(entry.getName());
-        walkRequest.setTag(session.getTags().generateTag());
-        connection.sendMessage(walkRequest.toMessage());
-        response = connection.getMessage();
-        if (response.messageType != P9Protocol.RWALK) {
-          logger.error(ERROR_WALK_READ);
-          processError(response);
-        } else {
-
-          WalkResponse walkResponse = Decoder.decodeWalkResponse(response);
-          newFileDescriptor.setQid(walkResponse.getQID());
-          session.getTags().closeTag(walkRequest.getTag());
-          GelatoDirectoryImpl newDir =
-              new GelatoDirectoryImpl(
-                  session, connection, newFileDescriptor, currentDepth - 1, path + getName() + "/");
-          newDir.setParent(this);
-          directoryMap.put(entry.getName(), newDir);
-          logger.trace(
-              "Found : "
-                  + entry.getName()
-                  + " Mapped to Resource: "
-                  + Long.toString(newFileDescriptor.getDescriptorId())
-                  + " Path: "
-                  + newDir.getPath());
-        }
-      }
-    }
-
-    for (StatStruct entry : statEntries) {
-      if (entry.getQid().getType() == P9Protocol.QID_FILE
-          && directoryMap.containsKey(entry.getName()) == false) {
-        // Issue a new walk request
-        WalkRequest walkRequest = new WalkRequest();
-        GelatoFileDescriptor newFileDescriptor = session.getManager().generateDescriptor();
-        walkRequest.setNewDecriptor(newFileDescriptor.getRawFileDescriptor());
-        walkRequest.setBaseDescriptor(descriptor.getRawFileDescriptor());
-        walkRequest.setTargetFile(entry.getName());
-        walkRequest.setTag(session.getTags().generateTag());
-        connection.sendMessage(walkRequest.toMessage());
-        response = connection.getMessage();
-        if (response.messageType != P9Protocol.RWALK) {
-          logger.error(ERROR_WALK_READ);
-          processError(response);
-        } else {
-          WalkResponse walkResponse = Decoder.decodeWalkResponse(response);
-          newFileDescriptor.setQid(walkResponse.getQID());
-          session.getTags().closeTag(walkRequest.getTag());
-
-          // This GelatoFile needs to be redone
-          GelatoFileImpl newFile = new GelatoFileImpl();
-          newFile.setDescriptor(newFileDescriptor);
-          newFile.setFileName(entry.getName());
-          newFile.setFilePath(path);
-
-          fileMap.put(entry.getName(), newFile);
-        }
-      }
-    }
-  }*/
-
-  private void processError(Message err) {
-    ErrorMessage msgErr;
-    if (err.messageType == P9Protocol.RERROR) {
-      msgErr = Decoder.decodeError(err);
-      logger.error(msgErr.getErrorMessage());
-    } else {
-      logger.error("Unable to process message type is: " + Byte.toString(err.messageType));
-    }
-  }
-
-  private void cacheValidate() {
-    logger.trace("Validating Cache entries");
-    long lifeSpan = (System.currentTimeMillis() / 1000) - cacheLoaded;
-    if (lifeSpan > cacheExpiry) {
-      refreshEntries();
-      cacheLoaded = (System.currentTimeMillis() / 1000);
-    }
   }
 }

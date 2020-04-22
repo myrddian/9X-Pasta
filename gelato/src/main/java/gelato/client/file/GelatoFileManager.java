@@ -60,14 +60,13 @@ public class GelatoFileManager {
     }
     messaging = new GelatoMessaging(clientSession, connection);
     Ciotola.getInstance().injectService(messaging);
+    Ciotola.getInstance().injectService(GelatoClientCache.getInstance());
     root = new GelatoDirectoryImpl(clientSession, messaging, clientSession.getFileServiceRoot());
+    GelatoClientCache.getInstance().addResource(root);
   }
 
   public GelatoDirectory getRoot() {
     return root;
   }
 
-  private String[] parsePath(String path) {
-    return path.split("/");
-  }
 }
