@@ -25,7 +25,7 @@ public class ServiceTest {
         ServiceManager serviceManager = new ServiceManager(ServiceManager.DEFAULT_VER,"test", 9092,
                 "example", "example");
         serviceManager.addRemoteService(TestBomb.class,new TestServiceProxy());
-        serviceManager.startService();
+        //serviceManager.startService();
 
     }
 
