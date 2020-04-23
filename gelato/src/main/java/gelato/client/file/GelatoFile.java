@@ -16,14 +16,13 @@
 
 package gelato.client.file;
 
-import gelato.GelatoFileDescriptor;
-
 import java.io.InputStream;
 import java.io.OutputStream;
 
 public interface GelatoFile extends GelatoResource {
   InputStream getFileInputStream();
   OutputStream getFileOutputStream();
+  OutputStream getFileOutputStream(int MODE);
   String getFullName();
   String getPath();
 }

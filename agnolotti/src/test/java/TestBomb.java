@@ -14,9 +14,11 @@
  *    limitations under the License.
  */
 
-package gelato.server.manager.controllers;
+public interface TestBomb {
 
-public interface GelatoFileController extends GelatoResourceController {
-  void setResourceController(GelatoResourceController resourceController);
-  GelatoResourceController getResource();
+    void hello();
+    String sayHello(String Name);
+    String sayHello(String Name, int Age);
+    String sayHello(int Age, String Name);
+
 }

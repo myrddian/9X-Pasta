@@ -14,9 +14,10 @@
  *    limitations under the License.
  */
 
-package gelato.server.manager.controllers;
+package agnolotti.client;
 
-public interface GelatoFileController extends GelatoResourceController {
-  void setResourceController(GelatoResourceController resourceController);
-  GelatoResourceController getResource();
+public class RemoteFactory {
+
+
+
 }

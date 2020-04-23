@@ -74,7 +74,7 @@ public class GelatoDescriptorHandler {
         sessionHandler.processRequest(clientConnection, message.getDescriptor(), session, msg);
       }
     } catch (InterruptedException e) {
-      e.printStackTrace();
+      logger.error("Service Interrupted",e);
     }
   }
 

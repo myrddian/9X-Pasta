@@ -14,9 +14,19 @@
  *    limitations under the License.
  */
 
-package gelato.server.manager.controllers;
 
-public interface GelatoFileController extends GelatoResourceController {
-  void setResourceController(GelatoResourceController resourceController);
-  GelatoResourceController getResource();
+import agnolotti.server.ServiceManager;
+import org.junit.Test;
+
+public class ServiceTest {
+
+    @Test
+    public void serviceInitTest() {
+        ServiceManager serviceManager = new ServiceManager(ServiceManager.DEFAULT_VER,"test", 9092,
+                "example", "example");
+        serviceManager.addRemoteService(TestBomb.class,new TestServiceProxy());
+        serviceManager.startService();
+
+    }
+
 }

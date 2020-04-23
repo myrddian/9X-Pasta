@@ -23,6 +23,7 @@ import gelato.client.GelatoMessaging;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import protocol.ByteEncoder;
+import protocol.P9Protocol;
 import protocol.messages.request.CloseRequest;
 import protocol.messages.request.ReadRequest;
 import protocol.messages.response.CloseResponse;
@@ -53,18 +54,47 @@ public class GelatoInputStream extends InputStream {
 
   private void strategySelector() throws IOException {
     currentLocation = 0;
-    if(fileSize <= Gelato.DEFAULT_NET_IO_MEM_BUFFER) {
+    long effectiveSize = fileSize - fileLocation;
+    if(effectiveSize <= Gelato.DEFAULT_NET_IO_MEM_BUFFER) {
       fitFileToBufferStrategy();
+    } else {
+      fetchBytesToBufferStrategy();
     }
   }
 
+
+  private void fetchBytesToBufferStrategy() throws IOException {
+    GelatoMessage<ReadRequest, ReadResponse> readRequest = messaging.createReadTransaction();
+    readRequest.getMessage().setFileDescriptor(fileDescriptor.getRawFileDescriptor());
+    readRequest.getMessage().setBytesToRead(P9Protocol.MAX_MSG_CONTENT_SIZE);
+    readRequest.getMessage().setFileOffset(fileLocation);
+    messaging.submitMessage(readRequest);
+
+    if(readRequest.getResponse() == null ) {
+      throw new IOException("Doble boom");
+    }
+
+    Iterator<ReadResponse> iterator = readRequest.iterator();
+    int location = 0;
+    while(iterator.hasNext()) {
+      ReadResponse readResponse = iterator.next();
+      ByteEncoder.copyBytesTo(
+              readResponse.getData(), buffer, location, readResponse.getData().length - 1);
+      location += readResponse.getData().length;
+    }
+    if(location != fileSize) {
+      logger.error("READ MISMATCH");
+      throw new IOException("BLO");
+    }
+    messaging.close(readRequest);
+  }
 
   //Copy the stream to the memory buffer
   private void fitFileToBufferStrategy() throws IOException {
     GelatoMessage<ReadRequest, ReadResponse> readRequest = messaging.createReadTransaction();
     readRequest.getMessage().setFileDescriptor(fileDescriptor.getRawFileDescriptor());
     readRequest.getMessage().setBytesToRead((int)fileSize);
-    readRequest.getMessage().setFileOffset(0);
+    readRequest.getMessage().setFileOffset(fileLocation);
     messaging.submitMessage(readRequest);
 
     if(readRequest.getResponse() == null ) {

@@ -40,7 +40,7 @@ public class GelatoClientCache {
             resource.cacheValidate();
         }
         try {
-            Thread.sleep(50);
+            Thread.sleep(300);
         } catch (InterruptedException e) {
             e.printStackTrace();
         }

@@ -19,6 +19,7 @@ package gelato.server;
 import ciotola.Ciotola;
 import gelato.Gelato;
 import gelato.GelatoConnection;
+import gelato.GelatoDescriptorManager;
 import gelato.GelatoFileDescriptor;
 import gelato.server.manager.GelatoDescriptorHandler;
 import gelato.server.manager.GelatoParallelRequestHandler;
@@ -40,6 +41,7 @@ public class GelatoServerManager {
   private GelatoDescriptorHandler descriptorHandler;
   private GelatoValidateRequestHandler validateRequestHandler = new GelatoValidateRequestHandler();
   private GelatoParallelRequestHandler parallelRequestHandler;
+  private GelatoDescriptorManager descriptorManager;
   private Ciotola serviceContainer = Ciotola.getInstance();
   private boolean shutdown = false;
 
@@ -50,7 +52,12 @@ public class GelatoServerManager {
     sessionHandler = new GelatoSessionHandler(qidManager, validateRequestHandler);
     descriptorHandler = new GelatoDescriptorHandler(library, connection, sessionHandler);
     parallelRequestHandler = new GelatoParallelRequestHandler(qidManager);
+    descriptorManager = library.getDescriptorManager();
     validateRequestHandler.setNextHandler(parallelRequestHandler);
+  }
+
+  public GelatoDescriptorManager getDescriptorManager() {
+    return descriptorManager;
   }
 
   public void addResource(

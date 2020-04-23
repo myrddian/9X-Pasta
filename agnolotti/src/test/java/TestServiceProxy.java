@@ -14,9 +14,24 @@
  *    limitations under the License.
  */
 
-package gelato.server.manager.controllers;
+public class TestServiceProxy implements TestBomb{
+    @Override
+    public void hello() {
+        System.out.println("hello");
+    }
 
-public interface GelatoFileController extends GelatoResourceController {
-  void setResourceController(GelatoResourceController resourceController);
-  GelatoResourceController getResource();
+    @Override
+    public String sayHello(String Name) {
+        return "hello " + Name;
+    }
+
+    @Override
+    public String sayHello(String Name, int Age) {
+        return sayHello(Name) + " " + Integer.toString(Age);
+    }
+
+    @Override
+    public String sayHello(int Age, String Name) {
+        return sayHello(Name, Age);
+    }
 }

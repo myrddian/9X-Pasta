@@ -21,6 +21,7 @@ import gelato.GelatoFileDescriptor;
 import gelato.GelatoSession;
 import gelato.server.manager.controllers.GelatoResourceController;
 import protocol.messages.Message;
+import protocol.messages.response.ErrorMessage;
 
 public class ParallelRequest implements  Runnable{
   private Message message;
@@ -71,6 +72,11 @@ public class ParallelRequest implements  Runnable{
 
   @Override
   public void run() {
-    handler.processRequest(connection,descriptor,session,message);
+    if(!handler.processRequest(connection,descriptor,session,message)) {
+      ErrorMessage msg = new ErrorMessage();
+      msg.setTag(message.tag);
+      msg.setErrorMessage("General Failure - Handling Operation");
+      connection.sendMessage(descriptor, msg.toMessage());
+    }
   }
 }

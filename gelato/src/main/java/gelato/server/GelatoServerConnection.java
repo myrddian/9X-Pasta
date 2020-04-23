@@ -69,6 +69,20 @@ public class GelatoServerConnection implements GelatoConnection {
     }
   }
 
+  public GelatoServerConnection(Gelato library, int portNumber) {
+    descriptorManager = library.getDescriptorManager();
+    libraryReference = library;
+    logger.debug("Starting Server on port: " + Integer.toString(portNumber));
+    try {
+      serverSocket = new ServerSocket(portNumber);
+      logger.debug("Server Started listening");
+
+    } catch (IOException e) {
+      logger.error("Unable to Start server", e);
+      throw new RuntimeException("Unable to start server");
+    }
+  }
+
   public void startServer() {
     started = true;
   }

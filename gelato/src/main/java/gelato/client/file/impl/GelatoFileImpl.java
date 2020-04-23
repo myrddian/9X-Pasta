@@ -21,6 +21,7 @@ import gelato.client.GelatoMessage;
 import gelato.client.GelatoMessaging;
 import gelato.client.file.GelatoFile;
 import gelato.client.file.GelatoInputStream;
+import gelato.client.file.GelatoOutputStream;
 import protocol.P9Protocol;
 import protocol.StatStruct;
 import protocol.messages.request.OpenRequest;
@@ -43,7 +44,6 @@ public class GelatoFileImpl  extends GelatoResourceImpl implements GelatoFile {
 
   @Override
   public InputStream getFileInputStream() {
-
     StatStruct localStruct = getStatStruct();
     GelatoMessage<OpenRequest, OpenResponse> openRequest = getMessaging().createOpenTransaction();
     openRequest.getMessage().setFileDescriptor(getFileDescriptor().getRawFileDescriptor());
@@ -58,7 +58,20 @@ public class GelatoFileImpl  extends GelatoResourceImpl implements GelatoFile {
 
   @Override
   public OutputStream getFileOutputStream() {
-    return null;
+    return getFileOutputStream((byte) P9Protocol.OPEN_MODE_OWRITE);
+  }
+
+  @Override
+  public OutputStream getFileOutputStream(int MODE) {
+    GelatoMessage<OpenRequest, OpenResponse> openRequest = getMessaging().createOpenTransaction();
+    openRequest.getMessage().setFileDescriptor(getFileDescriptor().getRawFileDescriptor());
+    openRequest.getMessage().setMode((byte) MODE);
+    getMessaging().submitMessage(openRequest);
+    if(openRequest.getResponse() == null) {
+      throw new RuntimeException("ERROR OPENING FILE");
+    }
+    getMessaging().close(openRequest);
+    return new GelatoOutputStream(getMessaging(),getFileDescriptor(),openRequest.getResponse().getSizeIO());
   }
 
   @Override

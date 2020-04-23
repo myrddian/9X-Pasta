@@ -1,0 +1,34 @@
+plugins {
+    // Apply the java-library plugin to add support for Java Library
+    id 'java-library'
+    id 'org.springframework.boot' version '2.1.3.RELEASE'
+}
+
+apply plugin: 'io.spring.dependency-management'
+apply plugin: 'java'
+sourceCompatibility = 11
+targetCompatibility = 11
+
+repositories {
+    // Use jcenter for resolving dependencies.
+    // You can declare any Maven/Ivy/file repository here.
+    jcenter()
+    mavenCentral()
+}
+jar {
+    enabled = true
+}
+
+bootJar {
+    enabled = false
+}
+
+dependencies {
+    testCompile group: 'junit', name: 'junit', version: '4.12'
+    implementation group: 'org.slf4j', name: 'slf4j-api', version: '1.7.28'
+    implementation 'com.google.code.gson:gson:2.8.6'
+    testRuntimeOnly group: 'ch.qos.logback', name: 'logback-classic', version: '1.2.3'
+    implementation project(':gelato')
+    implementation project(':ciotola')
+    implementation project(':protocol')
+}

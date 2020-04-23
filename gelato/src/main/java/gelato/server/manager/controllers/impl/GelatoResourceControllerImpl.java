@@ -50,6 +50,8 @@ import protocol.messages.request.WriteRequest;
 import protocol.messages.request.WriteStatRequest;
 import protocol.messages.response.ErrorMessage;
 
+import java.time.Instant;
+
 public class GelatoResourceControllerImpl implements GelatoResourceController {
 
   private final Logger logger = LoggerFactory.getLogger(GelatoResourceControllerImpl.class);
@@ -66,6 +68,33 @@ public class GelatoResourceControllerImpl implements GelatoResourceController {
   private WriteStatRequestHandler writeStatRequestHandler = new NotSupportedHandler();
   private RequestFlushHandler flushHandler = new DefaultFlushHandler();
   private ReadRequestHandler readRequestHandler = new NotSupportedHandler();
+
+  public static final String DEFAULT_NAME = "default_resource";
+  public static final String DEFAULT_USER = "default_user";
+  public static final String DEFAULT_GROUP = "default_group";
+
+
+  public GelatoResourceControllerImpl() {
+    StatStruct newStat = getStat();
+    newStat.setAccessTime(Instant.now().getEpochSecond());
+    newStat.setModifiedTime(newStat.getAccessTime());
+    newStat.setUid(DEFAULT_USER);
+    newStat.setGid(DEFAULT_GROUP);
+    newStat.setMuid(DEFAULT_GROUP);
+    newStat.setName(DEFAULT_NAME);
+    QID qid = getQID();
+    qid.setType(P9Protocol.QID_FILE);
+    qid.setVersion(0);
+    qid.setLongFileId(0l);
+    newStat.setQid(qid);
+    newStat.updateSize();
+    setStat(newStat);
+  }
+
+  public void updateSize() {
+    resourceStat.updateSize();
+  }
+
 
   @Override
   public QID getQID() {
@@ -90,6 +119,7 @@ public class GelatoResourceControllerImpl implements GelatoResourceController {
   @Override
   public void setStat(StatStruct newStat) {
     resourceStat = newStat;
+    resourceStat.updateSize();
   }
 
   @Override
@@ -105,6 +135,7 @@ public class GelatoResourceControllerImpl implements GelatoResourceController {
   @Override
   public void setResourceName(String newName) {
     getStat().setName(newName);
+    getStat().updateSize();
   }
 
   @Override
