@@ -58,7 +58,7 @@ public class GelatoResourceControllerImpl implements GelatoResourceController {
   private GelatoFileDescriptor fileDescriptor = new GelatoFileDescriptor();
   private StatStruct resourceStat = new StatStruct();
   private GelatoQIDManager resourceManager;
-  private CloseRequestHandler closeRequestHandler = new NotSupportedHandler();
+  private CloseRequestHandler closeRequestHandler = new DefaultCloseRequestHandler();
   private CreateRequestHandler createRequestHandler = new NotSupportedHandler();
   private OpenRequestHandler openRequestHandler = new NotSupportedHandler();
   private RemoveRequestHandler removeRequestHandler = new NotSupportedHandler();

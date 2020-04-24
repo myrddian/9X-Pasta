@@ -54,7 +54,7 @@ public class GelatoFileControllerImpl
   private GelatoResourceController resourceController = new GelatoResourceControllerImpl();
   private InputStream fileInputStream;
 
-  public GelatoFileControllerImpl(String fileName, InputStream inputStream, long resourceSize, GelatoFileDescriptor descriptor) {
+  public GelatoFileControllerImpl(String fileName, InputStream inputStream, long resourceSize, GelatoFileDescriptor descriptor){
     resourceController.setReadRequestHandler(this);
     resourceController.setOpenRequestHandler(this);
     resourceController.setStatRequestHandler(this);
@@ -75,10 +75,10 @@ public class GelatoFileControllerImpl
       OpenResponse response = new OpenResponse();
       response.setFileQID(getQID());
       connection.reply(response);
-      return false;
+      return true;
     }
     sendErrorMessage(connection, "Only READ mode is allowed");
-    return true;
+    return false;
   }
 
   @Override
@@ -94,7 +94,7 @@ public class GelatoFileControllerImpl
       fileInputStream.skip(offset);
       byte[] buff = new byte[P9Protocol.MAX_MSG_CONTENT_SIZE];
 
-      while (ptr != numberOfBytes) {
+      while (ptr < numberOfBytes) {
         int copyByte = numberOfBytes - ptr;
         if (copyByte > P9Protocol.MAX_MSG_CONTENT_SIZE) {
           copyByte = (int) P9Protocol.MAX_MSG_CONTENT_SIZE;
@@ -106,6 +106,7 @@ public class GelatoFileControllerImpl
         ReadResponse readResponse = new ReadResponse();
         readResponse.setData(Arrays.copyOf(buff, copyByte));
         connection.reply(readResponse);
+        ptr+=copyByte;
       }
 
       return true;
@@ -119,7 +120,6 @@ public class GelatoFileControllerImpl
   public boolean statRequest(
       RequestConnection connection, GelatoFileDescriptor clientFileDescriptor) {
     StatStruct selfStat = getStat();
-    selfStat.setLength(0);
     StatResponse response = new StatResponse();
     response.setStatStruct(selfStat);
     connection.reply(response);

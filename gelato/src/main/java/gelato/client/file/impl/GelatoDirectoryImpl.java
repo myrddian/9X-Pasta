@@ -26,6 +26,7 @@ import gelato.client.file.GelatoFile;
 import gelato.server.manager.controllers.GelatoDirectoryController;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import protocol.P9Protocol;
 import protocol.StatStruct;
 import protocol.messages.request.StatRequest;
 import protocol.messages.request.WalkRequest;
@@ -47,7 +48,7 @@ public class GelatoDirectoryImpl extends GelatoFileImpl implements GelatoDirecto
 
   private final Logger logger = LoggerFactory.getLogger(GelatoDirectoryImpl.class);
   private Map<String, GelatoDirectoryImpl> directoryMap = new ConcurrentHashMap<>();
-  private Map<String, GelatoFile> fileMap = new ConcurrentHashMap<>();
+  private Map<String, GelatoFileImpl> fileMap = new ConcurrentHashMap<>();
   private GelatoDirectoryImpl parent = this;
   private GelatoSession session;
 
@@ -92,6 +93,11 @@ public class GelatoDirectoryImpl extends GelatoFileImpl implements GelatoDirecto
   }
 
   @Override
+  public GelatoFile getFile(String fileName) {
+    return fileMap.get(fileName);
+  }
+
+  @Override
   public void refreshSelf() {
     super.refreshSelf();
     List<StatStruct> entries = refreshStatStruct();
@@ -100,12 +106,46 @@ public class GelatoDirectoryImpl extends GelatoFileImpl implements GelatoDirecto
               || entry.getName().equals(GelatoDirectoryController.PARENT_DIR)) {
         continue;
       }
-      if (directoryMap.containsKey(entry.getName()) == false) {
+      if (directoryMap.containsKey(entry.getName()) == false && entry.getQid().getType() == P9Protocol.QID_DIR) {
         walkToTarget(entry);
-      } else {
+      } else if(entry.getQid().getType() == P9Protocol.QID_DIR){
         directoryMap.get(entry.getName()).refreshStatStruct();
       }
+      if(fileMap.containsKey(entry.getName()) == false && entry.getQid().getType() == P9Protocol.QID_FILE) {
+        walkToTarget(entry);
+      } else if(entry.getQid().getType()  == P9Protocol.QID_FILE) {
+        fileMap.get(entry.getName()).refreshSelf();
+      }
     }
+  }
+
+  private void addFile(StatStruct newEntry, WalkResponse response, GelatoFileDescriptor descriptor) {
+    GelatoFileImpl newDir =
+            new GelatoFileImpl(getMessaging(), descriptor);
+    newDir.setFilePath(getPath() + getName() + "/" );
+    GelatoClientCache.getInstance().addResource(newDir);
+    fileMap.put(newEntry.getName(), newDir);
+    logger.debug(
+            "Found FILE : "
+                    + newEntry.getName()
+                    + " Mapped to Resource: "
+                    + Long.toString(descriptor.getDescriptorId()));
+  }
+
+  private void addDirectory(StatStruct newEntry, WalkResponse response, GelatoFileDescriptor descriptor) {
+    GelatoDirectoryImpl newDir =
+            new GelatoDirectoryImpl(session, getMessaging(), descriptor);
+    newDir.setParent(this);
+    newDir.setFilePath(getPath() + getName() + "/" );
+    GelatoClientCache.getInstance().addResource(newDir);
+    directoryMap.put(newEntry.getName(), newDir);
+    logger.debug(
+            "Found : "
+                    + newEntry.getName()
+                    + " Mapped to Resource: "
+                    + Long.toString(descriptor.getDescriptorId())
+                    + " Path: "
+                    + newDir.getPath());
   }
 
   private void walkToTarget(StatStruct newEntry) {
@@ -117,22 +157,14 @@ public class GelatoDirectoryImpl extends GelatoFileImpl implements GelatoDirecto
 
     getMessaging().submitMessage(walkRequest);
     WalkResponse walkResponse = walkRequest.getResponse();
-     newFileDescriptor.setQid(walkResponse.getQID());
-      session.getTags().closeTag(walkRequest.getTag());
-      GelatoDirectoryImpl newDir =
-          new GelatoDirectoryImpl(session, getMessaging(), newFileDescriptor);
-      newDir.setParent(this);
-      newDir.setFilePath(getPath() + getName() + "/" );
-      GelatoClientCache.getInstance().addResource(newDir);
-      directoryMap.put(newEntry.getName(), newDir);
-      logger.debug(
-          "Found : "
-              + newEntry.getName()
-              + " Mapped to Resource: "
-              + Long.toString(newFileDescriptor.getDescriptorId())
-              + " Path: "
-              + newDir.getPath());
-      getMessaging().close(walkRequest);
+    newFileDescriptor.setQid(walkResponse.getQID());
+    session.getTags().closeTag(walkRequest.getTag());
+    if (newEntry.getQid().getType() == P9Protocol.QID_DIR) {
+      addDirectory(newEntry,walkResponse,newFileDescriptor);
+    } else {
+      addFile(newEntry,walkResponse,newFileDescriptor);
+    }
+    getMessaging().close(walkRequest);
 
   }
 

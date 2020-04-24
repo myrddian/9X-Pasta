@@ -19,7 +19,10 @@ package gelato.server.manager.implementation;
 import gelato.GelatoConnection;
 import gelato.GelatoFileDescriptor;
 import gelato.GelatoSession;
+import gelato.client.file.GelatoOutputStream;
 import gelato.server.manager.controllers.GelatoResourceController;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import protocol.messages.Message;
 import protocol.messages.response.ErrorMessage;
 
@@ -29,6 +32,7 @@ public class ParallelRequest implements  Runnable{
   private GelatoSession session;
   private GelatoConnection connection;
   private GelatoFileDescriptor descriptor;
+  private final Logger logger = LoggerFactory.getLogger(ParallelRequest.class);
 
   public GelatoConnection getConnection() {
     return connection;
@@ -75,8 +79,10 @@ public class ParallelRequest implements  Runnable{
     if(!handler.processRequest(connection,descriptor,session,message)) {
       ErrorMessage msg = new ErrorMessage();
       msg.setTag(message.tag);
-      msg.setErrorMessage("General Failure - Handling Operation");
+      msg.setErrorMessage("General Failure - Handling Operation ");
       connection.sendMessage(descriptor, msg.toMessage());
+      logger.error("Unable to process Message : " + Integer.toString(message.messageType) + " Resource " +
+              handler.getStat().getName());
     }
   }
 }

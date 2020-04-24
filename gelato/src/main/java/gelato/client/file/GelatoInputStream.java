@@ -157,10 +157,11 @@ public class GelatoInputStream extends InputStream {
   @Override
   public synchronized int read() throws IOException {
     int byteval = 0;
+    if( fileLocation >= fileSize) {
+      return -1;
+    }
     if(currentLocation >= Gelato.DEFAULT_NET_IO_MEM_BUFFER) {
       strategySelector();
-    } else if( fileLocation >= fileSize) {
-      return -1;
     }
     byteval = buffer[currentLocation] & 0xFF;
     currentLocation++;

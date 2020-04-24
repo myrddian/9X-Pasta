@@ -34,4 +34,9 @@ public class TestServiceProxy implements TestBomb{
     public String sayHello(int Age, String Name) {
         return sayHello(Name, Age);
     }
+
+    @Override
+    public void hello(String name) {
+        System.out.println("hello " +name);
+    }
 }

@@ -46,8 +46,8 @@ class ServiceGenericDirectory extends GelatoDirectoryControllerImpl {
         qid.setVersion(0);
         qid.setLongFileId(directoryID);
         newStat.setQid(qid);
-        newStat.updateSize();
         setQID(qid);
         setStat(newStat);
+        newStat.updateSize();
     }
 }

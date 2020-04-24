@@ -49,8 +49,10 @@ public class CiotolaKeyPoolRunner extends Thread {
                 }
               } catch (InterruptedException e) {
                 logger.error("Interrupted while runnign job: ", e);
+                return;
               } catch (Exception ex) {
                 logger.error("Exception thrown by job: ", ex);
+                return;
               }
         }
     }

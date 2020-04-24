@@ -14,37 +14,33 @@
  *    limitations under the License.
  */
 
-package agnolotti.server;
+package agnolotti.client;
 
+import agnolotti.server.RemoteServiceFactory;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
-import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
-public class ServiceProxy implements InvocationHandler {
+public class RemoteServiceProxy  implements InvocationHandler {
 
-    private Object proxyObject;
-    private final Map<String, Method> methods = new HashMap<>();
+    Map<String, RemoteServiceMethod> methodMap = new ConcurrentHashMap<>();
 
-
-    public ServiceProxy(Object target) {
-       proxyObject= target;
-        for(Method method: target.getClass().getDeclaredMethods()) {
-            this.methods.put(RemoteServiceFactory.getMethodDecorator(method), method);
+    public RemoteServiceProxy(List<RemoteServiceMethod> methods) {
+        for(RemoteServiceMethod method: methods) {
+            methodMap.put(method.getMethodName(), method);
         }
     }
 
     @Override
     public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
-        //Thread safety on non-safe thread objects
-        synchronized (this) {
-            Object result = methods.get(RemoteServiceFactory.getMethodDecorator(method)).invoke(proxyObject, args);
-            return result;
-        }
-    }
 
-    @Override
-    public String toString() {
-        return getClass().getName() + '@' + Integer.toHexString(hashCode()) + "PROXY:"+ proxyObject.toString();
+        String methodDecorator = RemoteServiceFactory.getMethodDecorator(method);
+        if(!methodMap.containsKey(methodDecorator)) {
+            throw new RuntimeException("Invalid Function " + methodDecorator);
+        }
+        RemoteServiceMethod serviceMethod = methodMap.get(methodDecorator);
+        return serviceMethod.invoke(args);
     }
 }

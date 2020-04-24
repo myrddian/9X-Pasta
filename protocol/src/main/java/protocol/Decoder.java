@@ -295,7 +295,9 @@ public class Decoder {
     ptr += P9Protocol.MSG_LONG_SIZE;
     request.setByteCount(ByteEncoder.decodeInt(msg.messageContent, ptr));
     ptr += P9Protocol.MSG_INT_SIZE;
-    request.setWriteData(Arrays.copyOfRange(msg.messageContent, ptr, request.getByteCount()));
+    byte [] contentBuff = new byte[request.getByteCount()];
+    ByteEncoder.copyBytesFrom(msg.messageContent,contentBuff,ptr,contentBuff.length);
+    request.setWriteData(contentBuff);
 
     return request;
   }

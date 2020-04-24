@@ -47,11 +47,11 @@ public class RemoteServiceFactory {
 
     public static String getMethodDecorator(Method method) {
         int count = method.getParameterCount();
-        String methodTypes = method.getName();
+        String methodTypes = "@"+method.getName();
         for(Parameter parameter:method.getParameters()) {
-            methodTypes = methodTypes+"-"+parameter.getName()+"-"+parameter.getType();
+            methodTypes = methodTypes+"$"+parameter.getName()+"-"+parameter.getType();
         }
-        return methodTypes+"-count-"+Integer.toString(count);
+        return methodTypes+"#count:"+Integer.toString(count);
     }
 
     public RemoteServiceProxyDirectory generateRpc(Class remoteInterface, Object service) {
@@ -63,7 +63,7 @@ public class RemoteServiceFactory {
         if(!remoteInterface.isInstance(service)) {
             throw new RuntimeException("Service must implement Interface");
         }
-        ServiceProxy  proxy = new ServiceProxy(service);
+        ServiceProxySerialiser proxy = new ServiceProxySerialiser(service);
         Object proxyInstance = Proxy.newProxyInstance(RemoteServiceFactory.class.getClassLoader(),
                 new Class[] {remoteInterface}, proxy);
         String objectName = remoteInterface.getName();

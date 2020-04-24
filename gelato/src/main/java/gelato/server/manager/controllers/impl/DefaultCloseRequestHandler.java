@@ -14,12 +14,18 @@
  *    limitations under the License.
  */
 
-public interface TestBomb {
+package gelato.server.manager.controllers.impl;
 
-    void hello();
-    String sayHello(String Name);
-    String sayHello(String Name, int Age);
-    String sayHello(int Age, String Name);
-    void hello(String name);
+import gelato.GelatoFileDescriptor;
+import gelato.server.manager.RequestConnection;
+import gelato.server.manager.processchain.CloseRequestHandler;
+import protocol.messages.response.CloseResponse;
 
+public class DefaultCloseRequestHandler implements CloseRequestHandler {
+    @Override
+    public boolean closeRequest(RequestConnection connection, GelatoFileDescriptor clientFileDescriptor) {
+        CloseResponse closeResponse = new CloseResponse();
+        connection.reply(closeResponse);
+        return true;
+    }
 }

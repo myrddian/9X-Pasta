@@ -16,6 +16,7 @@
 
 package agnolotti.server;
 
+import agnolotti.Agnolotti;
 import com.google.gson.Gson;
 import gelato.server.GelatoServerManager;
 import gelato.server.manager.controllers.impl.GelatoDirectoryControllerImpl;
@@ -40,8 +41,8 @@ public class RemoteServiceProxyDirectory extends GelatoDirectoryControllerImpl {
     private void initRpc() {
         Map<String, Object> jsonMap = new HashMap<>();
         Map<String, Object> methodMap = new HashMap<>();
-        jsonMap.put("name",getDirectoryName());
-        jsonMap.put("methods", methodMap);
+        jsonMap.put(Agnolotti.SERVICE_NAME,getDirectoryName());
+        jsonMap.put(Agnolotti.METHOD_FIELD, methodMap);
         for(RemoteMethodStrategy element: methodStrategyMap.values()) {
             methodMap.put(element.methodDecorator(), element.getJsonContract());
             addFile(element);
@@ -49,7 +50,7 @@ public class RemoteServiceProxyDirectory extends GelatoDirectoryControllerImpl {
         }
         definedIDL = gson.toJson(jsonMap);
         ByteArrayInputStream arrayInputStream = new ByteArrayInputStream(definedIDL.getBytes());
-        fileIdl = new GelatoFileControllerImpl("idl.json", arrayInputStream,definedIDL.getBytes().length, manager.getDescriptorManager().generateDescriptor());
+        fileIdl = new GelatoFileControllerImpl(Agnolotti.IDL, arrayInputStream,definedIDL.getBytes().length, manager.getDescriptorManager().generateDescriptor());
         addFile(fileIdl);
         manager.addResource(fileIdl);
     }
@@ -71,9 +72,9 @@ public class RemoteServiceProxyDirectory extends GelatoDirectoryControllerImpl {
         StatStruct newStat = getStat();
         newStat.setAccessTime(Instant.now().getEpochSecond());
         newStat.setModifiedTime(newStat.getAccessTime());
-        newStat.setUid(ServiceManager.DEFAULT_NAME);
-        newStat.setGid(ServiceManager.DEFAULT_NAME);
-        newStat.setMuid(ServiceManager.DEFAULT_NAME);
+        newStat.setUid(Agnolotti.DEFAULT_NAME);
+        newStat.setGid(Agnolotti.DEFAULT_NAME);
+        newStat.setMuid(Agnolotti.DEFAULT_NAME);
         QID qid = getQID();
         qid.setType(P9Protocol.QID_DIR);
         qid.setVersion(0);

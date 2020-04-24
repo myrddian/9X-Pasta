@@ -26,9 +26,14 @@ public class RemoteClient {
     private GelatoConnection connection;
     private GelatoFileManager fileManager;
     private Gelato gelato;
+    private String serviceName;
+    private String serviceVersion;
+    private RemoteFactory remoteFactory;
 
     public RemoteClient(String server,
                         int port,
+                        String serviceName,
+                        String version,
                         String user) {
 
         gelato = new Gelato();
@@ -39,12 +44,15 @@ public class RemoteClient {
         if (connection == null) {
             throw new RuntimeException("Cannot connect");
         }
+        this.serviceName = serviceName;
+        this.serviceVersion = version;
         fileManager = new GelatoFileManager(connection, gelato, user, user);
+        remoteFactory = new RemoteFactory(serviceName,version, fileManager.getRoot());
     }
 
 
-    public RemoteFactory getFactory(Class remoteInterface) {
-        return new RemoteFactory();
+    public Object getRemoteService(Class remoteInterface) {
+        return remoteFactory.generateRemoteService(remoteInterface);
     }
 
     public GelatoConnection getConnection() {
@@ -69,6 +77,15 @@ public class RemoteClient {
 
     public void setGelato(Gelato gelato) {
         this.gelato = gelato;
+    }
+
+
+    public String getServiceName() {
+        return serviceName;
+    }
+
+    public String getServiceVersion() {
+        return serviceVersion;
     }
 
 

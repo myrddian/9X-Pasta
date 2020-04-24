@@ -79,6 +79,7 @@ public class  ConnectionPoolRunner extends Thread{
                     Thread.sleep(10);
                 } catch (InterruptedException e) {
                     logger.error("Interrupted while running job: ", e);
+                    return;
                 }
             }
         }

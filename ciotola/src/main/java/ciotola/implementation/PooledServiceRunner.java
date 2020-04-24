@@ -29,7 +29,7 @@ public class PooledServiceRunner implements Runnable {
   private int serviceId = 0;
 
   public PooledServiceRunner(CiotolaServiceInterface service, int id) {
-    javaService = service;;
+    javaService = service;
     serviceId = id;
     serviceStatus = ServiceStatus.SERVICE_START;
   }

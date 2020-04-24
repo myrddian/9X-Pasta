@@ -243,10 +243,10 @@ public class GelatoDirectoryControllerImpl
       OpenResponse response = new OpenResponse();
       response.setFileQID(getQID());
       connection.reply(response);
-      return false;
+      return true;
     }
     sendErrorMessage(connection, "Only READ mode is allowed");
-    return true;
+    return false;
   }
 
   @Override

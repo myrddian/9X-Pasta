@@ -24,5 +24,6 @@ public interface GelatoDirectory extends GelatoFile {
   List<GelatoFile> getFiles();
 
   GelatoDirectory getDirectory(String name);
+  GelatoFile getFile(String fileName);
 
 }

@@ -16,6 +16,7 @@
 
 package agnolotti.server;
 
+import agnolotti.Agnolotti;
 import gelato.Gelato;
 import gelato.server.GelatoServerConnection;
 import gelato.server.GelatoServerManager;
@@ -24,18 +25,12 @@ import org.slf4j.LoggerFactory;
 
 public class ServiceManager {
 
-    public static final long ROOT_ID = 001l;
-    public static final long NAME_ID = 002l;
-    public static final long VER_ID  = 003l;
 
-    public static final String ROOT_NAME = "";
-    public static final String DEFAULT_VER = "0.0.0-a";
-    public static final String DEFAULT_NAME = "serviceObject";
 
-    private String version = DEFAULT_VER;
-    private String nameSpace = DEFAULT_NAME;
-    private String userName = DEFAULT_NAME;
-    private String userGroup = DEFAULT_NAME;
+    private String version = Agnolotti.DEFAULT_VER;
+    private String nameSpace = Agnolotti.DEFAULT_NAME;
+    private String userName = Agnolotti.DEFAULT_NAME;
+    private String userGroup = Agnolotti.DEFAULT_NAME;
     private int port;
     private Gelato gelato;
     private GelatoServerConnection serverConnection;
@@ -61,9 +56,9 @@ public class ServiceManager {
         userGroup = serviceUserGroup;
         serverConnection = new GelatoServerConnection(gelato,port);
         serveletManager = new GelatoServerManager(serverConnection, gelato);
-        root = new ServiceGenericDirectory(userName, userGroup,ROOT_ID, ROOT_NAME);
-        serviceName = new ServiceGenericDirectory(userName,userGroup, NAME_ID, nameSpace);
-        serviceVersion = new ServiceGenericDirectory(userName, userGroup, VER_ID, version);
+        root = new ServiceGenericDirectory(userName, userGroup, Agnolotti.ROOT_ID, Agnolotti.ROOT_NAME);
+        serviceName = new ServiceGenericDirectory(userName,userGroup, Agnolotti.NAME_ID, nameSpace);
+        serviceVersion = new ServiceGenericDirectory(userName, userGroup, Agnolotti.VER_ID, version);
         root.addDirectory(serviceName);
         serviceName.addDirectory(serviceVersion);
         serveletManager.start();

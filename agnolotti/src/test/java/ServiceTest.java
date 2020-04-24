@@ -15,17 +15,29 @@
  */
 
 
+import agnolotti.Agnolotti;
+import agnolotti.client.RemoteClient;
 import agnolotti.server.ServiceManager;
 import org.junit.Test;
 
 public class ServiceTest {
 
     @Test
-    public void serviceInitTest() {
-        ServiceManager serviceManager = new ServiceManager(ServiceManager.DEFAULT_VER,"test", 9092,
+    public void serviceInitTest() throws InterruptedException {
+        ServiceManager serviceManager = new ServiceManager(Agnolotti.DEFAULT_VER,"test", 9092,
                 "example", "example");
         serviceManager.addRemoteService(TestBomb.class,new TestServiceProxy());
-        //serviceManager.startService();
+
+        Thread.sleep(100);
+
+        RemoteClient client = new RemoteClient("localhost",9092,"test", Agnolotti.DEFAULT_VER,
+                "test");
+
+        TestBomb tst = (TestBomb) client.getRemoteService(TestBomb.class);
+        tst.hello();
+        tst.hello("fun");
+        Thread.sleep(4000);
+
 
     }
 
