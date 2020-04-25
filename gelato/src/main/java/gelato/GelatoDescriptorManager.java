@@ -19,10 +19,11 @@ package gelato;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Random;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class GelatoDescriptorManager {
   private Map<Long, Boolean> usedFid = new HashMap<>();
-  private Map<Long, GelatoFileDescriptor> qidMap = new HashMap<>();
+  private Map<Long, GelatoFileDescriptor> qidMap = new ConcurrentHashMap<>();
 
   private Random generator = new Random();
 

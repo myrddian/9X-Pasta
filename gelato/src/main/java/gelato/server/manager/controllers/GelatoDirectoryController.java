@@ -19,6 +19,7 @@ package gelato.server.manager.controllers;
 public interface GelatoDirectoryController extends GelatoResourceController {
   String PARENT_DIR = "..";
   String CURRENT_DIR = ".";
+  String ROOT_DIR = "/";
 
   GelatoResourceController getResourceController();
 

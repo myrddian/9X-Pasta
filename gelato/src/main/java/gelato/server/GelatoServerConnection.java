@@ -37,9 +37,9 @@ import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class GelatoServerConnection implements GelatoConnection {
 
@@ -47,7 +47,7 @@ public class GelatoServerConnection implements GelatoConnection {
   private int portNumber = 7073;
   private ServerSocket serverSocket;
   private GelatoDescriptorManager descriptorManager;
-  private Map<GelatoFileDescriptor, GelatoTransport> connections = new HashMap<>();
+  private Map<GelatoFileDescriptor, GelatoTransport> connections = new ConcurrentHashMap<>();
   private boolean shutdown = false;
   private Gelato libraryReference;
   private boolean started = false;
@@ -145,7 +145,7 @@ public class GelatoServerConnection implements GelatoConnection {
   }
 
   @Override
-  public synchronized List<GelatoFileDescriptor> getConnections() {
+  public List<GelatoFileDescriptor> getConnections() {
     return new ArrayList<>(connections.keySet());
   }
 
@@ -194,13 +194,11 @@ public class GelatoServerConnection implements GelatoConnection {
         Socket clientSocket = serverSocket.accept();
         ClientTCPTransport tcpTransport = new ClientTCPTransport(clientSocket);
         GelatoFileDescriptor fileDescriptor = descriptorManager.generateDescriptor();
-        synchronized (this) {
           logger.trace(
               "Connected Client - File Descriptor: "
                   + Long.toString(fileDescriptor.getDescriptorId()));
           connections.put(fileDescriptor, tcpTransport);
           libraryReference.getExecutorService().submit(tcpTransport);
-        }
       } catch (IOException e) {
         logger.error("Unable to handle connections ", e);
       }

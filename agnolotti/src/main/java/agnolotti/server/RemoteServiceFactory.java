@@ -64,11 +64,9 @@ public class RemoteServiceFactory {
             throw new RuntimeException("Service must implement Interface");
         }
         ServiceProxySerialiser proxy = new ServiceProxySerialiser(service);
-        Object proxyInstance = Proxy.newProxyInstance(RemoteServiceFactory.class.getClassLoader(),
-                new Class[] {remoteInterface}, proxy);
         String objectName = remoteInterface.getName();
         Method [] methodList = remoteInterface.getDeclaredMethods();
-        Map<String, RemoteMethodStrategy>  strategyMap = pickStrategies(methodList, proxyInstance);
+        Map<String, RemoteMethodStrategy>  strategyMap = pickStrategies(methodList, service);
         RemoteServiceProxyDirectory retVal =  new RemoteServiceProxyDirectory(strategyMap, objectName,
                 descriptorManager.generateDescriptor().getDescriptorId(), manager);
         return retVal;

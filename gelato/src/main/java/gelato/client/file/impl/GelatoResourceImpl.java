@@ -61,6 +61,7 @@ public abstract class GelatoResourceImpl implements GelatoResource {
         cacheLoaded = (System.currentTimeMillis() / 1000);
     }
 
+    @Override
     public void refreshSelf() {
         GelatoMessage<StatRequest, StatResponse> statRequest = messaging.createStatTransaction();
         statRequest.getMessage().setFileDescriptor(descriptor.getRawFileDescriptor());

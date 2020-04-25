@@ -124,7 +124,7 @@ public class GelatoMessaging {
         this.connection = connection;
     }
 
-    public synchronized void close(GelatoMessage message) {
+    public void close(GelatoMessage message) {
         sessionHandler.getTags().closeTag(message.getTag());
         if(messageMap.containsKey(message.getTag())) {
             messageMap.remove(message.getTag());

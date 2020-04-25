@@ -42,11 +42,10 @@ import protocol.QID;
 import protocol.StatStruct;
 import protocol.messages.response.CloseResponse;
 import protocol.messages.response.OpenResponse;
+import protocol.messages.response.ReadResponse;
 import protocol.messages.response.StatResponse;
 import protocol.messages.response.WriteResponse;
 
-
-import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
@@ -55,9 +54,11 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
 import java.time.Instant;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class RemoteMethodStrategy extends GelatoResourceControllerImpl implements GelatoFileController,
         WriteRequestHandler, ReadRequestHandler, StatRequestHandler, OpenRequestHandler, CloseRequestHandler
@@ -99,6 +100,7 @@ public class RemoteMethodStrategy extends GelatoResourceControllerImpl implement
         newStat.setQid(qid);
         newStat.updateSize();
         setStat(newStat);
+        logger.debug("Binding Method to file: " + methodDecorator());
     }
 
     public String methodDecorator() {
@@ -140,44 +142,57 @@ public class RemoteMethodStrategy extends GelatoResourceControllerImpl implement
         return jsonFieldMap;
     }
 
-    private void invokeParamNoReturn(JsonObject marshalledObject) {
-        logger.debug("Invoking Parameter-No-Return Strategy");
+    private Object[] getParameters(JsonObject marshalledObject) {
         JsonArray parameters = marshalledObject.getAsJsonArray(Agnolotti.PARAMETERS);
         Object[] invokeParameters = invoke.getParameters();
         Object[] methodParameter = new Object[invokeParameters.length];
         List arrayList = (List) jsonFieldMap.get(Agnolotti.PARAMETERS);
         try {
-
             for(int i=0; i < invokeParameters.length; ++i) {
                 JsonElement parameter = parameters.get(i);
                 JsonObject objectParamerter = parameter.getAsJsonObject();
                 int location = objectParamerter.get(Agnolotti.PARAMETER_POS).getAsInt();
-                String value =  objectParamerter.get(Agnolotti.PARAMETER_VALUE).getAsString();
-                Map<String, Object> methodsMap = (Map) arrayList.get(i);
-                Object objectValue = gson.fromJson(value,Class.forName((String)methodsMap.get(Agnolotti.PARAMETER_TYPE)));
-                methodParameter[i] = objectValue;
+                Map<String, Object> methodsMap = (Map) arrayList.get(location);
+                Object objectValue = gson.fromJson(objectParamerter.get(Agnolotti.PARAMETER_VALUE),Class.forName((String)methodsMap.get(Agnolotti.PARAMETER_TYPE)));
+                methodParameter[location] = objectValue;
             }
+            return methodParameter;
+        } catch (ClassNotFoundException e) {
+            logger.error("Cannot Find Class Initialiser",e);
+            throw new RuntimeException("");
+        }
+    }
 
+    private void invokeParamNoReturn(JsonObject marshalledObject) {
+        logger.trace("Invoking Parameter-No-Return Strategy");
+        try {
+            Object [] methodParameter = getParameters(marshalledObject);
             invoke.invoke(service,methodParameter);
         } catch (IllegalAccessException e) {
             logger.error("Method Access is illegal ", e);
         } catch (InvocationTargetException e) {
             logger.error("Cannot invoke target method",e);
-        } catch (ClassNotFoundException e) {
-            logger.error("Cannot Find Class Initialiser",e);
         }
-
     }
 
 
-    private void invokeReturnNoParam() {
-        logger.debug("Invoking No-Parameter-Return Strategy");
-
+    private void invokeReturnNoParam(Map<String, Object> sessionDescriptorVar) {
+        logger.trace("Invoking No-Parameter-Return Strategy");
+        try {
+            Object  retValue = invoke.invoke(service,null);
+            Map<String, Object> retMap = new HashMap<>();
+            retMap.put(Agnolotti.RETURN_FIELD,retValue);
+            setReturnData(gson.toJson(retMap), sessionDescriptorVar);
+        } catch (IllegalAccessException e) {
+            logger.error("Method Access is illegal ", e);
+        } catch (InvocationTargetException e) {
+            logger.error("Cannot invoke target method",e);
+        }
     }
 
 
     private void invokeNoRetNoParam() {
-        logger.debug("Invoking No-Parameter-No-Return Strategy");
+        logger.trace("Invoking No-Parameter-No-Return Strategy");
         try {
             invoke.invoke(service,null);
         } catch (IllegalAccessException e) {
@@ -187,9 +202,28 @@ public class RemoteMethodStrategy extends GelatoResourceControllerImpl implement
         }
     }
 
-    private void invokeRetParam() {
-        logger.debug("Invoking Parameter-Return Strategy");
+    private void invokeRetParam(JsonObject marshalledObject, Map<String, Object> sessionDescriptorVar) {
+        logger.trace("Invoking Parameter-Return Strategy");
+        try {
+            Object []parameter = getParameters(marshalledObject);
+            Object  retValue = invoke.invoke(service,parameter);
+            Map<String, Object> retMap = new HashMap<>();
+            retMap.put(Agnolotti.RETURN_FIELD,retValue);
+            setReturnData(gson.toJson(retMap), sessionDescriptorVar);
+        } catch (IllegalAccessException e) {
+            logger.error("Method Access is illegal ", e);
+        } catch (InvocationTargetException e) {
+            logger.error("Cannot invoke target method",e);
+        }
 
+    }
+
+    private void setReturnData(String returnData, Map<String, Object> sessionDescriptorVar) {
+        byte []bytes = returnData.getBytes();
+        StatStruct sessionStatStruct = getResource(sessionDescriptorVar);
+        sessionStatStruct.setLength(bytes.length);
+        sessionStatStruct.updateSize();
+        putReturnData(sessionDescriptorVar, bytes);
     }
 
     private String decodeJson(List<byte[]> byteArray) {
@@ -207,8 +241,8 @@ public class RemoteMethodStrategy extends GelatoResourceControllerImpl implement
         return new String(buffer);
     }
 
-    private void invokeServiceMethod(List<byte[]> writes) {
-        logger.debug("Remote Invoke of Service: " + invoke.getName());
+    private void invokeServiceMethod(List<byte[]> writes, Map<String, Object> sessionDescriptorVar) {
+        logger.trace("Remote Invoke of Service: " + invoke.getName());
         String jsonHeader = decodeJson(writes);
         Reader reader = new InputStreamReader(new ByteArrayInputStream(jsonHeader.getBytes()));
         JsonReader jsonReader = new JsonReader(reader);
@@ -221,9 +255,9 @@ public class RemoteMethodStrategy extends GelatoResourceControllerImpl implement
             }
         } else {
             if(noParameters) {
-                invokeReturnNoParam();
+                invokeReturnNoParam(sessionDescriptorVar);
             } else  {
-                invokeRetParam();
+                invokeRetParam(jsonObject, sessionDescriptorVar);
             }
         }
     }
@@ -238,20 +272,47 @@ public class RemoteMethodStrategy extends GelatoResourceControllerImpl implement
 
     @Override
     public boolean readRequest(RequestConnection connection, GelatoFileDescriptor clientFileDescriptor, long offset, int numberOfBytes) {
-        return false;
+        Map<String, Object> sessionVar = getSessionMap(connection.getSession(), clientFileDescriptor);
+        StatStruct sessionStat = getResource(sessionVar);
+        if(offset!=0 || numberOfBytes != sessionStat.getLength()) {
+            connection.getResourceController().sendErrorMessage(connection, "RPC Operations must be atomic");
+            return true;
+        }
+
+        if(sessionStat.getLength() == 0 || getReturnData(sessionVar).length == 0) {
+            connection.getResourceController().sendErrorMessage(connection, "RPC Illegal Read");
+            return true;
+        }
+
+        byte [] returnData = getReturnData(sessionVar);
+        int ptr = 0;
+
+        while (ptr < returnData.length) {
+            int copyByte = numberOfBytes - ptr;
+            if (copyByte > P9Protocol.MAX_MSG_CONTENT_SIZE) {
+                copyByte = P9Protocol.MAX_MSG_CONTENT_SIZE;
+            }
+            ReadResponse readResponse = new ReadResponse();
+            readResponse.setData(Arrays.copyOf(returnData, copyByte));
+            connection.reply(readResponse);
+            ptr+=copyByte;
+        }
+        //Reset the session free up memory
+        resetSession(sessionVar);
+        return true;
     }
 
     @Override
     public boolean statRequest(RequestConnection connection, GelatoFileDescriptor clientFileDescriptor) {
 
         GelatoSession clientSession = connection.getSession();
-        String desriptorId = Long.toString(clientFileDescriptor.getDescriptorId());
+        String desriptorId = descriptoString(clientFileDescriptor);
         StatStruct selfStat;
-        Map<String, Object> sessionDescriptorVar = (Map) clientSession.getSessionVar(desriptorId);
-        if(sessionDescriptorVar == null || sessionDescriptorVar.get(desriptorId) == null ) {
+        Map<String, Object> sessionDescriptorVar = getSessionMap(clientSession, clientFileDescriptor);
+        if(sessionDescriptorVar == null ) {
             selfStat = getStat();
         } else  {
-            selfStat = (StatStruct)sessionDescriptorVar.get(desriptorId);
+            selfStat = getResource(sessionDescriptorVar);
         }
         StatResponse response = new StatResponse();
         response.setStatStruct(selfStat);
@@ -262,15 +323,15 @@ public class RemoteMethodStrategy extends GelatoResourceControllerImpl implement
     @Override
     public boolean writeRequest(RequestConnection connection, GelatoFileDescriptor clientFileDescriptor, long offset, byte[] data) {
         GelatoSession clientSession = connection.getSession();
-        String desriptorId = Long.toString(clientFileDescriptor.getDescriptorId());
-        Map<String, Object> sessionDescriptorVar = (Map) clientSession.getSessionVar(desriptorId);
-        int mode = (int) sessionDescriptorVar.get("mode");
+        String desriptorId = descriptoString(clientFileDescriptor);
+        Map<String, Object> sessionDescriptorVar = getSessionMap(clientSession,desriptorId);
+        int mode = getMode(sessionDescriptorVar);
         if(mode != P9Protocol.OPEN_MODE_OWRITE) {
             connection.getResourceController()
                     .sendErrorMessage(connection, "This operation is not supported = File is closed to Writes");
             return true;
         }
-        List<byte[]> writes = (List) sessionDescriptorVar.get("writes");
+        List<byte[]> writes = getWriteRequestData(sessionDescriptorVar);
         //Dont bother adding empty data to the list -- keep len at 0
         if(data.length !=0) {
             writes.add(data);
@@ -286,24 +347,22 @@ public class RemoteMethodStrategy extends GelatoResourceControllerImpl implement
     public boolean openRequest(RequestConnection connection, GelatoFileDescriptor clientFileDescriptor, byte mode) {
 
         GelatoSession clientSession = connection.getSession();
-        String desriptorId = Long.toString(clientFileDescriptor.getDescriptorId());
-        if(mode == P9Protocol.OPEN_MODE_OWRITE || clientSession.getSessionVar(desriptorId) == null) {
-            StatStruct sessionStat = getStat().duplicate();
+        String desriptorId = descriptoString(clientFileDescriptor);
+        if(clientSession.getSessionVar(desriptorId) == null) {
             Map<String, Object> sessionDescriptorVar = sessionVar();
-            sessionDescriptorVar.put("resource",sessionStat);
-            sessionDescriptorVar.put("mode", P9Protocol.OPEN_MODE_ORCLOSE);
             clientSession.setSessionVar(desriptorId,sessionDescriptorVar);
         }
 
-        Map<String, Object> sessionDescriptorVar = (Map) clientSession.getSessionVar(desriptorId);
-        if((int)sessionDescriptorVar.get("mode") == P9Protocol.OPEN_MODE_ORCLOSE ) {
+        Map<String, Object> sessionDescriptorVar = getSessionMap(clientSession, desriptorId);
+        if(getMode(sessionDescriptorVar) == P9Protocol.OPEN_MODE_ORCLOSE ) {
             if (mode == P9Protocol.OPEN_MODE_OREAD || mode == P9Protocol.OPEN_MODE_OWRITE) {
-                sessionDescriptorVar.clear();
+                if(mode == P9Protocol.OPEN_MODE_OWRITE) {
+                    resetSession(sessionDescriptorVar);
+                }
                 OpenResponse response = new OpenResponse();
                 response.setFileQID(getQID());
                 connection.reply(response);
-                sessionDescriptorVar.put("mode",(int)mode);
-                sessionDescriptorVar.put("writes", new ArrayList<byte[]>());
+                putMode(sessionDescriptorVar, mode);
                 return true;
             }
         } else {
@@ -319,18 +378,77 @@ public class RemoteMethodStrategy extends GelatoResourceControllerImpl implement
     @Override
     public boolean closeRequest(RequestConnection connection, GelatoFileDescriptor clientFileDescriptor) {
         GelatoSession clientSession = connection.getSession();
-        String desriptorId = Long.toString(clientFileDescriptor.getDescriptorId());
-        Map<String, Object> sessionDescriptorVar = (Map) clientSession.getSessionVar(desriptorId);
-        if((int)sessionDescriptorVar.get("mode") == P9Protocol.OPEN_MODE_OWRITE ) {
-            invokeServiceMethod((List)sessionDescriptorVar.get("writes"));
+        Map<String, Object> sessionDescriptorVar = getSessionMap(clientSession,clientFileDescriptor);
+        if(getMode(sessionDescriptorVar)== P9Protocol.OPEN_MODE_OWRITE ) {
+            invokeServiceMethod(getWriteRequestData(sessionDescriptorVar), sessionDescriptorVar );
         }
-        sessionDescriptorVar.put("mode",P9Protocol.OPEN_MODE_ORCLOSE);
+        putMode(sessionDescriptorVar, P9Protocol.OPEN_MODE_ORCLOSE);
         CloseResponse closeResponse = new CloseResponse();
         connection.reply(closeResponse);
         return true;
     }
 
+    public static final String WRITE_BYTES = "writes";
+    public static final String RESOURCE = "resource";
+    public static final String MODE = "mode";
+    public static final String RETURN_BYTE = "returnValue";
+
+    private void putReturnData(Map<String,Object> session, byte[] retData) {
+        session.put(RETURN_BYTE, retData);
+    }
+
+    private byte[] getReturnData(Map<String,Object> session) {
+        return (byte[]) session.get(RETURN_BYTE);
+    }
+
+    private void resetSession(Map<String,Object> session) {
+        session.clear();
+        StatStruct sessionStat = getStat().duplicate();
+        putMode(session, P9Protocol.OPEN_MODE_ORCLOSE);
+        putResource(session,sessionStat);
+        putWrite(session, new ArrayList<byte[]>());
+    }
+
+    private void putResource(Map<String,Object> session, StatStruct resource) {
+        session.put(RESOURCE, resource);
+    }
+
+    private void putWrite(Map<String,Object> session, List<byte[]> byteBuffer) {
+        session.put(WRITE_BYTES, byteBuffer);
+    }
+
+    private StatStruct getResource(Map<String,Object> session) {
+        return (StatStruct)session.get(RESOURCE);
+    }
+
     private Map<String, Object> sessionVar() {
-        return new HashMap<>();
+        Map<String, Object> sess  =  new ConcurrentHashMap<>();
+        putMode(sess,P9Protocol.OPEN_MODE_ORCLOSE);
+        return sess;
+    }
+
+    private List<byte[]> getWriteRequestData(Map<String,Object> sessionMap) {
+        return (List)sessionMap.get(WRITE_BYTES);
+    }
+
+    private String descriptoString(GelatoFileDescriptor descriptorId) {
+        return  Long.toString(descriptorId.getDescriptorId());
+    }
+
+    private Map<String, Object> getSessionMap(GelatoSession clientSession,GelatoFileDescriptor descriptorId) {
+        String desriptorIdStr = Long.toString(descriptorId.getDescriptorId());
+        return getSessionMap(clientSession, desriptorIdStr);
+    }
+
+    private Map<String, Object> getSessionMap(GelatoSession clientSession,String descriptorId) {
+        return (Map) clientSession.getSessionVar(descriptorId);
+    }
+
+    private int getMode(Map<String,Object> sessionMap) {
+        return (int)sessionMap.get(MODE);
+    }
+
+    private void putMode(Map<String,Object> sessionMap, int mode) {
+        sessionMap.put(MODE, mode);
     }
 }

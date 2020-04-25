@@ -14,20 +14,17 @@
  *    limitations under the License.
  */
 
-package gelato.client.file;
+package agnolottidemo;
 
-import gelato.GelatoFileDescriptor;
-import protocol.StatStruct;
+public class TestServiceImpl implements TestService{
+    @Override
+    public void nullCall() {
 
-public interface GelatoResource {
-  String getName();
-  long getSize();
-  StatStruct getStatStruct();
-  GelatoFileDescriptor getFileDescriptor();
-  boolean valid();
-  public void cacheValidate();
-  void refreshSelf();
-  long getCacheLoaded();
-  void setCacheLoaded(long cacheLoaded);
+    }
 
+    @Override
+    public String echo(String msg) {
+        System.out.println("Client sent: [ " + msg +" ] sending back!");
+        return msg;
+    }
 }

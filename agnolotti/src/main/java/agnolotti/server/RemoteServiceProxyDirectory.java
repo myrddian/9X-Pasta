@@ -21,6 +21,8 @@ import com.google.gson.Gson;
 import gelato.server.GelatoServerManager;
 import gelato.server.manager.controllers.impl.GelatoDirectoryControllerImpl;
 import gelato.server.manager.controllers.impl.GelatoFileControllerImpl;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import protocol.P9Protocol;
 import protocol.QID;
 import protocol.StatStruct;
@@ -33,6 +35,7 @@ import java.util.Map;
 public class RemoteServiceProxyDirectory extends GelatoDirectoryControllerImpl {
 
     private Map<String, RemoteMethodStrategy> methodStrategyMap;
+    private final Logger logger = LoggerFactory.getLogger(RemoteServiceProxyDirectory.class);
     private String definedIDL = "";
     private Gson gson = new Gson();
     private GelatoServerManager manager;
@@ -49,6 +52,7 @@ public class RemoteServiceProxyDirectory extends GelatoDirectoryControllerImpl {
             manager.addResource(element);
         }
         definedIDL = gson.toJson(jsonMap);
+        logger.debug("EXPORTING IDL: " + definedIDL);
         ByteArrayInputStream arrayInputStream = new ByteArrayInputStream(definedIDL.getBytes());
         fileIdl = new GelatoFileControllerImpl(Agnolotti.IDL, arrayInputStream,definedIDL.getBytes().length, manager.getDescriptorManager().generateDescriptor());
         addFile(fileIdl);

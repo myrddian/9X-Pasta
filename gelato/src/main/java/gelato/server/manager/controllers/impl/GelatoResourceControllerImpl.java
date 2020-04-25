@@ -233,6 +233,7 @@ public class GelatoResourceControllerImpl implements GelatoResourceController {
     ErrorMessage msg = new ErrorMessage();
     msg.setTag(connection.getTransactionId());
     msg.setErrorMessage(message);
+    logger.error(message);
     connection.reply(msg);
   }
 
@@ -242,6 +243,7 @@ public class GelatoResourceControllerImpl implements GelatoResourceController {
     ErrorMessage msg = new ErrorMessage();
     msg.setTag(tag);
     msg.setErrorMessage(message);
+    logger.error(message);
     connection.sendMessage(descriptor, msg.toMessage());
   }
 

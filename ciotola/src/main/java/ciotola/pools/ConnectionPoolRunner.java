@@ -36,9 +36,9 @@ public class  ConnectionPoolRunner extends Thread{
         List<CiotolaConnectionService> removeServices = new ArrayList<>();
         while (isRunning()) {
             boolean processed = false;
-            if(getSize() > 0 ) {
-                int size = getSize();
-                for(int counter = 0; counter < size; ++counter) {
+            int sizeOfService = getSize();
+            if(sizeOfService> 0 ) {
+                for(int counter = 0; counter < sizeOfService; ++counter) {
                     CiotolaConnectionService service = getService(counter);
                     try {
                         if(service.isClosed()) {
@@ -74,9 +74,9 @@ public class  ConnectionPoolRunner extends Thread{
                 }
                 removeDeadServices(removeServices);
             }
-            if(processed == false || getSize() == 0){
+            if(processed == false || sizeOfService == 0){
                 try {
-                    Thread.sleep(10);
+                    Thread.sleep(5);
                 } catch (InterruptedException e) {
                     logger.error("Interrupted while running job: ", e);
                     return;

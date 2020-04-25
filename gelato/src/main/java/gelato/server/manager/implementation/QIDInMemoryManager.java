@@ -26,16 +26,17 @@ import protocol.QID;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Random;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class QIDInMemoryManager implements GelatoQIDManager {
 
   final Logger logger = LoggerFactory.getLogger(QIDInMemoryManager.class);
   private Random rnd = new Random();
-  private Map<Long, String> qidMapping = new HashMap<>();
+  private Map<Long, String> qidMapping = new ConcurrentHashMap<>();
   private Map<Long, GelatoResourceController> resourceHandlerMap = new HashMap<>();
 
   @Override
-  public synchronized long generateQIDFieldID(String assetName) {
+  public long generateQIDFieldID(String assetName) {
     long value = Math.abs(rnd.nextLong());
     while (qidMapping.containsKey(value)) {
       value = rnd.nextLong();
@@ -45,7 +46,7 @@ public class QIDInMemoryManager implements GelatoQIDManager {
   }
 
   @Override
-  public synchronized QID generateAuthQID() {
+  public QID generateAuthQID() {
     QID newAuthQID = new QID();
     newAuthQID.setVersion(0);
     newAuthQID.setType((byte) QID.QID_AUTH_NOT_REQUIRED);
@@ -54,7 +55,7 @@ public class QIDInMemoryManager implements GelatoQIDManager {
   }
 
   @Override
-  public synchronized boolean mapResourceHandler(
+  public boolean mapResourceHandler(
       GelatoFileDescriptor id, GelatoResourceController handler) {
     if (resourceHandlerMap.containsKey(id.getQid().getLongFileId()) || handler == null) {
       logger.error("Resource in USE or NULL Handler");
@@ -65,7 +66,7 @@ public class QIDInMemoryManager implements GelatoQIDManager {
   }
 
   @Override
-  public synchronized GelatoResourceController getHandler(GelatoFileDescriptor id) {
+  public GelatoResourceController getHandler(GelatoFileDescriptor id) {
     if (resourceHandlerMap.containsKey(id.getQid().getLongFileId())) {
       return resourceHandlerMap.get(id.getQid().getLongFileId());
     }

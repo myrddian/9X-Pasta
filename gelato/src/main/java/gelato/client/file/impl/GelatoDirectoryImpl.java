@@ -122,7 +122,13 @@ public class GelatoDirectoryImpl extends GelatoFileImpl implements GelatoDirecto
   private void addFile(StatStruct newEntry, WalkResponse response, GelatoFileDescriptor descriptor) {
     GelatoFileImpl newDir =
             new GelatoFileImpl(getMessaging(), descriptor);
-    newDir.setFilePath(getPath() + getName() + "/" );
+    String path = "";
+    if(getName().equals(GelatoDirectoryController.ROOT_DIR)) {
+      path = "/";
+    } else {
+      path = getPath() + getName() + GelatoDirectoryController.ROOT_DIR;
+    }
+    newDir.setFilePath(path);
     GelatoClientCache.getInstance().addResource(newDir);
     fileMap.put(newEntry.getName(), newDir);
     logger.debug(
@@ -136,7 +142,13 @@ public class GelatoDirectoryImpl extends GelatoFileImpl implements GelatoDirecto
     GelatoDirectoryImpl newDir =
             new GelatoDirectoryImpl(session, getMessaging(), descriptor);
     newDir.setParent(this);
-    newDir.setFilePath(getPath() + getName() + "/" );
+    String path = "";
+    if(getName().equals(GelatoDirectoryController.ROOT_DIR)) {
+      path = "/";
+    } else {
+      path = getPath() + getName() + GelatoDirectoryController.ROOT_DIR;
+    }
+    newDir.setFilePath(path);
     GelatoClientCache.getInstance().addResource(newDir);
     directoryMap.put(newEntry.getName(), newDir);
     logger.debug(

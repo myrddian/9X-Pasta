@@ -24,7 +24,7 @@ public class Agnolotti {
     public static final long VER_ID  = 003l;
 
     public static final String ROOT_NAME = "";
-    public static final String DEFAULT_VER = "0.0.0-a";
+    public static final String DEFAULT_VER = "1.0.0-SNAPSHOT";
     public static final String DEFAULT_NAME = "serviceObject";
 
     public static final String METHOD_FIELD = "methods";

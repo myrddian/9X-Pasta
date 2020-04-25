@@ -31,13 +31,27 @@ public class ServiceTest {
         Thread.sleep(100);
 
         RemoteClient client = new RemoteClient("localhost",9092,"test", Agnolotti.DEFAULT_VER,
-                "test");
+               "test");
 
         TestBomb tst = (TestBomb) client.getRemoteService(TestBomb.class);
-        tst.hello();
-        tst.hello("fun");
-        Thread.sleep(4000);
+        //tst.hello();
+        //tst.hello("fun");
+        //Thread.sleep(4000);
 
+        //RemoteClient client2 = new RemoteClient("localhost",9092,"test", Agnolotti.DEFAULT_VER,
+        //        "test");
+
+        //TestBomb tst2 = (TestBomb) client2.getRemoteService(TestBomb.class);
+        //tst2.hello();
+        //tst2.hello("fun2");
+
+        //tst.hello("test1");
+        //tst2.hello("test2");
+        System.out.println(tst.sayHello("tst"));
+        System.out.println(tst.sayHello("tst2"));
+        System.out.println(tst.sayHello("tst3"));
+        System.out.println(tst.sayHello("tst"));
+        Thread.sleep(4000);
 
     }
 

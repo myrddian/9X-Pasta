@@ -19,12 +19,18 @@ import agnolotti.Agnolotti;
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
+import com.google.gson.stream.JsonReader;
 import gelato.client.file.GelatoFile;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import protocol.StatStruct;
 
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.OutputStream;
+import java.io.Reader;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -63,8 +69,22 @@ public class RemoteServiceMethod {
         return remoteMethodFile.getName();
     }
 
+    private Object invokeNoRetNoParam() {
+
+        Map<String, Object> invocationMap = generateRequest();
+        String jsonString = gson.toJson(invocationMap);
+        OutputStream invokeStream = remoteMethodFile.getFileOutputStream();
+        try {
+            byte [] bytesTosend = jsonString.getBytes();
+            invokeStream.write(bytesTosend);
+            invokeStream.close();
+        } catch (IOException e) {
+            logger.error("Error Invoking handler exception:",e);
+        }
+        return null;
+    }
+
     private Object invokeParamNoReturn(Object [] parameters) {
-        logger.debug("Invoking Parameter-No-Return Strategy");
         Map<String,Object> invocationMap = generateRequest();
 
         JsonArray parameterArray = idl.getAsJsonArray(Agnolotti.PARAMETERS);
@@ -93,36 +113,41 @@ public class RemoteServiceMethod {
         return null;
     }
 
+    private Object getResults() {
+        //Request stat update
+        remoteMethodFile.refreshSelf();
+        StatStruct statStruct = remoteMethodFile.getStatStruct();
+        if(statStruct.getLength() == 0) {
+            logger.error("CLIENT RPC - Failed - Expected return got NULL");
+            throw new RuntimeException("RPC-Error");
+        }
 
-    private Object invokeReturnNoParam() {
-        logger.debug("Invoking No-Parameter-Return Strategy");
-        return null;
+        InputStream fileStream = remoteMethodFile.getFileInputStream();
+        Reader reader = new InputStreamReader(fileStream);
+        JsonReader jsonReader = new JsonReader(reader);
+        JsonObject jsonObject = JsonParser.parseReader(jsonReader).getAsJsonObject();
+        String returnType = idl.get(Agnolotti.RETURN_FIELD).getAsString();
+        try {
+            return gson.fromJson(jsonObject.get(Agnolotti.RETURN_FIELD),Class.forName(returnType));
+        } catch (ClassNotFoundException e) {
+            logger.error("Converting to Class failed",e);
+            throw new RuntimeException("Error Converting return");
+        }
+
     }
 
 
-    private Object invokeNoRetNoParam() {
-        logger.debug("Invoking No-Parameter-No-Return Strategy");
-
-        Map<String, Object> invocationMap = generateRequest();
-        String jsonString = gson.toJson(invocationMap);
-        OutputStream invokeStream = remoteMethodFile.getFileOutputStream();
-        try {
-            byte [] bytesTosend = jsonString.getBytes();
-            invokeStream.write(bytesTosend);
-            invokeStream.close();
-        } catch (IOException e) {
-            logger.error("Error Invoking handler exception:",e);
-        }
-        return null;
+    private Object invokeReturnNoParam() {
+        invokeNoRetNoParam();
+        return getResults();
     }
 
     private Object invokeRetParam(Object [] parameters) {
-        logger.debug("Invoking Parameter-Return Strategy");
-        return null;
+        invokeParamNoReturn(parameters);
+        return getResults();
     }
 
     public Object invoke(Object [] parameters) {
-        logger.debug("Remote Invoke of Service: " + getMethodName());
         if(noReturn) {
             if(noParameters) {
                 return invokeNoRetNoParam();

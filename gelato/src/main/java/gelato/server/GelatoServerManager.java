@@ -21,6 +21,7 @@ import gelato.Gelato;
 import gelato.GelatoConnection;
 import gelato.GelatoDescriptorManager;
 import gelato.GelatoFileDescriptor;
+import gelato.client.file.GelatoResource;
 import gelato.server.manager.GelatoDescriptorHandler;
 import gelato.server.manager.GelatoParallelRequestHandler;
 import gelato.server.manager.GelatoQIDManager;
@@ -73,7 +74,7 @@ public class GelatoServerManager {
   public void setRootDirectory(GelatoDirectoryController rootDirectory) {
     sessionHandler.setRootAttach(rootDirectory);
     addResource(rootDirectory);
-    rootDirectory.setDirectoryName("/");
+    rootDirectory.setDirectoryName(GelatoDirectoryController.ROOT_DIR);
   }
 
   public void start() {

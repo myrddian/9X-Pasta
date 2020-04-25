@@ -10,4 +10,5 @@
 rootProject.name = '9X'
 include 'protocol', 'gelato', 'fettuccine', 'fettuccineshell', 'ciotola'
 include 'agnolotti'
+include 'agnolottidemo'
 

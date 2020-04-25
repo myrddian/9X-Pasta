@@ -34,6 +34,7 @@ import protocol.messages.VersionRequest;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.LinkedBlockingQueue;
 
 public class GelatoDescriptorHandler {
@@ -41,7 +42,7 @@ public class GelatoDescriptorHandler {
   final Logger logger = LoggerFactory.getLogger(GelatoDescriptorHandler.class);
 
   private GelatoConnection serverConnection;
-  private Map<GelatoFileDescriptor, GelatoSession> descriptorGelatoSessionMap = new HashMap<>();
+  private Map<GelatoFileDescriptor, GelatoSession> descriptorGelatoSessionMap = new ConcurrentHashMap<>();
   private BlockingQueue<V2Message> readMessageQueue = new LinkedBlockingQueue<>();
   private GelatoSessionHandler sessionHandler;
   private Gelato library;

@@ -48,6 +48,7 @@ import protocol.messages.response.WalkResponse;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class GelatoDirectoryControllerImpl
     implements GelatoDirectoryController,
@@ -57,8 +58,8 @@ public class GelatoDirectoryControllerImpl
         StatRequestHandler {
 
   private final Logger logger = LoggerFactory.getLogger(GelatoDirectoryControllerImpl.class);
-  private Map<String, GelatoDirectoryController> directories = new HashMap<>();
-  private Map<String, GelatoFileController> files = new HashMap<>();
+  private Map<String, GelatoDirectoryController> directories = new ConcurrentHashMap<>();
+  private Map<String, GelatoFileController> files = new ConcurrentHashMap<>();
   private GelatoResourceController resourceController = new GelatoResourceControllerImpl();
   private StatStruct parentDir = new StatStruct();
 

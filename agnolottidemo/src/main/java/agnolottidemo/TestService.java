@@ -14,20 +14,9 @@
  *    limitations under the License.
  */
 
-package gelato.client.file;
+package agnolottidemo;
 
-import gelato.GelatoFileDescriptor;
-import protocol.StatStruct;
-
-public interface GelatoResource {
-  String getName();
-  long getSize();
-  StatStruct getStatStruct();
-  GelatoFileDescriptor getFileDescriptor();
-  boolean valid();
-  public void cacheValidate();
-  void refreshSelf();
-  long getCacheLoaded();
-  void setCacheLoaded(long cacheLoaded);
-
+public interface TestService {
+    void nullCall();
+    String echo(String msg);
 }

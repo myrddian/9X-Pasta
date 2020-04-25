@@ -23,9 +23,8 @@ import gelato.GelatoSession;
 import gelato.GelatoTags;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class GelatoServerSession implements GelatoSession {
 
@@ -38,15 +37,15 @@ public class GelatoServerSession implements GelatoSession {
   private GelatoConnection connection;
   private GelatoDescriptorManager manager = null;
   private GelatoTags tags;
-  private Map<String, Object> sessionVars = new HashMap<>();
+  private Map<String, Object> sessionVars = new ConcurrentHashMap<>();
 
   @Override
-  public synchronized void setSessionVar(String varName, Object varValue) {
+  public void setSessionVar(String varName, Object varValue) {
     sessionVars.put(varName, varValue);
   }
 
   @Override
-  public synchronized Object getSessionVar(String varName) {
+  public Object getSessionVar(String varName) {
     return sessionVars.get(varName);
   }
 

@@ -32,7 +32,7 @@ import java.io.OutputStream;
 
 public class GelatoFileImpl  extends GelatoResourceImpl implements GelatoFile {
 
-  private String filePath;
+  private String filePath="";
 
   public GelatoFileImpl(GelatoMessaging messaging, GelatoFileDescriptor descriptor) {
     super(messaging, descriptor);
