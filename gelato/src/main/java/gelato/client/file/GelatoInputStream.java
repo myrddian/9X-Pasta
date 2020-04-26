@@ -84,7 +84,7 @@ public class GelatoInputStream extends InputStream {
     }
     if(location != fileSize) {
       logger.error("READ MISMATCH");
-      throw new IOException("BLO");
+      throw new IOException("File Mismatch Exception");
     }
     messaging.close(readRequest);
   }
@@ -98,7 +98,7 @@ public class GelatoInputStream extends InputStream {
     messaging.submitMessage(readRequest);
 
     if(readRequest.getResponse() == null ) {
-      throw new IOException("Doble boom");
+      throw new IOException("Double boom");
     }
 
     if(fileSize > ioNetworkSize) {
@@ -112,7 +112,7 @@ public class GelatoInputStream extends InputStream {
       }
       if(location != fileSize) {
         logger.error("READ MISMATCH");
-        throw new RuntimeException("BLO");
+        throw new RuntimeException("BLOWN");
       }
     } else {
       ByteEncoder.copyBytesTo(readRequest.getResponse().getData(), buffer, 0, (int) fileSize);
@@ -130,7 +130,7 @@ public class GelatoInputStream extends InputStream {
     try {
       initialise();
     } catch (IOException e) {
-      e.printStackTrace();
+      logger.error("Unable to initialise stream ", e);
     }
   }
 
@@ -139,11 +139,7 @@ public class GelatoInputStream extends InputStream {
   public void close() {
     GelatoMessage<CloseRequest, CloseResponse> closeRequest = messaging.createCloseTransaction();
     closeRequest.getMessage().setFileID(fileDescriptor.getRawFileDescriptor());
-    messaging.submitMessage(closeRequest);
-    if(closeRequest.getResponse() == null ) {
-      logger.error("Error closing stream");
-    }
-    messaging.close(closeRequest);
+    messaging.submitAndClose(closeRequest);
   }
 
   @Override

@@ -24,7 +24,6 @@ public class TestServiceImpl implements TestService{
 
     @Override
     public String echo(String msg) {
-        System.out.println("Client sent: [ " + msg +" ] sending back!");
         return msg;
     }
 }

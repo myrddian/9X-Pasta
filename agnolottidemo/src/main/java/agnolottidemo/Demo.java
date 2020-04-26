@@ -19,6 +19,7 @@ package agnolottidemo;
 import agnolotti.Agnolotti;
 import agnolotti.client.RemoteClient;
 import agnolotti.server.ServiceManager;
+import protocol.P9Protocol;
 
 public class Demo {
 
@@ -37,26 +38,48 @@ public class Demo {
         }
     }
 
+    public static void nullOrRspTest(TestService testService, boolean test) {
+        long startTime = System.currentTimeMillis();
+        System.out.println("Starting Demo");
+        for(int i=0; i < LOOP_COUNT; ++i) {
+            String rsp="";
+            if(test)  {
+                rsp = testService.echo("Echo Test");
+            } else {
+                testService.nullCall();
+            }
+
+            if( (i % MOD_FACTOR) == 0 ) {
+                System.out.println(Integer.toString(i) + " - invocations completed");
+                if(test) {
+                    System.out.println("Echo reply from server: "+rsp);
+                }
+            }
+        }
+        long stopTime = System.currentTimeMillis();
+
+        long time = (stopTime - startTime) / 1000;
+        if(time <= 0) {
+            time = 1;
+        }
+        long callPerSec = LOOP_COUNT/time;
+        long invocationCost =  1000 / callPerSec;
+        System.out.println("Total Time taken - " + Long.toString(time));
+        System.out.println("Performance: " + Long.toString(callPerSec) + " Invocations per second on a single client");
+        System.out.println("Total invocation cost: " + Long.toString(invocationCost) + "ms");
+    }
+
     public static void clientDemo() {
 
         RemoteClient client = new RemoteClient("localhost",9092,serviceName, Agnolotti.DEFAULT_VER,
                 serviceName);
         TestService testService = (TestService) client.getRemoteService(TestService.class);
 
-        long startTime = System.currentTimeMillis();
-        System.out.println("Starting Demo");
-        for(int i=0; i < LOOP_COUNT; ++i) {
-            testService.nullCall();
-            if( (i % MOD_FACTOR) == 0 ) {
-                System.out.println(Integer.toString(i) + " - invocations completed");
-            }
-        }
-        long stopTime = System.currentTimeMillis();
+        System.out.println("Executing null call test: ");
+        nullOrRspTest(testService,false);
+        System.out.println("Executing full call and return marshall test");
+        nullOrRspTest(testService,true);
 
-        long time = (stopTime - startTime) / 1000;
-
-        System.out.println("Total Time taken - " + Long.toString(time));
-        System.out.println("Performance: " + Long.toString(LOOP_COUNT/time) + " Invocations per second on a single client");
 
     }
 

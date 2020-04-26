@@ -128,9 +128,13 @@ public class RemoteServiceMethod {
         JsonObject jsonObject = JsonParser.parseReader(jsonReader).getAsJsonObject();
         String returnType = idl.get(Agnolotti.RETURN_FIELD).getAsString();
         try {
+            fileStream.close();
             return gson.fromJson(jsonObject.get(Agnolotti.RETURN_FIELD),Class.forName(returnType));
-        } catch (ClassNotFoundException e) {
+        } catch (ClassNotFoundException e ) {
             logger.error("Converting to Class failed",e);
+            throw new RuntimeException("Error Converting return");
+        } catch (IOException e) {
+            logger.error("Error reading stream ",e);
             throw new RuntimeException("Error Converting return");
         }
 

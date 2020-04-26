@@ -48,12 +48,8 @@ public class GelatoFileImpl  extends GelatoResourceImpl implements GelatoFile {
     GelatoMessage<OpenRequest, OpenResponse> openRequest = getMessaging().createOpenTransaction();
     openRequest.getMessage().setFileDescriptor(getFileDescriptor().getRawFileDescriptor());
     openRequest.getMessage().setMode((byte) P9Protocol.OPEN_MODE_OREAD);
-    getMessaging().submitMessage(openRequest);
-    if(openRequest.getResponse() == null) {
-      throw new RuntimeException("ERROR OPENING FILE");
-    }
-    getMessaging().close(openRequest);
-    return new GelatoInputStream(getMessaging(),getFileDescriptor(),openRequest.getResponse().getSizeIO(),localStruct.getLength());
+    getMessaging().submitAndClose(openRequest);
+    return new GelatoInputStream(getMessaging(),getFileDescriptor(),P9Protocol.MAX_MSG_CONTENT_SIZE,localStruct.getLength());
   }
 
   @Override
@@ -66,12 +62,8 @@ public class GelatoFileImpl  extends GelatoResourceImpl implements GelatoFile {
     GelatoMessage<OpenRequest, OpenResponse> openRequest = getMessaging().createOpenTransaction();
     openRequest.getMessage().setFileDescriptor(getFileDescriptor().getRawFileDescriptor());
     openRequest.getMessage().setMode((byte) MODE);
-    getMessaging().submitMessage(openRequest);
-    if(openRequest.getResponse() == null) {
-      throw new RuntimeException("ERROR OPENING FILE");
-    }
-    getMessaging().close(openRequest);
-    return new GelatoOutputStream(getMessaging(),getFileDescriptor(),openRequest.getResponse().getSizeIO());
+    getMessaging().submitAndClose(openRequest);
+    return new GelatoOutputStream(getMessaging(),getFileDescriptor(),P9Protocol.MAX_MSG_CONTENT_SIZE);
   }
 
   @Override
