@@ -16,16 +16,21 @@
 
 package gelato.client;
 
+import ciotola.Ciotola;
 import ciotola.annotations.CiotolaServiceRun;
 import ciotola.annotations.CiotolaServiceStart;
 import ciotola.annotations.CiotolaServiceStop;
 import gelato.GelatoConnection;
 import gelato.GelatoSession;
+import gelato.client.transport.ClientSideOutTcpWrite;
+import gelato.client.transport.ClientSideTcpInputReader;
+import gelato.client.transport.MessageCompletion;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import protocol.Decoder;
 import protocol.P9Protocol;
 import protocol.messages.Message;
+import protocol.messages.VersionRequest;
 import protocol.messages.request.AttachRequest;
 import protocol.messages.request.AuthRequest;
 import protocol.messages.request.CloseRequest;
@@ -51,94 +56,132 @@ import protocol.messages.response.WalkResponse;
 import protocol.messages.response.WriteResponse;
 import protocol.messages.response.WriteStatResponse;
 
+import java.io.IOException;
+import java.net.Socket;
 import java.util.Map;
+import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.LinkedBlockingQueue;
 
 public class GelatoMessaging {
 
-    private GelatoSession sessionHandler;
     private boolean shutdown = false;
     private GelatoConnection connection;
-    private Map<Integer, GelatoMessage> messageMap = new ConcurrentHashMap<>();
     private final Logger logger = LoggerFactory.getLogger(GelatoMessaging.class);
+    private ClientSideTcpInputReader inputReader;
+    private ClientSideOutTcpWrite outputWriter;
+    private int ioSize = P9Protocol.DEFAULT_MSG_SIZE;
+    private Socket clientSocket;
 
-    private void processMessages() {
-        Message fetchedMessage = connection.getMessage();
-        int correlation = fetchedMessage.tag;
-        if(messageMap.containsKey(correlation))  {
-            GelatoMessage future = messageMap.get(correlation);
-            if(fetchedMessage.messageType == P9Protocol.RERROR) {
-                String error = Decoder.decodeError(fetchedMessage).getErrorMessage();
-                future.setError();
-                future.setErrorMessage(error);
-                future.setCompleted();
-                logger.error("Error in response " + error );
+    private BlockingQueue<MessageCompletion> incomingMessages = new LinkedBlockingQueue<>();
 
+    private boolean isErrorAndHandle(MessageCompletion newMessage) {
+        if(newMessage.getMessage().messageType == P9Protocol.RERROR) {
+            String error = Decoder.decodeError(newMessage.getMessage()).getErrorMessage();
+            newMessage.getFuture().setError();
+            newMessage.getFuture().setErrorMessage(error);
+            newMessage.getFuture().setCompleted();
+            logger.error("Error in response " + error );
+            return true;
+        }
+        return false;
+    }
+
+
+    private void handleAttach(GelatoMessage future, Message message) {
+        AttachResponse response = Decoder.decodeAttachResponse(message);
+        future.setFuture(response);
+    }
+
+    private void handleRead(GelatoMessage future, Message message, boolean init) {
+        ReadResponse response = Decoder.decodeReadResponse(message);
+        if(init) {
+            future.setFuture(response);
+        } else {
+            future.setResponseMessage(response);
+        }
+
+    }
+
+    private void processFuture(GelatoMessage future, Message message, boolean init) {
+        switch (future.messageType()) {
+            case P9Protocol.TATTACH:
+                handleAttach(future,message);
+                break;
+            case P9Protocol.TAUTH:
+                future.setFuture(Decoder.decodeAuthResponse(message));
+                break;
+            case P9Protocol.TCLOSE:
+                future.setFuture(Decoder.decodeCloseResponse(message));
+                break;
+            case P9Protocol.TCREATE:
+                future.setFuture(Decoder.decodeCreateResponse(message));
+                break;
+            case P9Protocol.TFLUSH:
+                future.setFuture(Decoder.decodeFlushResponse(message));
+                break;
+            case P9Protocol.TOPEN:
+                future.setFuture(Decoder.decodeOpenResponse(message));
+                break;
+            case P9Protocol.TREAD:
+                handleRead(future,message,init);
+                break;
+            case P9Protocol.TREMOVE:
+                future.setFuture(Decoder.decodeRemoveResponse(message));
+                break;
+            case P9Protocol.TSTAT:
+                future.setFuture(Decoder.decodeStatResponse(message));
+                break;
+            case P9Protocol.TWALK:
+                future.setFuture(Decoder.decodeWalkResponse(message));
+                break;
+            case P9Protocol.TWRITE:
+                future.setFuture(Decoder.decodeWriteResponse(message));
+                break;
+            case P9Protocol.TWSTAT:
+                future.setFuture(Decoder.decodeStatWriteResponse(message));
+                break;
+            case P9Protocol.TVERSION:
+                future.setFuture(Decoder.decodeVersionRequest(message));
+        }
+    }
+
+    private void processMessages() throws InterruptedException {
+        MessageCompletion futureCompletion = incomingMessages.take();
+        if(!isErrorAndHandle(futureCompletion)) {
+            if(!futureCompletion.getFuture().isComplete()) {
+                futureCompletion.getFuture().setCompleted();
+                processFuture(futureCompletion.getFuture(), futureCompletion.getMessage(), true);
             } else {
-                switch (future.messageType()) {
-                    case P9Protocol.TATTACH:
-                        future.setResponseMessage(Decoder.decodeAttachResponse(fetchedMessage));
-                        break;
-                    case P9Protocol.TAUTH:
-                        future.setResponseMessage(Decoder.decodeAuthResponse(fetchedMessage));
-                        break;
-                    case P9Protocol.TCLOSE:
-                        future.setResponseMessage(Decoder.decodeCloseResponse(fetchedMessage));
-                        break;
-                    case P9Protocol.TCREATE:
-                        future.setResponseMessage(Decoder.decodeCreateResponse(fetchedMessage));
-                        break;
-                    case P9Protocol.TFLUSH:
-                        future.setResponseMessage(Decoder.decodeFlushResponse(fetchedMessage));
-                        break;
-                    case P9Protocol.TOPEN:
-                        future.setResponseMessage(Decoder.decodeOpenResponse(fetchedMessage));
-                        break;
-                    case P9Protocol.TREAD:
-                        future.setResponseMessage(Decoder.decodeReadResponse(fetchedMessage));
-                        break;
-                    case P9Protocol.TREMOVE:
-                        future.setResponseMessage(Decoder.decodeRemoveResponse(fetchedMessage));
-                        break;
-                    case P9Protocol.TSTAT:
-                        future.setResponseMessage(Decoder.decodeStatResponse(fetchedMessage));
-                        break;
-                    case P9Protocol.TWALK:
-                        future.setResponseMessage(Decoder.decodeWalkResponse(fetchedMessage));
-                        break;
-                    case P9Protocol.TWRITE:
-                        future.setResponseMessage(Decoder.decodeWriteResponse(fetchedMessage));
-                        break;
-                    case P9Protocol.TWSTAT:
-                        future.setResponseMessage(Decoder.decodeStatWriteResponse(fetchedMessage));
-                        break;
-                }
-                future.setCompleted();
+                processFuture(futureCompletion.getFuture(), futureCompletion.getMessage(), false);
             }
         }
     }
 
-    public GelatoMessaging(GelatoSession session,
-                           GelatoConnection connection) {
-        sessionHandler = session;
-        this.connection = connection;
+    public void addMessageToProcess(MessageCompletion newMessage) {
+        incomingMessages.add(newMessage);
+    }
+
+    public GelatoMessaging(String hostName, int portNumber) throws IOException {
+        clientSocket = new Socket(hostName, portNumber);
+        inputReader = new ClientSideTcpInputReader(clientSocket.getInputStream(),this);
+        outputWriter = new ClientSideOutTcpWrite(clientSocket.getOutputStream(), inputReader);
+        Ciotola.getInstance().injectService(inputReader);
+        Ciotola.getInstance().injectService(outputWriter);
+        Ciotola.getInstance().injectService(this);
     }
 
     public void close(GelatoMessage message) {
-        sessionHandler.getTags().closeTag(message.getTag());
-        if(messageMap.containsKey(message.getTag())) {
-            messageMap.remove(message.getTag());
-        }
+        inputReader.closeFuture(message);
     }
 
     public void submitMessage(GelatoMessage message) {
-        message.setTag(sessionHandler.getTags().generateTag());
-        if(messageMap.containsKey(message.getTag())) {
-            logger.error("Clashing tags - removing old");
-            messageMap.remove(message.getTag());
-        }
-        messageMap.put(message.getTag(), message);
-        connection.sendMessage(message.toMessage());
+        outputWriter.sendMessage(message);
+    }
+
+    public void submitAndClose(GelatoMessage message) {
+        message.setCompleted();
+        outputWriter.sendMessage(message);
     }
 
     public GelatoMessage<AttachRequest, AttachResponse> createAttachTransaction() {
@@ -190,6 +233,10 @@ public class GelatoMessaging {
         return new GelatoMessage<>(new WriteStatRequest());
     }
 
+    public GelatoMessage<VersionRequest, VersionRequest> createVersionRequest() {
+        return new GelatoMessage<>(new VersionRequest());
+    }
+
     @CiotolaServiceStop
     public synchronized void shutdown() {
         shutdown = true;
@@ -201,7 +248,7 @@ public class GelatoMessaging {
     }
 
     @CiotolaServiceRun
-    public void process() {
+    public void process() throws InterruptedException {
         while (!isShutdown()) {
             processMessages();
         }

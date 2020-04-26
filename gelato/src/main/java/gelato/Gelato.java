@@ -25,16 +25,13 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 public class Gelato {
-  public static final int BUFFER_SIZE = 4096;;
-  final Logger logger = LoggerFactory.getLogger(Gelato.class);;
-  private ExecutorService executorService;
+  final Logger logger = LoggerFactory.getLogger(Gelato.class);
   private GelatoTagManager tagManager = new GelatoTagManager();
   private GelatoDescriptorManager descriptorManager = new GelatoDescriptorManager();
 
   public Gelato() {
     logger.trace("Starting Gelato");
     logger.trace(GelatoVersion.getVersion());
-    executorService = Executors.newWorkStealingPool();
   }
 
   public GelatoTagManager getTagManager() {
@@ -62,10 +59,6 @@ public class Gelato {
   public GelatoServerConnection createServer(GelatoConfigImpl con) {
     GelatoServerConnection connection = new GelatoServerConnection(this, con);
     return connection;
-  }
-
-  public ExecutorService getExecutorService() {
-    return executorService;
   }
 
   public int threadCapacity() {

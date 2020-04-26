@@ -18,12 +18,15 @@ package gelato.client;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import protocol.P9Protocol;
 import protocol.messages.Message;
 import protocol.messages.TransactionMessage;
 
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.LinkedBlockingQueue;
 
 public class GelatoMessage<M,R>  implements TransactionMessage, Iterator, Iterable {
 
@@ -35,34 +38,39 @@ public class GelatoMessage<M,R>  implements TransactionMessage, Iterator, Iterab
     private final Logger logger = LoggerFactory.getLogger(GelatoMessage.class);
     private String errorMessage;
     private int location = 0;
+    private BlockingQueue<R> future = new LinkedBlockingQueue<>();
+    private Message rawReplyMessage;
+    private R futureMessage;
+
+    private void takeMessage() {
+        if(!isComplete()) {
+            try {
+                futureMessage = future.take();
+                setCompleted();
+            } catch (InterruptedException e) {
+                logger.error("Problem fetching future");
+            }
+        }
+    }
 
     public GelatoMessage(M message) {
         originalMessage = message;
         transactionMessage = (TransactionMessage)message;
     }
 
-    private void spinWait() {
-        while(!isComplete()) {
-            try {
-                Thread.sleep(10);
-            } catch (InterruptedException e) {
-                logger.error("Thread interrupted", e);
-            }
-        }
-    }
-
     public R getResponse() {
-        spinWait();
-        if(isError()) {
-            return null;
-        }
-        return responseMessage.get(0);
+       takeMessage();
+       return futureMessage;
     }
 
     public M getMessage() {
         return originalMessage;
     }
 
+    public void setFuture(R futureMessage) {
+        future.add(futureMessage);
+        setResponseMessage(futureMessage);
+    }
 
     public synchronized int size() {
         return responseMessage.size();
@@ -96,6 +104,13 @@ public class GelatoMessage<M,R>  implements TransactionMessage, Iterator, Iterab
         return errorMessage;
     }
 
+    public synchronized Message getRawReplyMessage() {
+        return rawReplyMessage;
+    }
+
+    public synchronized void setRawReplyMessage(Message rawReplyMessage) {
+        this.rawReplyMessage = rawReplyMessage;
+    }
 
     //Simple handler functions to make it nicer to work with.
 
@@ -126,14 +141,17 @@ public class GelatoMessage<M,R>  implements TransactionMessage, Iterator, Iterab
 
     @Override
     public synchronized boolean hasNext() {
-        if(location < responseMessage.size()) {
-            return true;
+        if(messageType() != P9Protocol.RREAD) {
+            throw new RuntimeException("Invalid operation on Non READ message type");
         }
-        return  false;
+        return(location < responseMessage.size());
     }
 
     @Override
     public synchronized R next() {
+        if(messageType() != P9Protocol.RREAD) {
+            throw new RuntimeException("Invalid operation on Non READ message type");
+        }
         int ptr = location;
         location++;
         return responseMessage.get(ptr);
@@ -141,7 +159,10 @@ public class GelatoMessage<M,R>  implements TransactionMessage, Iterator, Iterab
 
     @Override
     public Iterator iterator() {
-        spinWait();
+        if(messageType() != P9Protocol.RREAD) {
+            throw new RuntimeException("Invalid operation on Non READ message type");
+        }
+        takeMessage();
         location = 0;
         return this;
     }

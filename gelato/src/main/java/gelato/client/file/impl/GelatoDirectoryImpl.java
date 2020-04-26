@@ -170,7 +170,6 @@ public class GelatoDirectoryImpl extends GelatoFileImpl implements GelatoDirecto
     getMessaging().submitMessage(walkRequest);
     WalkResponse walkResponse = walkRequest.getResponse();
     newFileDescriptor.setQid(walkResponse.getQID());
-    session.getTags().closeTag(walkRequest.getTag());
     if (newEntry.getQid().getType() == P9Protocol.QID_DIR) {
       addDirectory(newEntry,walkResponse,newFileDescriptor);
     } else {
@@ -222,7 +221,7 @@ public class GelatoDirectoryImpl extends GelatoFileImpl implements GelatoDirecto
         ++location;
       }
     } catch (IOException e) {
-      e.printStackTrace();
+      logger.error("Exception in refresh ", e);
       setResourceValid(false);
       return statEntries;
     }

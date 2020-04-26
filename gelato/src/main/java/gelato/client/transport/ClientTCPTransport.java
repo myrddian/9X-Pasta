@@ -14,7 +14,7 @@
  *    limitations under the License.
  */
 
-package gelato.client;
+package gelato.client.transport;
 
 import gelato.GelatoConfigImpl;
 import gelato.transport.TCPTransport;

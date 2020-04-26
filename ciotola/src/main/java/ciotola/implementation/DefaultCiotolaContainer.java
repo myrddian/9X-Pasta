@@ -40,6 +40,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -49,9 +50,9 @@ public class DefaultCiotolaContainer implements CiotolaContext {
 
   private ExecutorService executorService = Executors.newCachedThreadPool();
   private Map<String, CiotolaServiceInterface> serviceInterfaceMap = new HashMap<>();
-  private Map<String, Class> candidateService = new HashMap<>();
-  private Map<String, Object> autoWires = new HashMap<>();
-  private Map<String, Logger> loggerMap = new HashMap<>();
+  private Map<String, Class> candidateService = new ConcurrentHashMap<>();
+  private Map<String, Object> autoWires = new ConcurrentHashMap<>();
+  private Map<String, Logger> loggerMap = new ConcurrentHashMap<>();
   private List<String> loadedJars = new ArrayList<>();
   private List<String> scanAnnotations = new ArrayList<>();
   private List<PooledServiceRunner> serviceRunners = new ArrayList<>();

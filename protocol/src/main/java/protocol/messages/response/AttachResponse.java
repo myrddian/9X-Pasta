@@ -58,6 +58,7 @@ public class AttachResponse implements TransactionMessage {
   @Override
   public Message toMessage() {
     Message raw = new Message();
+    raw.tag = this.tag;
     raw.messageType = P9Protocol.RATTACH;
     int size = MessageRaw.minSize + P9Protocol.MSG_QID_SIZE;
     raw.messageSize = size;

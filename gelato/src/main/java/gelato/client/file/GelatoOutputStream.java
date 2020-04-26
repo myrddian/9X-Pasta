@@ -56,17 +56,7 @@ public class GelatoOutputStream extends OutputStream {
         writeMessage.getMessage().setFileDescriptor(fileDescriptor.getRawFileDescriptor());
         writeMessage.getMessage().setByteCount(bufferPtr);
         writeMessage.getMessage().setWriteData(Arrays.copyOfRange(buffer,from,size));
-        messaging.submitMessage(writeMessage);
-        if(writeMessage.getResponse() == null ) {
-            if(writeMessage.isError()) {
-                logger.error("Error responded with an error  - Server [ "+ writeMessage.getErrorMessage() + " ]");
-            } else {
-                logger.error("Unknown Error in stream");
-            }
-            closed = true;
-            throw new IOException("Invalid Server resposne");
-        }
-        messaging.close(writeMessage);
+        messaging.submitAndClose(writeMessage);
     }
 
     private void multiBufferFlush() throws IOException{
@@ -105,11 +95,7 @@ public class GelatoOutputStream extends OutputStream {
             closed = true;
             GelatoMessage<CloseRequest, CloseResponse> closeRequest = messaging.createCloseTransaction();
             closeRequest.getMessage().setFileID(fileDescriptor.getRawFileDescriptor());
-            messaging.submitMessage(closeRequest);
-            if(closeRequest.getResponse() == null ) {
-                logger.error("Error closing stream");
-            }
-            messaging.close(closeRequest);
+            messaging.submitAndClose(closeRequest);
         }
     }
 

@@ -26,7 +26,6 @@ import gelato.GelatoConfigImpl;
 import gelato.GelatoConnection;
 import gelato.GelatoDescriptorManager;
 import gelato.GelatoFileDescriptor;
-import gelato.client.ClientTCPTransport;
 import gelato.server.manager.v2.V2TCPTransport;
 import gelato.transport.GelatoTransport;
 import org.slf4j.Logger;
@@ -49,7 +48,6 @@ public class GelatoServerConnection implements GelatoConnection {
   private GelatoDescriptorManager descriptorManager;
   private Map<GelatoFileDescriptor, GelatoTransport> connections = new ConcurrentHashMap<>();
   private boolean shutdown = false;
-  private Gelato libraryReference;
   private boolean started = false;
   private MODE transportMode = MODE.V2_API;
   @CiotolaAutowire private CiotolaContext context;
@@ -57,7 +55,6 @@ public class GelatoServerConnection implements GelatoConnection {
   public GelatoServerConnection(Gelato library, GelatoConfigImpl config) {
     portNumber = config.getPortNumber();
     descriptorManager = library.getDescriptorManager();
-    libraryReference = library;
     logger.debug("Starting Server on port: " + Integer.toString(portNumber));
     try {
       serverSocket = new ServerSocket(portNumber);
@@ -71,7 +68,6 @@ public class GelatoServerConnection implements GelatoConnection {
 
   public GelatoServerConnection(Gelato library, int portNumber) {
     descriptorManager = library.getDescriptorManager();
-    libraryReference = library;
     logger.debug("Starting Server on port: " + Integer.toString(portNumber));
     try {
       serverSocket = new ServerSocket(portNumber);
@@ -189,20 +185,7 @@ public class GelatoServerConnection implements GelatoConnection {
   }
 
   private void oldV1Api() {
-    while (!shutdown) {
-      try {
-        Socket clientSocket = serverSocket.accept();
-        ClientTCPTransport tcpTransport = new ClientTCPTransport(clientSocket);
-        GelatoFileDescriptor fileDescriptor = descriptorManager.generateDescriptor();
-          logger.trace(
-              "Connected Client - File Descriptor: "
-                  + Long.toString(fileDescriptor.getDescriptorId()));
-          connections.put(fileDescriptor, tcpTransport);
-          libraryReference.getExecutorService().submit(tcpTransport);
-      } catch (IOException e) {
-        logger.error("Unable to handle connections ", e);
-      }
-    }
+    throw new RuntimeException("Model not supported");
   }
 
   public enum MODE {

@@ -21,6 +21,8 @@ import gelato.GelatoConfigImpl;
 import gelato.GelatoConnection;
 import gelato.client.file.GelatoFileManager;
 
+import java.io.IOException;
+
 public class RemoteClient {
 
     private GelatoConnection connection;
@@ -36,17 +38,14 @@ public class RemoteClient {
                         String version,
                         String user) {
 
-        gelato = new Gelato();
-        GelatoConfigImpl config = new GelatoConfigImpl();
-        config.setHost(server);
-        config.setPort(port);
-        connection = gelato.createClientConnection(config);
-        if (connection == null) {
-            throw new RuntimeException("Cannot connect");
-        }
+
         this.serviceName = serviceName;
         this.serviceVersion = version;
-        fileManager = new GelatoFileManager(connection, gelato, user, user);
+        try {
+            fileManager = new GelatoFileManager(server,port, user, user);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
         remoteFactory = new RemoteFactory(serviceName,version, fileManager.getRoot());
     }
 

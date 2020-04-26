@@ -22,6 +22,8 @@ import gelato.GelatoConnection;
 import gelato.client.file.GelatoFileManager;
 import org.springframework.stereotype.Service;
 
+import java.io.IOException;
+
 @Service
 public class ShellConnection {
 
@@ -40,15 +42,11 @@ public class ShellConnection {
   }
 
   public boolean connect(String hostName, int port, String userName) {
-    gelato = new Gelato();
-    config = new GelatoConfigImpl();
-    config.setHost(hostName);
-    config.setPort(port);
-    client = gelato.createClientConnection(config);
-    if (client == null) {
-      return false;
+    try {
+      fileManager = new GelatoFileManager(hostName,port,userName,userName);
+    } catch (IOException e) {
+      e.printStackTrace();
     }
-    fileManager = new GelatoFileManager(client, gelato, userName, userName);
     isConnected = true;
     return true;
   }

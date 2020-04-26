@@ -26,11 +26,13 @@ import gelato.client.file.impl.GelatoDirectoryImpl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.IOException;
+
 public class GelatoFileManager {
 
   private final Logger logger = LoggerFactory.getLogger(GelatoFileManager.class);
 
-  private GelatoConnection connection;
+
   private GelatoClientSession clientSession;
   private Gelato gelato;
   private GelatoTagManager tagManager;
@@ -38,17 +40,18 @@ public class GelatoFileManager {
   private GelatoDirectoryImpl root;
   private GelatoMessaging messaging;
 
-  public GelatoFileManager(GelatoConnection con, Gelato library, String userName, String userAuth) {
-    connection = con;
-    gelato = library;
+  public GelatoFileManager(String hostName, int portNumber,
+                           String userName, String userAuth) throws IOException {
+
+    gelato = new Gelato();
+    messaging = new GelatoMessaging(hostName, portNumber);
     tagManager = gelato.getTagManager();
-    clientSession = new GelatoClientSession();
     authDescriptor = gelato.getDescriptorManager().generateDescriptor();
     tagManager = gelato.getTagManager();
     tagManager.createTagHandler(authDescriptor);
 
-    clientSession.setTags(tagManager.getManager(authDescriptor));
-    clientSession.setConnection(connection);
+
+    clientSession = new GelatoClientSession(messaging);
     clientSession.setManager(gelato.getDescriptorManager());
     clientSession.setAuthorisationDescriptor(authDescriptor);
     clientSession.setUserName(userName);
@@ -58,12 +61,12 @@ public class GelatoFileManager {
       logger.error("Unable to establish session");
       throw new RuntimeException("Unable to establish session");
     }
-    messaging = new GelatoMessaging(clientSession, connection);
-    Ciotola.getInstance().injectService(messaging);
     Ciotola.getInstance().injectService(GelatoClientCache.getInstance());
     root = new GelatoDirectoryImpl(clientSession, messaging, clientSession.getFileServiceRoot());
     GelatoClientCache.getInstance().addResource(root);
   }
+
+
 
   public GelatoDirectory getRoot() {
     return root;

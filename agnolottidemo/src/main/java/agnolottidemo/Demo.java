@@ -23,7 +23,7 @@ import agnolotti.server.ServiceManager;
 public class Demo {
 
     public static final String serviceName = "demo";
-    public static final int LOOP_COUNT = 100;
+    public static final int LOOP_COUNT = 1000;
     public static final int MOD_FACTOR = (int)(LOOP_COUNT * 0.1);
 
     public static void main(String[] args) {
@@ -46,9 +46,9 @@ public class Demo {
         long startTime = System.currentTimeMillis();
         System.out.println("Starting Demo");
         for(int i=0; i < LOOP_COUNT; ++i) {
-            testService.echo("Sending Test Message");
+            testService.nullCall();
             if( (i % MOD_FACTOR) == 0 ) {
-                System.out.println(i * MOD_FACTOR * 0.1);
+                System.out.println(Integer.toString(i) + " - invocations completed");
             }
         }
         long stopTime = System.currentTimeMillis();
@@ -56,7 +56,7 @@ public class Demo {
         long time = (stopTime - startTime) / 1000;
 
         System.out.println("Total Time taken - " + Long.toString(time));
-        System.out.println("Performance: " + Long.toString(LOOP_COUNT/time));
+        System.out.println("Performance: " + Long.toString(LOOP_COUNT/time) + " Invocations per second on a single client");
 
     }
 

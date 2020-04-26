@@ -14,16 +14,29 @@
  *    limitations under the License.
  */
 
-package gelato.transport;
+package gelato.client.transport;
 
-import gelato.Gelato;
-import gelato.GelatoConfigImpl;
-import gelato.client.transport.ClientTCPTransport;
+import gelato.client.GelatoMessage;
+import protocol.messages.Message;
 
-public class TransportFactory {
+public class MessageCompletion {
+    public GelatoMessage getFuture() {
+        return future;
+    }
 
-  public static GelatoTransport createClientTransport(Gelato lib, GelatoConfigImpl config) {
-    TCPTransport newTransport = new ClientTCPTransport(config);
-    return newTransport;
-  }
+    public void setFuture(GelatoMessage future) {
+        this.future = future;
+    }
+
+    public Message getMessage() {
+        return message;
+    }
+
+    public void setMessage(Message message) {
+        this.message = message;
+    }
+
+    private GelatoMessage future;
+    private Message message;
+
 }

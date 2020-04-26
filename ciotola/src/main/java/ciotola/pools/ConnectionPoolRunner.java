@@ -74,7 +74,7 @@ public class  ConnectionPoolRunner extends Thread{
                 }
                 removeDeadServices(removeServices);
             }
-            if(processed == false || sizeOfService == 0){
+            if(sizeOfService == 0){
                 try {
                     Thread.sleep(5);
                 } catch (InterruptedException e) {

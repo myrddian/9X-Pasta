@@ -21,6 +21,8 @@ import gelato.GelatoDescriptorManager;
 import gelato.GelatoFileDescriptor;
 import gelato.GelatoSession;
 import gelato.GelatoTags;
+import gelato.client.GelatoMessage;
+import gelato.client.GelatoMessaging;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import protocol.Decoder;
@@ -36,6 +38,7 @@ import protocol.messages.response.AuthResponse;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class GelatoClientSession implements GelatoSession {
 
@@ -46,11 +49,15 @@ public class GelatoClientSession implements GelatoSession {
   private String userName;
   private String nameSpace;
   private String userAuth;
-  private GelatoConnection connection;
+  private GelatoMessaging connection;
   private GelatoDescriptorManager manager = null;
   private GelatoTags tags;
-  private Map<String, Object> sessionVars = new HashMap<>();
+  private Map<String, Object> sessionVars = new ConcurrentHashMap<>();
   private boolean useAuth = false;
+
+  public GelatoClientSession(GelatoMessaging messaging) {
+    connection = messaging;
+  }
 
   @Override
   public synchronized void setSessionVar(String varName, Object varValue) {
@@ -99,13 +106,11 @@ public class GelatoClientSession implements GelatoSession {
 
   @Override
   public GelatoConnection getConnection() {
-    return connection;
+    return null;
   }
 
   @Override
-  public void setConnection(GelatoConnection connection) {
-    this.connection = connection;
-  }
+  public void setConnection(GelatoConnection connection) { }
 
   @Override
   public GelatoDescriptorManager getManager() {
@@ -118,15 +123,10 @@ public class GelatoClientSession implements GelatoSession {
   }
 
   public boolean initSession() {
-    VersionRequest versionRequest = new VersionRequest();
-    versionRequest.setMessageTag(P9Protocol.NO_TAG);
-    connection.sendMessage(versionRequest.toMessage());
-    Message resp = connection.getMessage();
-    if (resp.messageType != P9Protocol.RVERSION) {
-      logger.error("Invalid Message received while initialising session");
-      throw new RuntimeException("INVALID RSP received");
-    }
-    VersionRequest rspVersion = Decoder.decodeVersionRequest(resp);
+
+    GelatoMessage<VersionRequest,VersionRequest> versionRequest = connection.createVersionRequest();
+    connection.submitMessage(versionRequest);
+    VersionRequest rspVersion = versionRequest.getMessage();
     logger.info(
         "Started Session -  Server is: "
             + rspVersion.getVersion()
@@ -147,20 +147,16 @@ public class GelatoClientSession implements GelatoSession {
 
     // Now Attach
     GelatoFileDescriptor attachDescriptor = manager.generateDescriptor();
-    AttachRequest request = new AttachRequest();
-    request.setTag(tags.generateTag());
-    request.setUsername(getUserName());
-    request.setNamespace(""); // default should always be blank/empty
-    request.setFid(attachDescriptor.getRawFileDescriptor());
-    request.setAfid(authorisationDescriptor.getRawFileDescriptor());
+    GelatoMessage<AttachRequest,AttachResponse> request = connection.createAttachTransaction();
 
-    connection.sendMessage(request.toMessage());
-    resp = connection.getMessage();
-    if (resp.messageType != P9Protocol.RATTACH) {
-      logger.error("Invalid Message received while initialising session - Expected RATTACH");
-      return false;
-    }
-    AttachResponse response = Decoder.decodeAttachResponse(resp);
+    request.getMessage().setUsername(getUserName());
+    request.getMessage().setNamespace(""); // default should always be blank/empty
+    request.getMessage().setFid(attachDescriptor.getRawFileDescriptor());
+    request.getMessage().setAfid(authorisationDescriptor.getRawFileDescriptor());
+
+    connection.submitMessage(request);
+
+    AttachResponse response = request.getResponse();
     attachDescriptor.setQid(response.getServerID());
     this.fileServiceRoot = attachDescriptor;
     logger.info("Client Attached to Root of File Service");
@@ -168,21 +164,17 @@ public class GelatoClientSession implements GelatoSession {
   }
 
   public boolean authHandler() {
-    AuthRequest authRequest = new AuthRequest();
-    authRequest.setUserName(getUserName());
-    authRequest.setUserAuth(getUserAuth());
-    authRequest.setTag(tags.generateTag());
+    GelatoMessage<AuthRequest,AuthResponse> authRequest = connection.createAuthTransaction();
+    authRequest.getMessage().setUserName(getUserName());
+    authRequest.getMessage().setUserAuth(getUserAuth());
+
     if (this.authorisationDescriptor == null) {
       authorisationDescriptor = manager.generateDescriptor();
     }
-    authRequest.setAuthFileID(authorisationDescriptor.getRawFileDescriptor());
-    connection.sendMessage(authRequest.toMessage());
-    Message resp = connection.getMessage();
-    if (resp.messageType != P9Protocol.RAUTH) {
-      logger.error("Invalid Message received while initialising session - Expected RAUTH");
-      return false;
-    }
-    AuthResponse authResponse = Decoder.decodeAuthResponse(resp);
+    authRequest.getMessage().setAuthFileID(authorisationDescriptor.getRawFileDescriptor());
+    connection.submitMessage(authRequest);
+
+    AuthResponse authResponse = authRequest.getResponse();
     authorisationDescriptor.setQid(authResponse.getQid());
     if (authResponse.getQid().getType() == QID.QID_AUTH_NOT_REQUIRED) {
       logger.info("Server requires no authorisation");
