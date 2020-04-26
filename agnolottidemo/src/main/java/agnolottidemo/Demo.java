@@ -19,7 +19,6 @@ package agnolottidemo;
 import agnolotti.Agnolotti;
 import agnolotti.client.RemoteClient;
 import agnolotti.server.ServiceManager;
-import protocol.P9Protocol;
 
 public class Demo {
 
@@ -32,7 +31,11 @@ public class Demo {
         if(args[0].equals("server")) {
             serverDemo();
         } else if(args[0].equals("client")){
-            clientDemo();
+            if(args.length != 2){
+                System.out.println("Specify host");
+            } else {
+                clientDemo(args[1]);
+            }
         } else {
             System.out.println("pick - server or client");
         }
@@ -69,9 +72,9 @@ public class Demo {
         System.out.println("Total invocation cost: " + Long.toString(invocationCost) + "ms");
     }
 
-    public static void clientDemo() {
+    public static void clientDemo(String host) {
 
-        RemoteClient client = new RemoteClient("localhost",9092,serviceName, Agnolotti.DEFAULT_VER,
+        RemoteClient client = new RemoteClient(host,9092,serviceName, Agnolotti.DEFAULT_VER,
                 serviceName);
         TestService testService = (TestService) client.getRemoteService(TestService.class);
 
@@ -79,6 +82,7 @@ public class Demo {
         nullOrRspTest(testService,false);
         System.out.println("Executing full call and return marshall test");
         nullOrRspTest(testService,true);
+        System.out.println("Tests Over - hit CRTL-C to quit");
 
 
     }
