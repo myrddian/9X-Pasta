@@ -31,23 +31,23 @@ public class Demo {
         if(args[0].equals("server")) {
             serverDemo();
         } else if(args[0].equals("client")){
-            if(args.length != 2){
-                System.out.println("Specify host");
+            if(args.length != 3){
+                System.out.println("Specify host and message");
             } else {
-                clientDemo(args[1]);
+                clientDemo(args[1], args[2]);
             }
         } else {
             System.out.println("pick - server or client");
         }
     }
 
-    public static void nullOrRspTest(TestService testService, boolean test) {
+    public static void nullOrRspTest(TestService testService, boolean test, String echoMsg) {
         long startTime = System.currentTimeMillis();
         System.out.println("Starting Demo");
         for(int i=0; i < LOOP_COUNT; ++i) {
             String rsp="";
             if(test)  {
-                rsp = testService.echo("Echo Test");
+                rsp = testService.echo(echoMsg +" "+ Integer.toString(i));
             } else {
                 testService.nullCall();
             }
@@ -72,16 +72,16 @@ public class Demo {
         System.out.println("Total invocation cost: " + Long.toString(invocationCost) + "ms");
     }
 
-    public static void clientDemo(String host) {
+    public static void clientDemo(String host, String msg) {
 
         RemoteClient client = new RemoteClient(host,9092,serviceName, Agnolotti.DEFAULT_VER,
                 serviceName);
         TestService testService = (TestService) client.getRemoteService(TestService.class);
 
         System.out.println("Executing null call test: ");
-        nullOrRspTest(testService,false);
+        nullOrRspTest(testService,false,msg);
         System.out.println("Executing full call and return marshall test");
-        nullOrRspTest(testService,true);
+        nullOrRspTest(testService,true, msg);
         System.out.println("Tests Over - hit CRTL-C to quit");
 
 
