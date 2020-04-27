@@ -22,7 +22,9 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+import com.google.gson.JsonSyntaxException;
 import com.google.gson.stream.JsonReader;
+import com.google.gson.stream.MalformedJsonException;
 import gelato.GelatoFileDescriptor;
 import gelato.GelatoSession;
 import gelato.server.manager.RequestConnection;
@@ -247,19 +249,26 @@ public class RemoteMethodStrategy extends GelatoResourceControllerImpl implement
         Reader reader = new InputStreamReader(new ByteArrayInputStream(jsonHeader.getBytes()));
         JsonReader jsonReader = new JsonReader(reader);
         JsonObject jsonObject = JsonParser.parseReader(jsonReader).getAsJsonObject();
-        if(noReturn) {
-            if(noParameters) {
-                invokeNoRetNoParam();
-            } else  {
-                invokeParamNoReturn(jsonObject);
+        try {
+            if(noReturn) {
+                if(noParameters) {
+                    invokeNoRetNoParam();
+                } else  {
+                    invokeParamNoReturn(jsonObject);
+                }
+            } else {
+                if(noParameters) {
+                    invokeReturnNoParam(sessionDescriptorVar);
+                } else  {
+                    invokeRetParam(jsonObject, sessionDescriptorVar);
+                }
             }
-        } else {
-            if(noParameters) {
-                invokeReturnNoParam(sessionDescriptorVar);
-            } else  {
-                invokeRetParam(jsonObject, sessionDescriptorVar);
-            }
+        } catch (NullPointerException | JsonSyntaxException e) {
+            logger.error("Incorrect invocation caused an NPE");
+            logger.error("JSON involved : " + jsonHeader);
+            logger.error("Exception stacktrace ", e);
         }
+
     }
 
     @Override
@@ -274,6 +283,10 @@ public class RemoteMethodStrategy extends GelatoResourceControllerImpl implement
     public boolean readRequest(RequestConnection connection, GelatoFileDescriptor clientFileDescriptor, long offset, int numberOfBytes) {
         Map<String, Object> sessionVar = getSessionMap(connection.getSession(), clientFileDescriptor);
         StatStruct sessionStat = getResource(sessionVar);
+        if(sessionStat == null ) {
+            connection.getResourceController().sendErrorMessage(connection, "Cannot READ Empty RPC Stream");
+            return true;
+        }
         if(offset!=0 || numberOfBytes != sessionStat.getLength()) {
             connection.getResourceController().sendErrorMessage(connection, "RPC Operations must be atomic");
             return true;

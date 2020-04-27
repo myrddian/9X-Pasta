@@ -55,6 +55,10 @@ public class RemoteServiceProxyDirectory extends GelatoDirectoryControllerImpl {
         logger.debug("EXPORTING IDL: " + definedIDL);
         ByteArrayInputStream arrayInputStream = new ByteArrayInputStream(definedIDL.getBytes());
         fileIdl = new GelatoFileControllerImpl(Agnolotti.IDL, arrayInputStream,definedIDL.getBytes().length, manager.getDescriptorManager().generateDescriptor());
+        fileIdl.getStat().setUid(Agnolotti.DEFAULT_NAME);
+        fileIdl.getStat().setGid(Agnolotti.DEFAULT_NAME);
+        fileIdl.getStat().setMuid(Agnolotti.DEFAULT_NAME);
+        fileIdl.getStat().updateSize();
         addFile(fileIdl);
         manager.addResource(fileIdl);
     }

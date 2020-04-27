@@ -17,13 +17,19 @@
 package fettuccineshell;
 
 import gelato.client.file.GelatoDirectory;
+import gelato.client.file.GelatoFile;
 import gelato.client.file.GelatoFileManager;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.shell.standard.ShellComponent;
 import org.springframework.shell.standard.ShellMethod;
 import org.springframework.shell.standard.ShellOption;
+import protocol.StatStruct;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.List;
+import java.util.Scanner;
 
 @ShellComponent
 public class NagivationCommands {
@@ -41,16 +47,100 @@ public class NagivationCommands {
         init();
       }
       List<GelatoDirectory> directoryList = currentDirectory.getDirectories();
-      if (directoryList == null || directoryList.size() == 0) {
+      List<GelatoFile> fileList = currentDirectory.getFiles();
+      if (directoryList == null || directoryList.size() == 0 &&
+              (fileList.size() == 0 || fileList == null)) {
         shellHelper.print("Nothing here");
       } else {
         for (GelatoDirectory directory : directoryList) {
           shellHelper.print(directory.getName(), PromptColor.GREEN);
         }
+        for(GelatoFile file: fileList) {
+          shellHelper.print(file.getName(),PromptColor.MAGENTA);
+        }
       }
     } else {
       shellHelper.printError("Not Currently connected");
     }
+  }
+
+  @ShellMethod("Display contents of file")
+  public void cat(@ShellOption({"-f", "--file" }) String file) {
+    if(!shellConnection.isConnected()) {
+      shellHelper.print("NOT CONNECTED", PromptColor.RED);
+      return;
+    }
+
+    GelatoFile targetFile = currentDirectory.getFile(file);
+    if(targetFile == null) {
+      shellHelper.print("File Not found", PromptColor.RED);
+      return;
+    }
+
+    InputStream fileStream = targetFile.getFileInputStream();
+    Scanner scan = new Scanner(fileStream);
+    while(scan.hasNextLine()){
+      String line = scan.nextLine();
+      shellHelper.print(line,PromptColor.BRIGHT);
+    }
+    try {
+      fileStream.close();
+    } catch (IOException e) {
+      shellHelper.print(e.toString(), PromptColor.RED);
+      e.printStackTrace();
+    }
+
+  }
+
+  @ShellMethod("Write to file")
+  public void write(@ShellOption({"-f", "--file" }) String file,
+                    @ShellOption({"-m", "--message" }) String message) {
+    if(!shellConnection.isConnected()) {
+      shellHelper.print("NOT CONNECTED", PromptColor.RED);
+      return;
+    }
+
+    GelatoFile targetFile = currentDirectory.getFile(file);
+    if(targetFile == null) {
+      shellHelper.print("File Not found", PromptColor.RED);
+      return;
+    }
+
+    OutputStream fileStream = targetFile.getFileOutputStream();
+    try {
+      fileStream.write(message.getBytes());
+      fileStream.close();
+    } catch (IOException e) {
+      shellHelper.print(e.toString(), PromptColor.RED);
+      e.printStackTrace();
+    }
+
+  }
+
+  @ShellMethod("Query File Structure")
+  public void stat(@ShellOption({"-f", "--file" }) String file){
+    if(!shellConnection.isConnected()) {
+      shellHelper.print("NOT CONNECTED", PromptColor.RED);
+      return;
+    }
+
+    GelatoFile targetFile = currentDirectory.getFile(file);
+    if(targetFile == null) {
+      shellHelper.print("File Not found", PromptColor.RED);
+      return;
+    }
+
+    StatStruct fileInfo = targetFile.getStatStruct();
+
+    shellHelper.print("File Name: " + fileInfo.getName(), PromptColor.YELLOW);
+    shellHelper.print("File Path: " + targetFile.getPath(), PromptColor.YELLOW);
+    shellHelper.print("File Size: " + Long.toString(fileInfo.getLength()) + " bytes", PromptColor.YELLOW);
+    shellHelper.print("File Type: "  + fileInfo.getQid().getType(), PromptColor.YELLOW);
+    shellHelper.print("Owned by: " + fileInfo.getUid(), PromptColor.YELLOW);
+    shellHelper.print("File Mode: "+ fileInfo.getMode(), PromptColor.YELLOW);
+    shellHelper.print("File Structure " + fileInfo.getStatSize() + " bytes", PromptColor.YELLOW);
+
+
   }
 
   @ShellMethod("Change Directory")
