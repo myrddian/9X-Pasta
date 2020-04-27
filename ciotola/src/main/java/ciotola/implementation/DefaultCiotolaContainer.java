@@ -49,7 +49,7 @@ public class DefaultCiotolaContainer implements CiotolaContext {
   private final Logger logger = LoggerFactory.getLogger(DefaultCiotolaContainer.class);
 
   private ExecutorService executorService = Executors.newCachedThreadPool();
-  private Map<String, CiotolaServiceInterface> serviceInterfaceMap = new HashMap<>();
+  private Map<String, CiotolaServiceInterface> serviceInterfaceMap = new ConcurrentHashMap<>();
   private Map<String, Class> candidateService = new ConcurrentHashMap<>();
   private Map<String, Object> autoWires = new ConcurrentHashMap<>();
   private Map<String, Logger> loggerMap = new ConcurrentHashMap<>();
@@ -164,6 +164,13 @@ public class DefaultCiotolaContainer implements CiotolaContext {
   @Override
   public void execute(CiotolaConnectionService connectionService) {
     connectionPool.addConnection(connectionService);
+  }
+
+  @Override
+  public void stop() {
+    connectionPool.shutDownPool();
+    keyPoolExecutor.shutdown();
+    executorService.shutdownNow();
   }
 
   @Override

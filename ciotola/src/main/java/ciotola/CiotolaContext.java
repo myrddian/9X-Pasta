@@ -56,4 +56,5 @@ public interface CiotolaContext {
 
   void execute(Runnable job, long key);
   void execute(CiotolaConnectionService connectionService);
+  void stop();
 }

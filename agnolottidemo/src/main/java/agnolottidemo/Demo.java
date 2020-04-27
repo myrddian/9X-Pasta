@@ -20,25 +20,92 @@ import agnolotti.Agnolotti;
 import agnolotti.client.RemoteClient;
 import agnolotti.server.ServiceManager;
 
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+
 public class Demo {
 
     public static final String serviceName = "demo";
     public static final int LOOP_COUNT = 1000;
     public static final int MOD_FACTOR = (int)(LOOP_COUNT * 0.1);
+    public static final int RUNNERS = 12;
 
     public static void main(String[] args) {
         System.out.println("Agnolotti Demo");
         if(args[0].equals("server")) {
             serverDemo();
         } else if(args[0].equals("client")){
-            if(args.length != 3){
+            if(args.length < 3){
                 System.out.println("Specify host and message");
             } else {
                 clientDemo(args[1], args[2]);
             }
+        } else if(args[0].equals("loadrunner")) {
+            parallelRun(args[1], args[2]);
         } else {
             System.out.println("pick - server or client");
         }
+    }
+
+
+
+    public static void parallelRun(String host, String msg) {
+        class runner implements Runnable {
+
+            int location;
+            long[] results;
+            String hostName;
+            String msg;
+            CountDownLatch cnt;
+
+            public runner(int loc, long [] res, String host, String mesg, CountDownLatch countDownLatch)
+            {
+                location = loc;
+                results = res;
+                hostName = host;
+                msg = mesg;
+                cnt = countDownLatch;
+            }
+
+            @Override
+            public void run() {
+                RemoteClient client = new RemoteClient(hostName,9092,serviceName, Agnolotti.DEFAULT_VER,
+                        serviceName);
+                TestService testService = (TestService) client.getRemoteService(TestService.class);
+                long startTime = System.currentTimeMillis();
+                for(int i=0; i< LOOP_COUNT; ++i) {
+                    testService.echo(msg +" " + Integer.toString(i));
+                }
+                long stopTime = System.currentTimeMillis();
+                results[location] = (stopTime - startTime);
+                System.out.println("Total Time Executing - " + Long.toString(results[location]));
+                cnt.countDown();
+            }
+        }
+
+        long [] timingResult = new long[RUNNERS];
+        ExecutorService service = Executors.newCachedThreadPool();
+        System.out.println("Launching jobs");
+        CountDownLatch latch = new CountDownLatch(timingResult.length);
+        long taskStart = System.currentTimeMillis();
+
+        for(int counter=0; counter < timingResult.length; ++counter) {
+            service.submit(new runner(counter,timingResult,host,msg, latch));
+        }
+         try {
+             latch.await();
+         } catch (InterruptedException e) {
+             e.printStackTrace();
+         }
+        long stopTask = System.currentTimeMillis();
+        System.out.println("Stopping Jobs");
+        long totalTime = stopTask - taskStart;
+        int executedInvokes = timingResult.length * LOOP_COUNT;
+        System.out.println("Total Invocations: " + Integer.toString(executedInvokes));
+        System.out.println("Total milliseconds " + Long.toString(totalTime) +" Transactions per second "+ Double.toString(executedInvokes/(totalTime/1000)));
+        System.out.println("Effetive Cost: " + Long.toString(totalTime/executedInvokes) +" ms per call");
+
     }
 
     public static void nullOrRspTest(TestService testService, boolean test, String echoMsg) {

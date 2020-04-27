@@ -51,4 +51,10 @@ public class CiotolaConnectionPool {
         }
     }
 
+    public synchronized void shutDownPool() {
+        for(ConnectionPoolRunner runner:workerPool) {
+            runner.stopWorker();
+        }
+    }
+
 }

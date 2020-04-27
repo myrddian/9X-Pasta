@@ -44,7 +44,7 @@ public class CiotolaKeyPool {
         workerPool.get(scheduleGroup).addJob(job);
     }
 
-    public void shutdown() {
+    public synchronized void shutdown() {
         logger.debug("Stopping workers");
         for(CiotolaKeyPoolRunner runner: workerPool) {
             runner.stopWorker();

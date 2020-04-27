@@ -16,6 +16,7 @@
 
 package agnolotti.client;
 
+import ciotola.Ciotola;
 import gelato.Gelato;
 import gelato.GelatoConfigImpl;
 import gelato.GelatoConnection;
@@ -87,5 +88,9 @@ public class RemoteClient {
         return serviceVersion;
     }
 
+
+    public void stop() {
+        Ciotola.getInstance().stop();
+    }
 
 }

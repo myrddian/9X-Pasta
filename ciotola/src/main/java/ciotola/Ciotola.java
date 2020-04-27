@@ -168,4 +168,9 @@ public class Ciotola implements CiotolaContext {
     serviceContainer.execute(connectionService);
   }
 
+  @Override
+  public void stop() {
+    serviceContainer.stop();
+  }
+
 }
