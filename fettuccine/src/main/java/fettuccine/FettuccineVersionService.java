@@ -18,6 +18,9 @@ package fettuccine;
 
 
 import common.api.fettuccine.FettuccineVersion;
+import gelato.Gelato;
+import gelato.GelatoVersion;
+import protocol.P9Protocol;
 
 public class FettuccineVersionService implements FettuccineVersion {
   public static final int VERSION_MAJOR = 1;
@@ -36,6 +39,9 @@ public class FettuccineVersionService implements FettuccineVersion {
                     + VERSION_NOTES
                     + " Copyright: "
                     + COPYRIGHT;
+    String gelato = GelatoVersion.getVersion();
+    String protocol = P9Protocol.protocolVersion;
+    ver = ver + "\n - Using: "+gelato+"\n - Library: "+protocol;
     return ver;
   }
 

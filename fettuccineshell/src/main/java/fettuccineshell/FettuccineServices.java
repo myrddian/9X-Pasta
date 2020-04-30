@@ -21,10 +21,12 @@ import common.api.fettuccine.FettuccineConstants;
 import common.api.fettuccine.FettuccineNameSpace;
 import common.api.fettuccine.FettuccineVersion;
 import common.api.fettuccine.Mount;
+import gelato.GelatoVersion;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.shell.standard.ShellComponent;
 import org.springframework.shell.standard.ShellMethod;
 import org.springframework.shell.standard.ShellOption;
+import protocol.P9Protocol;
 
 
 @ShellComponent
@@ -59,10 +61,14 @@ public class FettuccineServices {
     public void version() {
         if(initRpc()) {
             shellHelper.print("Fettuccine Version reported as: ");
-            shellHelper.print(versionService.getVersion());
+            shellHelper.print(versionService.getVersion(),PromptColor.BRIGHT);
         } else {
             shellHelper.print("No Connection");
         }
+        shellHelper.print("Shell built with Gelato: ");
+        shellHelper.print(" - "+ GelatoVersion.getVersion(),PromptColor.BRIGHT);
+        shellHelper.print("Protocol library: ");
+        shellHelper.print(" - "+ P9Protocol.protocolVersion,PromptColor.BRIGHT);
     }
 
     @ShellMethod("Mount a remote 9X Service to Fettuccine")
