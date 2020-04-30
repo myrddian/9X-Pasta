@@ -26,7 +26,6 @@ import java.io.IOException;
 
 public class RemoteClient {
 
-    private GelatoConnection connection;
     private GelatoFileManager fileManager;
     private Gelato gelato;
     private String serviceName;
@@ -50,17 +49,15 @@ public class RemoteClient {
         remoteFactory = new RemoteFactory(serviceName,version, fileManager.getRoot());
     }
 
+    public RemoteClient(GelatoFileManager fileManager, String serviceName, String  serviceVersion) {
+        this.fileManager = fileManager;
+        this.serviceName = serviceName;
+        this.serviceVersion = serviceVersion;
+        remoteFactory = new RemoteFactory(serviceName,serviceVersion, fileManager.getRoot());
+    }
 
     public Object getRemoteService(Class remoteInterface) {
         return remoteFactory.generateRemoteService(remoteInterface);
-    }
-
-    public GelatoConnection getConnection() {
-        return connection;
-    }
-
-    public void setConnection(GelatoConnection connection) {
-        this.connection = connection;
     }
 
     public GelatoFileManager getFileManager() {

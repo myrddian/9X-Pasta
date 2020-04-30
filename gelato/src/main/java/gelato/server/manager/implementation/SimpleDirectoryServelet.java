@@ -16,6 +16,7 @@
 
 package gelato.server.manager.implementation;
 
+import gelato.server.GelatoServerManager;
 import gelato.server.manager.controllers.impl.GelatoDirectoryControllerImpl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -29,7 +30,8 @@ public class SimpleDirectoryServelet extends GelatoDirectoryControllerImpl {
 
   private final Logger logger = LoggerFactory.getLogger(SimpleDirectoryServelet.class);
 
-  public SimpleDirectoryServelet(long resourceDescriptor, String name) {
+  public SimpleDirectoryServelet(GelatoServerManager serverManager,long resourceDescriptor, String name) {
+    super(serverManager);
     setResourceName(name);
     StatStruct newStat = getStat();
     newStat.setAccessTime(Instant.now().getEpochSecond());

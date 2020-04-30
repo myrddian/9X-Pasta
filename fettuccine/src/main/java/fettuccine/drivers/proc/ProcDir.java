@@ -16,32 +16,33 @@
 
 package fettuccine.drivers.proc;
 
-import fettuccine.FettuccineService;
+
+import gelato.server.GelatoServerManager;
 import gelato.server.manager.controllers.impl.GelatoDirectoryControllerImpl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import protocol.P9Protocol;
 import protocol.QID;
 import protocol.StatStruct;
+import common.api.fettuccine.FettuccineConstants;
 
 import java.time.Instant;
 
 public class ProcDir extends GelatoDirectoryControllerImpl {
 
   public static final long PROC_ID = 100l;
-  public static final String PROC_NAME = "proc";
 
   private final Logger logger = LoggerFactory.getLogger(ProcDir.class);
 
-    public ProcDir() {
-    super();
-    setResourceName(PROC_NAME);
+    public ProcDir(GelatoServerManager serverManager) {
+    super(serverManager);
+    setResourceName(FettuccineConstants.PROC_DIR);
     StatStruct newStat = getStat();
     newStat.setAccessTime(Instant.now().getEpochSecond());
     newStat.setModifiedTime(newStat.getAccessTime());
-    newStat.setUid(FettuccineService.FETTUCCINE_SVC_NAME);
-    newStat.setGid(FettuccineService.FETTUCCINE_SVC_GRP);
-    newStat.setMuid(FettuccineService.FETTUCCINE_SVC_NAME);
+    newStat.setUid(FettuccineConstants.FETTUCCINE_SVC_NAME);
+    newStat.setGid(FettuccineConstants.FETTUCCINE_SVC_GRP);
+    newStat.setMuid(FettuccineConstants.FETTUCCINE_SVC_NAME);
     QID qid = getQID();
     qid.setType(P9Protocol.QID_DIR);
     qid.setVersion(0);

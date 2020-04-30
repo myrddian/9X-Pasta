@@ -27,6 +27,7 @@ import org.slf4j.LoggerFactory;
 import protocol.Decoder;
 import protocol.P9Protocol;
 import protocol.messages.Message;
+import protocol.messages.response.ErrorMessage;
 
 public class GelatoValidateRequestHandler implements GenericRequestHandler {
 
@@ -102,10 +103,21 @@ public class GelatoValidateRequestHandler implements GenericRequestHandler {
     }
     if (!session.getManager().validDescriptor(requestedResource)) {
       logger.error("Invalid Descriptor request in Message");
+      logger.error("Resource: " + requestedResource.getDescriptorId() +" Does not exist!");
+      logger.error("Message Tag: " + request.tag);
+      logger.error("Messaage Type: " + request.messageType);
+      sendError("Invalid resource", request.tag,descriptor, connection);
       return false;
     }
 
     return nextHandler.processRequest(connection, descriptor, session, request);
+  }
+
+  private void sendError(String error, int tag, GelatoFileDescriptor connDesc, GelatoConnection connection) {
+    ErrorMessage msg = new ErrorMessage();
+    msg.setTag(tag);
+    msg.setErrorMessage(error);
+    connection.sendMessage(connDesc,msg.toMessage());
   }
 
   public GenericRequestHandler getUnknownHandler() {

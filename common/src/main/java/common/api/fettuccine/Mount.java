@@ -14,24 +14,11 @@
  *    limitations under the License.
  */
 
-package fettuccine;
+package common.api.fettuccine;
 
-public class FettuccineVersion {
-  public static final int VERSION_MAJOR = 1;
-  public static final int VERSION_MINOR = 0;
-  public static final String VERSION_NOTES = "(alpha)";
-  public static final String COPYRIGHT = "Enzo Reyes";
+import java.util.List;
 
-  public static String getVersion() {
-    String ver =
-        "Fettuccine version: "
-            + Integer.toString(FettuccineVersion.VERSION_MAJOR)
-            + "."
-            + Integer.toString(FettuccineVersion.VERSION_MINOR)
-            + " "
-            + VERSION_NOTES
-            + " Copyright: "
-            + COPYRIGHT;
-    return ver;
-  }
+public interface Mount {
+    boolean mount(String server, int port, String userName,  String point);
+    List<String> listMounts();
 }

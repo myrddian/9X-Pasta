@@ -33,6 +33,8 @@ public class GelatoFileManager {
   private final Logger logger = LoggerFactory.getLogger(GelatoFileManager.class);
 
 
+
+
   private GelatoClientSession clientSession;
   private Gelato gelato;
   private GelatoTagManager tagManager;
@@ -70,6 +72,10 @@ public class GelatoFileManager {
 
   public GelatoDirectory getRoot() {
     return root;
+  }
+  public GelatoMessaging getConnection() { return messaging;}
+  public GelatoClientSession getClientSession() {
+    return clientSession;
   }
 
 }

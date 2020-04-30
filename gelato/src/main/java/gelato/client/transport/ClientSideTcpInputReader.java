@@ -38,7 +38,6 @@ import java.util.concurrent.ConcurrentHashMap;
 public class ClientSideTcpInputReader {
 
     private InputStream netWorkInputStream;
-    private Map<Integer, GelatoMessage> replyBucket = new ConcurrentHashMap<>();
     private byte[] minHeaderBuffer = new byte[MessageRaw.minSize];
     private boolean shutdown = false;
     private final Logger logger = LoggerFactory.getLogger(ClientSideTcpInputReader.class);
@@ -46,11 +45,6 @@ public class ClientSideTcpInputReader {
 
     public static final String INCORRECT_HEADER = "Incorrect header";
     public static final String INVALID_BYTE_COUNT = "Number of bytes read from stream does not match required amount";
-
-    public void addFuture(GelatoMessage future) {
-        replyBucket.put(future.getTag(),future);
-    }
-    public void closeFuture(GelatoMessage future) { replyBucket.remove(future.getTag()); }
 
 
     public ClientSideTcpInputReader(InputStream inputStream, GelatoMessaging broker) {
@@ -60,32 +54,9 @@ public class ClientSideTcpInputReader {
 
     public void processMessages() throws IOException {
         Message message = getMessage();
-        GelatoMessage future = replyBucket.get(message.tag);
-        if(future == null) {
-            logger.error("No future found for message");
-            return;
-        }
-        if(future.isComplete()) {
-            replyBucket.remove(message.tag);
-            determineError(message);
-        } else {
-            MessageCompletion completion = new MessageCompletion();
-            completion.setFuture(future);
-            completion.setMessage(message);
-            messaging.addMessageToProcess(completion);
-        }
-
+        messaging.addMessageToProcess(message);
     }
 
-
-    public void determineError(Message message) {
-        if(message.messageType == P9Protocol.RERROR) {
-            ErrorMessage errorMessage = Decoder.decodeError(message);
-            logger.error("Reply from server was an Error message but the transaction is completed - reply from server below");
-            logger.error(errorMessage.getErrorMessage());
-            throw new RuntimeException("Future Transaction not completed - Error not Handled");
-        }
-    }
 
     public Message getMessage() throws IOException {
 

@@ -16,7 +16,9 @@
 
 package agnolotti.server;
 
+import agnolotti.primitives.SystemMapper;
 import gelato.GelatoDescriptorManager;
+import gelato.GelatoFileDescriptor;
 import gelato.server.GelatoServerManager;
 
 import java.lang.reflect.Method;
@@ -29,10 +31,16 @@ public class RemoteServiceFactory {
 
     private GelatoDescriptorManager descriptorManager;
     private GelatoServerManager manager;
+    public static final SystemMapper typeMapper = new SystemMapper();
 
     public RemoteServiceFactory(GelatoDescriptorManager gelatoDescriptorManager,
                                 GelatoServerManager serverManager) {
         descriptorManager = gelatoDescriptorManager;
+        manager = serverManager;
+    }
+
+    public RemoteServiceFactory(GelatoServerManager serverManager) {
+        descriptorManager = serverManager.getDescriptorManager();
         manager = serverManager;
     }
 
@@ -49,7 +57,7 @@ public class RemoteServiceFactory {
         int count = method.getParameterCount();
         String methodTypes = "@"+method.getName();
         for(Parameter parameter:method.getParameters()) {
-            methodTypes = methodTypes+"$"+parameter.getName()+"-"+parameter.getType();
+            methodTypes = methodTypes+"$"+parameter.getName()+"-"+typeMapper.mapGenericName(parameter.getType().getTypeName());
         }
         return methodTypes+"#count:"+Integer.toString(count);
     }
@@ -67,8 +75,10 @@ public class RemoteServiceFactory {
         String objectName = remoteInterface.getName();
         Method [] methodList = remoteInterface.getDeclaredMethods();
         Map<String, RemoteMethodStrategy>  strategyMap = pickStrategies(methodList, service);
+        GelatoFileDescriptor newDescriptor = descriptorManager.generateDescriptor();
+        newDescriptor.getQid().setLongFileId(newDescriptor.getDescriptorId());
         RemoteServiceProxyDirectory retVal =  new RemoteServiceProxyDirectory(strategyMap, objectName,
-                descriptorManager.generateDescriptor().getDescriptorId(), manager);
+                newDescriptor.getDescriptorId(), manager);
         return retVal;
     }
 

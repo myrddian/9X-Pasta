@@ -57,6 +57,7 @@ public class GelatoResourceControllerImpl implements GelatoResourceController {
   private final Logger logger = LoggerFactory.getLogger(GelatoResourceControllerImpl.class);
   private GelatoFileDescriptor fileDescriptor = new GelatoFileDescriptor();
   private StatStruct resourceStat = new StatStruct();
+  private QID resourceQID = new QID();
   private GelatoQIDManager resourceManager;
   private CloseRequestHandler closeRequestHandler = new DefaultCloseRequestHandler();
   private CreateRequestHandler createRequestHandler = new NotSupportedHandler();
@@ -75,20 +76,20 @@ public class GelatoResourceControllerImpl implements GelatoResourceController {
 
 
   public GelatoResourceControllerImpl() {
-    StatStruct newStat = getStat();
-    newStat.setAccessTime(Instant.now().getEpochSecond());
-    newStat.setModifiedTime(newStat.getAccessTime());
-    newStat.setUid(DEFAULT_USER);
-    newStat.setGid(DEFAULT_GROUP);
-    newStat.setMuid(DEFAULT_GROUP);
-    newStat.setName(DEFAULT_NAME);
-    QID qid = getQID();
-    qid.setType(P9Protocol.QID_FILE);
-    qid.setVersion(0);
-    qid.setLongFileId(0l);
-    newStat.setQid(qid);
-    newStat.updateSize();
-    setStat(newStat);
+
+    resourceStat.setAccessTime(Instant.now().getEpochSecond());
+    resourceStat.setModifiedTime(resourceStat.getAccessTime());
+    resourceStat.setUid(DEFAULT_USER);
+    resourceStat.setGid(DEFAULT_GROUP);
+    resourceStat.setMuid(DEFAULT_GROUP);
+    resourceStat.setName(DEFAULT_NAME);
+    resourceQID.setType(P9Protocol.QID_FILE);
+    resourceQID.setVersion(0);
+    resourceQID.setLongFileId(0l);
+    fileDescriptor.setQid(resourceQID);
+    resourceStat.setQid(resourceQID);
+    resourceStat.updateSize();
+
   }
 
   public void updateSize() {
@@ -97,18 +98,21 @@ public class GelatoResourceControllerImpl implements GelatoResourceController {
 
 
   @Override
-  public QID getQID() {
-    return fileDescriptor.getQid();
+  public synchronized QID getQID() {
+    return resourceQID;
   }
 
   @Override
-  public void setQID(QID value) {
+  public synchronized void setQID(QID value) {
+    resourceQID = value;
+    resourceStat.setQid(value);
     fileDescriptor.setQid(value);
+    resourceStat.updateSize();
   }
 
   @Override
   public String resourceName() {
-    return getStat().getName();
+    return resourceStat.getName();
   }
 
   @Override
@@ -120,6 +124,7 @@ public class GelatoResourceControllerImpl implements GelatoResourceController {
   public void setStat(StatStruct newStat) {
     resourceStat = newStat;
     resourceStat.updateSize();
+    resourceStat.setQid(resourceQID);
   }
 
   @Override

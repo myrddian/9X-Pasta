@@ -49,7 +49,6 @@ public class RemoteServiceProxyDirectory extends GelatoDirectoryControllerImpl {
         for(RemoteMethodStrategy element: methodStrategyMap.values()) {
             methodMap.put(element.methodDecorator(), element.getJsonContract());
             addFile(element);
-            manager.addResource(element);
         }
         definedIDL = gson.toJson(jsonMap);
         logger.debug("EXPORTING IDL: " + definedIDL);
@@ -60,7 +59,6 @@ public class RemoteServiceProxyDirectory extends GelatoDirectoryControllerImpl {
         fileIdl.getStat().setMuid(Agnolotti.DEFAULT_NAME);
         fileIdl.getStat().updateSize();
         addFile(fileIdl);
-        manager.addResource(fileIdl);
     }
 
 
@@ -73,7 +71,7 @@ public class RemoteServiceProxyDirectory extends GelatoDirectoryControllerImpl {
                                        long id, GelatoServerManager serverManager) {
 
 
-        super();
+        super(serverManager);
         manager = serverManager;
         this.methodStrategyMap = methodStrategyMap;
         setResourceName(dirName);

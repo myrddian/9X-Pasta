@@ -16,7 +16,6 @@
 
 package fettuccine.drivers.proc;
 
-import fettuccine.FettuccineService;
 import gelato.GelatoConnection;
 import gelato.GelatoFileDescriptor;
 import gelato.server.GelatoServerManager;
@@ -25,6 +24,7 @@ import gelato.server.manager.implementation.response.ResponseAttachHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import protocol.messages.response.AttachResponse;
+import common.api.fettuccine.FettuccineConstants;
 
 public class ProcDriver implements ResponseAttachHandler {
 
@@ -33,10 +33,10 @@ public class ProcDriver implements ResponseAttachHandler {
   private GelatoServerManager serveletManager;
 
   public ProcDriver(GelatoServerManager gelatoServerManager) {
-    procDir = new ProcDir();
+
     serveletManager = gelatoServerManager;
+    procDir = new ProcDir(serveletManager);
     serveletManager.getSessionHandler().setResponseAttachHandler(this);
-    serveletManager.addResource(procDir);
   }
 
   @Override
@@ -44,13 +44,12 @@ public class ProcDriver implements ResponseAttachHandler {
       GelatoConnection connection, GelatoFileDescriptor fileDescriptor, AttachResponse response) {
     logger.info("Mapping Session " + Long.toString(fileDescriptor.getDescriptorId()) + " to PROC");
     SimpleDirectoryServelet connectionDir =
-        new SimpleDirectoryServelet(
+        new SimpleDirectoryServelet(serveletManager,
             fileDescriptor.getDescriptorId(), Long.toString(fileDescriptor.getDescriptorId()));
-    connectionDir.setUid(FettuccineService.FETTUCCINE_SVC_NAME);
-    connectionDir.setGid(FettuccineService.FETTUCCINE_SVC_GRP);
-    connectionDir.setMuid(FettuccineService.FETTUCCINE_SVC_NAME);
+    connectionDir.setUid(FettuccineConstants.FETTUCCINE_SVC_NAME);
+    connectionDir.setGid(FettuccineConstants.FETTUCCINE_SVC_GRP);
+    connectionDir.setMuid(FettuccineConstants.FETTUCCINE_SVC_NAME);
     procDir.addDirectory(connectionDir);
-    serveletManager.addResource(connectionDir);
     connection.sendMessage(fileDescriptor, response.toMessage());
     return true;
   }

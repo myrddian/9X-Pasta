@@ -21,6 +21,7 @@ import gelato.Gelato;
 import gelato.GelatoConnection;
 import gelato.GelatoDescriptorManager;
 import gelato.GelatoFileDescriptor;
+import gelato.client.file.GelatoDirectory;
 import gelato.client.file.GelatoResource;
 import gelato.server.manager.GelatoDescriptorHandler;
 import gelato.server.manager.GelatoParallelRequestHandler;
@@ -36,7 +37,8 @@ import org.slf4j.LoggerFactory;
 public class GelatoServerManager {
 
   private final Logger logger = LoggerFactory.getLogger(GelatoServerManager.class);
-  private GelatoConnection connection;
+
+  private GelatoServerConnection connection;
   private GelatoQIDManager qidManager;
   private GelatoSessionHandler sessionHandler;
   private GelatoDescriptorHandler descriptorHandler;
@@ -46,7 +48,10 @@ public class GelatoServerManager {
   private Ciotola serviceContainer = Ciotola.getInstance();
   private boolean shutdown = false;
 
-  public GelatoServerManager(GelatoConnection connection, Gelato library) {
+
+  private Gelato library;
+
+  public GelatoServerManager(GelatoServerConnection connection, Gelato library) {
 
     this.connection = connection;
     qidManager = new QIDInMemoryManager();
@@ -55,6 +60,7 @@ public class GelatoServerManager {
     parallelRequestHandler = new GelatoParallelRequestHandler(qidManager);
     descriptorManager = library.getDescriptorManager();
     validateRequestHandler.setNextHandler(parallelRequestHandler);
+    this.library = library;
   }
 
   public GelatoDescriptorManager getDescriptorManager() {
@@ -92,6 +98,20 @@ public class GelatoServerManager {
       }
     }
   }
+
+  public Gelato getLibrary() {
+    return library;
+  }
+
+
+  public GelatoServerConnection getConnection() {
+    return connection;
+  }
+
+  public GelatoDirectoryController getRoot() {
+    return sessionHandler.getRootAttach();
+  }
+
 
   public synchronized void shutdown() {
     shutdown = true;

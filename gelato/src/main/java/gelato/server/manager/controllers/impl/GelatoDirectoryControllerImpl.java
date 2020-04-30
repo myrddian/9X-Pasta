@@ -19,6 +19,7 @@ package gelato.server.manager.controllers.impl;
 import gelato.GelatoConnection;
 import gelato.GelatoFileDescriptor;
 import gelato.GelatoSession;
+import gelato.server.GelatoServerManager;
 import gelato.server.manager.GelatoQIDManager;
 import gelato.server.manager.RequestConnection;
 import gelato.server.manager.controllers.GelatoDirectoryController;
@@ -46,7 +47,6 @@ import protocol.messages.response.ReadResponse;
 import protocol.messages.response.StatResponse;
 import protocol.messages.response.WalkResponse;
 
-import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -62,12 +62,15 @@ public class GelatoDirectoryControllerImpl
   private Map<String, GelatoFileController> files = new ConcurrentHashMap<>();
   private GelatoResourceController resourceController = new GelatoResourceControllerImpl();
   private StatStruct parentDir = new StatStruct();
+  private GelatoServerManager serverManager;
 
-  public GelatoDirectoryControllerImpl() {
+  public GelatoDirectoryControllerImpl(GelatoServerManager gelatoServerManager) {
     resourceController.setWalkRequestHandler(this);
     resourceController.setReadRequestHandler(this);
     resourceController.setOpenRequestHandler(this);
     resourceController.setStatRequestHandler(this);
+    resourceController.getStat().getQid().setType(P9Protocol.QID_DIR);
+    serverManager = gelatoServerManager;
   }
 
   private long calculateSize() {
@@ -149,6 +152,7 @@ public class GelatoDirectoryControllerImpl
     }
     directories.put(newDirectory.getDirectoryName(), newDirectory);
     newDirectory.mapPaths(this);
+    serverManager.addResource(newDirectory);
   }
 
   @Override
@@ -162,6 +166,7 @@ public class GelatoDirectoryControllerImpl
       return;
     }
     files.put(newFile.getResource().resourceName(), newFile);
+    serverManager.addResource(newFile);
   }
 
   // Provided built in functionality that can be overridden

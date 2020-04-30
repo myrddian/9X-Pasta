@@ -47,6 +47,7 @@ import protocol.messages.response.AttachResponse;
 import protocol.messages.response.AuthResponse;
 import protocol.messages.response.CloseResponse;
 import protocol.messages.response.CreateResponse;
+import protocol.messages.response.ErrorMessage;
 import protocol.messages.response.FlushResponse;
 import protocol.messages.response.OpenResponse;
 import protocol.messages.response.ReadResponse;
@@ -66,14 +67,16 @@ import java.util.concurrent.LinkedBlockingQueue;
 public class GelatoMessaging {
 
     private boolean shutdown = false;
-    private GelatoConnection connection;
     private final Logger logger = LoggerFactory.getLogger(GelatoMessaging.class);
     private ClientSideTcpInputReader inputReader;
     private ClientSideOutTcpWrite outputWriter;
+
+
     private int ioSize = P9Protocol.DEFAULT_MSG_SIZE;
     private Socket clientSocket;
+    private Map<Integer, GelatoMessage> replyBucket = new ConcurrentHashMap<>();
 
-    private BlockingQueue<MessageCompletion> incomingMessages = new LinkedBlockingQueue<>();
+    private BlockingQueue<Message> incomingMessages = new LinkedBlockingQueue<>();
 
     private boolean isErrorAndHandle(MessageCompletion newMessage) {
         if(newMessage.getMessage().messageType == P9Protocol.RERROR) {
@@ -146,8 +149,7 @@ public class GelatoMessaging {
         }
     }
 
-    private void processMessages() throws InterruptedException {
-        MessageCompletion futureCompletion = incomingMessages.take();
+    private void normalProcess(MessageCompletion futureCompletion ) throws InterruptedException {
         if(!isErrorAndHandle(futureCompletion)) {
             if(!futureCompletion.getFuture().isComplete()) {
                 futureCompletion.getFuture().setCompleted();
@@ -158,21 +160,66 @@ public class GelatoMessaging {
         }
     }
 
-    public void addMessageToProcess(MessageCompletion newMessage) {
+    public void determineError(Message message) {
+        if(message.messageType == P9Protocol.RERROR) {
+            ErrorMessage errorMessage = Decoder.decodeError(message);
+            logger.error("Reply from server was an Error message but the transaction is completed - reply from server below");
+            logger.error(errorMessage.getErrorMessage());
+            throw new RuntimeException("Future Transaction not completed - Error not Handled");
+        }
+    }
+
+    private void messageCompletion(Message message) throws InterruptedException {
+        GelatoMessage future = replyBucket.get(message.tag);
+        if(future == null) {
+            logger.error("No future found for message");
+            return;
+        }
+        
+        if(future.isProxy()) {
+            future.getProxy().processMessage(future,message, this);
+            return;
+        }
+
+        if(future.isComplete()) {
+            replyBucket.remove(message.tag);
+            determineError(message);
+        } else {
+            MessageCompletion completion = new MessageCompletion();
+            completion.setFuture(future);
+            completion.setMessage(message);
+            normalProcess(completion);
+        }
+    }
+
+    private void processMessages() throws InterruptedException {
+        messageCompletion(incomingMessages.take());
+    }
+
+    public void addFuture(GelatoMessage future) {
+        replyBucket.put(future.getTag(),future);
+    }
+    public void closeFuture(GelatoMessage future) { replyBucket.remove(future.getTag()); }
+
+    public void addMessageToProcess(Message newMessage) {
         incomingMessages.add(newMessage);
     }
 
     public GelatoMessaging(String hostName, int portNumber) throws IOException {
         clientSocket = new Socket(hostName, portNumber);
         inputReader = new ClientSideTcpInputReader(clientSocket.getInputStream(),this);
-        outputWriter = new ClientSideOutTcpWrite(clientSocket.getOutputStream(), inputReader);
+        outputWriter = new ClientSideOutTcpWrite(clientSocket.getOutputStream(), this);
         Ciotola.getInstance().injectService(inputReader);
         Ciotola.getInstance().injectService(outputWriter);
         Ciotola.getInstance().injectService(this);
     }
 
     public void close(GelatoMessage message) {
-        inputReader.closeFuture(message);
+        closeFuture(message);
+    }
+
+    public int getTag() {
+        return outputWriter.generateTag();
     }
 
     public void submitMessage(GelatoMessage message) {
@@ -183,6 +230,12 @@ public class GelatoMessaging {
         message.setCompleted();
         outputWriter.sendMessage(message);
     }
+
+
+    public int getIoSize() {
+        return ioSize;
+    }
+
 
     public GelatoMessage<AttachRequest, AttachResponse> createAttachTransaction() {
             return new GelatoMessage<>( new AttachRequest());

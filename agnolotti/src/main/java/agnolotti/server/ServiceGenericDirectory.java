@@ -16,6 +16,7 @@
 
 package agnolotti.server;
 
+import gelato.server.GelatoServerManager;
 import gelato.server.manager.controllers.impl.GelatoDirectoryControllerImpl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -32,8 +33,8 @@ class ServiceGenericDirectory extends GelatoDirectoryControllerImpl {
     public ServiceGenericDirectory(String serviceUserName,
                                    String serviceUserGroup,
                                    long directoryID,
-                                   String directoryName) {
-        super();
+                                   String directoryName, GelatoServerManager serverManager) {
+        super(serverManager);
         setResourceName(directoryName);
         StatStruct newStat = getStat();
         newStat.setAccessTime(Instant.now().getEpochSecond());

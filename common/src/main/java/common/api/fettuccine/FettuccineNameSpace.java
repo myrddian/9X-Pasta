@@ -14,6 +14,13 @@
  *    limitations under the License.
  */
 
-package fettuccine.drivers;
+package common.api.fettuccine;
 
-public class Mount {}
+import java.util.List;
+
+public interface FettuccineNameSpace {
+
+    List<String> getNameSpaces();
+    boolean createNameSpace(String nsName);
+    boolean deleteNameSpace(String nsName);
+}

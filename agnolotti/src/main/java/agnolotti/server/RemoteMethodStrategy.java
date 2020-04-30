@@ -17,6 +17,7 @@
 package agnolotti.server;
 
 import agnolotti.Agnolotti;
+import agnolotti.primitives.SystemMapper;
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
@@ -76,6 +77,7 @@ public class RemoteMethodStrategy extends GelatoResourceControllerImpl implement
     }
     private Gson gson = new Gson();
     private Map<String, Object> jsonFieldMap;
+    private SystemMapper mapper = new SystemMapper();
 
 
     public RemoteMethodStrategy(Method method, Object service, long id) {
@@ -122,12 +124,13 @@ public class RemoteMethodStrategy extends GelatoResourceControllerImpl implement
         jsonFieldMap = new HashMap<>();
         List arrayList = new ArrayList();
         jsonFieldMap.put(Agnolotti.PARAMETERS, arrayList);
-        jsonFieldMap.put(Agnolotti.RETURN_FIELD, invoke.getReturnType().getName());
+        jsonFieldMap.put(Agnolotti.RETURN_FIELD, mapper.mapGenericName(invoke.getReturnType().getName()));
         int fieldPosition = 0;
         for(Parameter param: invoke.getParameters()) {
             Map<String, Object> methodsMap = new HashMap<>();
             methodsMap.put(Agnolotti.PARAMETER_NAME, param.getName());
-            methodsMap.put(Agnolotti.PARAMETER_TYPE, param.getType().getName());
+            String typeMapper = mapper.mapGenericName(param.getType().getName());
+            methodsMap.put(Agnolotti.PARAMETER_TYPE, typeMapper);
             methodsMap.put(Agnolotti.PARAMETER_POS, fieldPosition);
             arrayList.add(methodsMap);
             ++fieldPosition;
@@ -155,7 +158,9 @@ public class RemoteMethodStrategy extends GelatoResourceControllerImpl implement
                 JsonObject objectParamerter = parameter.getAsJsonObject();
                 int location = objectParamerter.get(Agnolotti.PARAMETER_POS).getAsInt();
                 Map<String, Object> methodsMap = (Map) arrayList.get(location);
-                Object objectValue = gson.fromJson(objectParamerter.get(Agnolotti.PARAMETER_VALUE),Class.forName((String)methodsMap.get(Agnolotti.PARAMETER_TYPE)));
+                JsonElement fieldValue = objectParamerter.get(Agnolotti.PARAMETER_VALUE);
+                String jsonClassType = (String)methodsMap.get(Agnolotti.PARAMETER_TYPE);
+                Object objectValue = mapper.getValue(fieldValue,jsonClassType);
                 methodParameter[location] = objectValue;
             }
             return methodParameter;

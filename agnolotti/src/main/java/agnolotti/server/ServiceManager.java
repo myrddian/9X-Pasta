@@ -20,6 +20,7 @@ import agnolotti.Agnolotti;
 import gelato.Gelato;
 import gelato.server.GelatoServerConnection;
 import gelato.server.GelatoServerManager;
+import gelato.server.manager.controllers.GelatoDirectoryController;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -38,9 +39,39 @@ public class ServiceManager {
     private final Logger logger = LoggerFactory.getLogger(ServiceManager.class);
     private RemoteServiceFactory factory;
 
-    private ServiceGenericDirectory root;
-    private ServiceGenericDirectory serviceName;
-    private ServiceGenericDirectory serviceVersion;
+    private GelatoDirectoryController root;
+    private GelatoDirectoryController serviceName;
+    private GelatoDirectoryController serviceVersion;
+
+
+    public ServiceManager(GelatoServerManager manager, String serviceName,
+                          String userName,
+                          String version) {
+        this(manager, manager.getConnection(), manager.getRoot(),serviceName,userName,version);
+    }
+
+    public ServiceManager(GelatoServerManager manager,
+                          GelatoServerConnection connection,
+                          GelatoDirectoryController location,
+                          String serviceName,
+                          String userName,
+                          String version) {
+        serveletManager = manager;
+        serverConnection = connection;
+        this.version = version;
+        this.userName = userName;
+        this.userGroup = userName;
+        nameSpace = serviceName;
+        root = location;
+        this.serviceName = new ServiceGenericDirectory(userName,userGroup,
+                serveletManager.getDescriptorManager().generateDescriptor().getDescriptorId(),serviceName, serveletManager);
+        this.serviceVersion =  new ServiceGenericDirectory(userName,userGroup,
+                serveletManager.getDescriptorManager().generateDescriptor().getDescriptorId(),version,serveletManager);
+        this.serviceName.addDirectory(this.serviceVersion);
+        root.addDirectory(this.serviceName);
+        factory = new RemoteServiceFactory(serveletManager);
+    }
+
 
     public ServiceManager(String newVersion,
                           String newName,
@@ -56,15 +87,13 @@ public class ServiceManager {
         userGroup = serviceUserGroup;
         serverConnection = new GelatoServerConnection(gelato,port);
         serveletManager = new GelatoServerManager(serverConnection, gelato);
-        root = new ServiceGenericDirectory(userName, userGroup, Agnolotti.ROOT_ID, Agnolotti.ROOT_NAME);
-        serviceName = new ServiceGenericDirectory(userName,userGroup, Agnolotti.NAME_ID, nameSpace);
-        serviceVersion = new ServiceGenericDirectory(userName, userGroup, Agnolotti.VER_ID, version);
+        root = new ServiceGenericDirectory(userName, userGroup, Agnolotti.ROOT_ID, Agnolotti.ROOT_NAME,serveletManager);
+        serviceName = new ServiceGenericDirectory(userName,userGroup, Agnolotti.NAME_ID, nameSpace,serveletManager);
+        serviceVersion = new ServiceGenericDirectory(userName, userGroup, Agnolotti.VER_ID, version,serveletManager);
         root.addDirectory(serviceName);
         serviceName.addDirectory(serviceVersion);
         serveletManager.start();
         serveletManager.setRootDirectory(root);
-        serveletManager.addResource(serviceName);
-        serveletManager.addResource(serviceVersion);
         factory = new RemoteServiceFactory(gelato.getDescriptorManager(), serveletManager);
     }
 
@@ -80,7 +109,6 @@ public class ServiceManager {
     public void addRemoteService(Class remoteInterface, Object service) {
         RemoteServiceProxyDirectory proxyDirectory = factory.generateRpc(remoteInterface, service);
         serviceVersion.addDirectory(proxyDirectory);
-        serveletManager.addResource(proxyDirectory);
     }
 
 

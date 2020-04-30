@@ -47,10 +47,11 @@ public class ServiceTest {
 
         //tst.hello("test1");
         //tst2.hello("test2");
-        System.out.println(tst.sayHello("tst"));
-        System.out.println(tst.sayHello("tst2"));
-        System.out.println(tst.sayHello("tst3"));
-        System.out.println(tst.sayHello("tst"));
+        //System.out.println(tst.sayHello("tst"));
+        //System.out.println(tst.sayHello("tst2"));
+        //System.out.println(tst.sayHello("tst3"));
+        //System.out.println(tst.sayHello("tst"));
+        System.out.println(tst.sayHello(10,"bob"));
         Thread.sleep(4000);
 
     }

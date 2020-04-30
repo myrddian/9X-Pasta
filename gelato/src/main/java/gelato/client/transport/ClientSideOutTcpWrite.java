@@ -20,6 +20,7 @@ import ciotola.annotations.CiotolaServiceRun;
 import ciotola.annotations.CiotolaServiceStart;
 import ciotola.annotations.CiotolaServiceStop;
 import gelato.client.GelatoMessage;
+import gelato.client.GelatoMessaging;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import protocol.P9Protocol;
@@ -38,9 +39,9 @@ public class ClientSideOutTcpWrite {
   private BlockingQueue<GelatoMessage> writeMessageQueue = new LinkedBlockingQueue<>();
   private final Logger logger = LoggerFactory.getLogger(ClientSideOutTcpWrite.class);
   private int currentTagClient = 0;
-  private ClientSideTcpInputReader inputSideManager;
+  private GelatoMessaging messaging;
 
-    public int generateTag() {
+    public synchronized int generateTag() {
         if (currentTagClient > 65000) {
             currentTagClient = 1;
         } else {
@@ -49,10 +50,10 @@ public class ClientSideOutTcpWrite {
         return currentTagClient;
     }
 
-    public ClientSideOutTcpWrite(OutputStream networkStream, ClientSideTcpInputReader inputSide) {
+    public ClientSideOutTcpWrite(OutputStream networkStream, GelatoMessaging messaging) {
       logger.debug("Client side ouput steamer starting");
       socketOutputStream = networkStream;
-      inputSideManager = inputSide;
+      this.messaging = messaging;
     }
 
     private void processMessages() throws InterruptedException, IOException {
@@ -64,9 +65,9 @@ public class ClientSideOutTcpWrite {
       } else  {
           outbound.setTag(msgTag);
       }
+      messaging.addFuture(outbound);
       MessageRaw raw = outbound.toMessage().toRaw();
       byte[] outBytes = Encoder.messageToBytes(raw);
-      inputSideManager.addFuture(outbound);
       socketOutputStream.write(outBytes);
     }
 

@@ -16,6 +16,7 @@
 
 package gelato.client;
 
+import gelato.client.transport.MessageProxy;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import protocol.P9Protocol;
@@ -41,6 +42,9 @@ public class GelatoMessage<M,R>  implements TransactionMessage, Iterator, Iterab
     private BlockingQueue<R> future = new LinkedBlockingQueue<>();
     private Message rawReplyMessage;
     private R futureMessage;
+    private boolean messageIsProxied = false;
+    private MessageProxy proxy;
+    private int proxyId;
 
     private void takeMessage() {
         if(!isComplete()) {
@@ -51,6 +55,19 @@ public class GelatoMessage<M,R>  implements TransactionMessage, Iterator, Iterab
                 logger.error("Problem fetching future");
             }
         }
+    }
+
+    public void setProxyState(boolean isProxied) {
+        messageIsProxied = isProxied;
+    }
+
+    public boolean isProxy() {
+        return messageIsProxied;
+    }
+    public MessageProxy getProxy() { return proxy; }
+    public void setProxy(MessageProxy newProxy) {
+        proxy = newProxy;
+        messageIsProxied = true;
     }
 
     public GelatoMessage(M message) {
@@ -70,6 +87,7 @@ public class GelatoMessage<M,R>  implements TransactionMessage, Iterator, Iterab
     public void setFuture(R futureMessage) {
         future.add(futureMessage);
         setResponseMessage(futureMessage);
+        setCompleted();
     }
 
     public synchronized int size() {
@@ -166,4 +184,15 @@ public class GelatoMessage<M,R>  implements TransactionMessage, Iterator, Iterab
         location = 0;
         return this;
     }
+
+
+    public int getProxyId() {
+        return proxyId;
+    }
+
+    public void setProxyId(int proxyId) {
+        this.proxyId = proxyId;
+    }
+
+
 }

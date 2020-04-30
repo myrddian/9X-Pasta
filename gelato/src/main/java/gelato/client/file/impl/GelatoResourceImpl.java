@@ -34,7 +34,7 @@ public abstract class GelatoResourceImpl implements GelatoResource {
     private GelatoMessaging messaging;
     private final Logger logger = LoggerFactory.getLogger(GelatoResourceImpl.class);
     private long cacheLoaded = 0;
-    private long cacheExpiry = 10;
+    private long cacheExpiry = 4;
     private boolean resourceValid = true;
 
     public GelatoResourceImpl(GelatoMessaging messaging,

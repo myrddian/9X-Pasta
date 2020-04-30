@@ -16,6 +16,7 @@
 
 package agnolotti.client;
 import agnolotti.Agnolotti;
+import agnolotti.primitives.SystemMapper;
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
@@ -44,6 +45,7 @@ public class RemoteServiceMethod {
     private boolean noParameters= false;
     private final Logger logger = LoggerFactory.getLogger(RemoteServiceMethod.class);
     private Gson gson = new Gson();
+    private SystemMapper mapper = new SystemMapper();
 
     public RemoteServiceMethod(GelatoFile file, JsonObject methodIdl) {
         remoteMethodFile = file;
@@ -129,7 +131,7 @@ public class RemoteServiceMethod {
         String returnType = idl.get(Agnolotti.RETURN_FIELD).getAsString();
         try {
             fileStream.close();
-            return gson.fromJson(jsonObject.get(Agnolotti.RETURN_FIELD),Class.forName(returnType));
+            return mapper.getValue(jsonObject.get(Agnolotti.RETURN_FIELD), returnType);
         } catch (ClassNotFoundException e ) {
             logger.error("Converting to Class failed",e);
             throw new RuntimeException("Error Converting return");

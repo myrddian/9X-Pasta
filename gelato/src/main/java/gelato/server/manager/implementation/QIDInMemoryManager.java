@@ -33,7 +33,7 @@ public class QIDInMemoryManager implements GelatoQIDManager {
   final Logger logger = LoggerFactory.getLogger(QIDInMemoryManager.class);
   private Random rnd = new Random();
   private Map<Long, String> qidMapping = new ConcurrentHashMap<>();
-  private Map<Long, GelatoResourceController> resourceHandlerMap = new HashMap<>();
+  private Map<Long, GelatoResourceController> resourceHandlerMap = new ConcurrentHashMap<>();
 
   @Override
   public long generateQIDFieldID(String assetName) {
@@ -59,6 +59,11 @@ public class QIDInMemoryManager implements GelatoQIDManager {
       GelatoFileDescriptor id, GelatoResourceController handler) {
     if (resourceHandlerMap.containsKey(id.getQid().getLongFileId()) || handler == null) {
       logger.error("Resource in USE or NULL Handler");
+      if(handler != null) {
+        logger.error("Clashing mapping: " +id.getQid().getLongFileId() );
+      } else {
+        logger.error("Handler not initialized");
+      }
       return false;
     }
     resourceHandlerMap.put(id.getQid().getLongFileId(), handler);
