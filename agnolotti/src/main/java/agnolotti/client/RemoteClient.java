@@ -18,10 +18,9 @@ package agnolotti.client;
 
 import ciotola.Ciotola;
 import gelato.Gelato;
-import gelato.GelatoConfigImpl;
-import gelato.GelatoConnection;
 import gelato.client.file.GelatoFileManager;
-
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import java.io.IOException;
 
 public class RemoteClient {
@@ -31,6 +30,7 @@ public class RemoteClient {
     private String serviceName;
     private String serviceVersion;
     private RemoteFactory remoteFactory;
+    private Logger logger = LoggerFactory.getLogger(RemoteClient.class);
 
     public RemoteClient(String server,
                         int port,
@@ -44,7 +44,8 @@ public class RemoteClient {
         try {
             fileManager = new GelatoFileManager(server,port, user, user);
         } catch (IOException e) {
-            e.printStackTrace();
+           logger.error("Unable to connect or read remote server", e);
+           throw new RuntimeException("Unable to connect");
         }
         remoteFactory = new RemoteFactory(serviceName,version, fileManager.getRoot());
     }

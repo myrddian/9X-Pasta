@@ -41,6 +41,10 @@ public class SystemMapper {
     public static String SHORT_GENERIC_TYPE = "short";
     public static String CHARACTER_GENERIC_TYPE = "char";
     public static String NO_RETURN = "void";
+    public static String LIST_SYSTEM_TYPE= "java.util.List";
+    public static String GENERIC_LIST_TYPE = "List";
+    public static String MAP_SYSTEM_TYPE = "java.util.Map";
+    public static String GENERIC_MAP_TYPE = "Map";
 
     private Map<String, String> serialiseOutMap = new ConcurrentHashMap<>();
     private Map<String, String> deserialiseInMap = new ConcurrentHashMap<>();
@@ -57,6 +61,8 @@ public class SystemMapper {
         serialiseOutMap.put(FLOAT_SYSTEM_TYPE, GENRIC_FLOAT_TYPE);
         serialiseOutMap.put(SHORT_GENERIC_TYPE, SHORT_GENERIC_TYPE);
         serialiseOutMap.put(CHARACTER_GENERIC_TYPE, CHARACTER_GENERIC_TYPE);
+        serialiseOutMap.put(LIST_SYSTEM_TYPE, GENERIC_LIST_TYPE);
+        serialiseOutMap.put(MAP_SYSTEM_TYPE, GENERIC_MAP_TYPE);
         serialiseOutMap.put(NO_RETURN, NO_RETURN);
 
         //Reverse the map
