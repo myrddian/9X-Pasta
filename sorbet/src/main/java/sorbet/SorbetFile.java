@@ -25,9 +25,6 @@ import protocol.StatStruct;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.List;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
-
 public class SorbetFile extends GelatoFileControllerImpl {
 
     private OutputStream outputStream = null;
@@ -55,25 +52,25 @@ public class SorbetFile extends GelatoFileControllerImpl {
         return outputStream;
     }
 
-    public void putResource(Map<String,Object> session, StatStruct resource) {
+    public void putResource(SorbetResourceSession session, StatStruct resource) {
         session.put(Sorbet.RESOURCE, resource);
     }
 
-    public void putWrite(Map<String,Object> session, List<byte[]> byteBuffer) {
+    public void putWrite(SorbetResourceSession session, List<byte[]> byteBuffer) {
         session.put(Sorbet.WRITE_BYTES, byteBuffer);
     }
 
-    public StatStruct getResource(Map<String,Object> session) {
+    public StatStruct getResource(SorbetResourceSession session) {
         return (StatStruct)session.get(Sorbet.RESOURCE);
     }
 
-    public Map<String, Object> sessionVar() {
-        Map<String, Object> sess  =  new ConcurrentHashMap<>();
+    public SorbetResourceSession sessionVar() {
+        SorbetResourceSession sess  =  new SorbetResourceSession();
         putMode(sess, P9Protocol.OPEN_MODE_ORCLOSE);
         return sess;
     }
 
-    public List<byte[]> getWriteRequestData(Map<String,Object> sessionMap) {
+    public List<byte[]> getWriteRequestData(SorbetResourceSession sessionMap) {
         return (List)sessionMap.get(Sorbet.WRITE_BYTES);
     }
 
@@ -81,45 +78,45 @@ public class SorbetFile extends GelatoFileControllerImpl {
         return  Long.toString(descriptorId.getDescriptorId());
     }
 
-    public Map<String, Object> getSessionMap(GelatoSession clientSession, GelatoFileDescriptor descriptorId) {
+    public SorbetResourceSession getSessionMap(GelatoSession clientSession, GelatoFileDescriptor descriptorId) {
         String desriptorIdStr = Long.toString(descriptorId.getDescriptorId());
         return getSessionMap(clientSession, desriptorIdStr);
     }
 
-    public Map<String, Object> getSessionMap(GelatoSession clientSession,String descriptorId) {
-        return (Map) clientSession.getSessionVar(descriptorId);
+    public SorbetResourceSession getSessionMap(GelatoSession clientSession,String descriptorId) {
+        return (SorbetResourceSession) clientSession.getSessionVar(descriptorId);
     }
 
-    public int getMode(Map<String,Object> sessionMap) {
+    public int getMode(SorbetResourceSession sessionMap) {
         return (int)sessionMap.get(Sorbet.MODE);
     }
 
-    public void putMode(Map<String,Object> sessionMap, int mode) {
+    public void putMode(SorbetResourceSession sessionMap, int mode) {
         sessionMap.put(Sorbet.MODE, mode);
     }
 
     public void setFileName(String newName) {
-        getResource().getStat().setName(newName);
-        getResource().getStat().updateSize();
+        getResourceController().getStat().setName(newName);
+        getResourceController().getStat().updateSize();
     }
 
     public void setFileSize(long newFileSize) {
-        getResource().getStat().setLength(newFileSize);
+        getResourceController().getStat().setLength(newFileSize);
     }
 
     public void setFileGroupId(String newGroupId) {
-        getResource().getStat().setGid(newGroupId);
-        getResource().getStat().updateSize();
+        getResourceController().getStat().setGid(newGroupId);
+        getResourceController().getStat().updateSize();
     }
 
     public void setFileOwnerId(String ownerId) {
-        getResource().getStat().setUid(ownerId);
-        getResource().getStat().updateSize();
+        getResourceController().getStat().setUid(ownerId);
+        getResourceController().getStat().updateSize();
     }
 
     public void setModifierUid(String modifierUid) {
-        getResource().getStat().setMuid(modifierUid);
-        getResource().getStat().updateSize();
+        getResourceController().getStat().setMuid(modifierUid);
+        getResourceController().getStat().updateSize();
     }
 
     public void setFileDescriptor(GelatoFileDescriptor descriptor) {
@@ -127,13 +124,13 @@ public class SorbetFile extends GelatoFileControllerImpl {
     }
 
     public void setFileAccessTime(long accessTime) {
-        getResource().getStat().setAccessTime(accessTime);
-        getResource().getStat().updateSize();
+        getResourceController().getStat().setAccessTime(accessTime);
+        getResourceController().getStat().updateSize();
     }
 
     public void setModifiefTime(long modifiedTime) {
-        getResource().getStat().setModifiedTime(modifiedTime);
-        getResource().getStat().updateSize();
+        getResourceController().getStat().setModifiedTime(modifiedTime);
+        getResourceController().getStat().updateSize();
     }
 
 }

@@ -326,7 +326,7 @@ public class GelatoFileControllerImpl
   }
 
   @Override
-  public GelatoResourceController getResource() {
+  public GelatoResourceController getResourceController() {
     return resourceController;
   }
 }

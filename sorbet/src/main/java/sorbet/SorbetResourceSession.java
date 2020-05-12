@@ -14,9 +14,24 @@
  *    limitations under the License.
  */
 
-package gelato.server.manager.controllers;
+package sorbet;
 
-public interface GelatoFileController extends GelatoResourceController {
-  void setResourceController(GelatoResourceController resourceController);
-  GelatoResourceController getResourceController();
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+
+public class SorbetResourceSession {
+    private Map<String, Object> mappings = new ConcurrentHashMap<>();
+
+    public boolean contains(String key) {
+        return mappings.containsKey(key);
+    }
+
+    public Object get(String key) {
+        return mappings.get(key);
+    }
+
+    public void put(String key, Object obj) {
+        mappings.put(key,obj);
+    }
+
 }

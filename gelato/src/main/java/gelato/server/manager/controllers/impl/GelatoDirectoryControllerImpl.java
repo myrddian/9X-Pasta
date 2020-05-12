@@ -85,7 +85,7 @@ public class GelatoDirectoryControllerImpl
     }
 
     for (GelatoFileController fileHandler : files.values()) {
-      count += fileHandler.getResource().getStat().getStatSize();
+      count += fileHandler.getResourceController().getStat().getStatSize();
     }
     return count;
   }
@@ -132,7 +132,7 @@ public class GelatoDirectoryControllerImpl
     if (directories.containsKey(resourceName)) {
       return directories.get(resourceName).getResourceController();
     } else {
-      return files.get(resourceName).getResource();
+      return files.get(resourceName).getResourceController();
     }
   }
 
@@ -163,21 +163,21 @@ public class GelatoDirectoryControllerImpl
 
   @Override
   public void addFile(GelatoFileController newFile) {
-    if (files.containsKey(newFile.getResource().resourceName())) {
+    if (files.containsKey(newFile.getResourceController().resourceName())) {
       logger.error("Cannot add the same file twice");
       return;
     }
-    if (directories.containsKey(newFile.getResource().resourceName())) {
+    if (directories.containsKey(newFile.getResourceController().resourceName())) {
       logger.error("Cannot add the a File Handler which is a Directory");
       return;
     }
-    files.put(newFile.getResource().resourceName(), newFile);
+    files.put(newFile.getResourceController().resourceName(), newFile);
     serverManager.addResource(newFile);
   }
 
   @Override
   public void removeFile(GelatoFileController file) {
-    files.remove(file.getResource().resourceName());
+    files.remove(file.getResourceController().resourceName());
     serverManager.removeResource(file);
   }
 
@@ -226,7 +226,7 @@ public class GelatoDirectoryControllerImpl
     }
 
     for (GelatoFileController files : files.values()) {
-      StatStruct statStruct = files.getResource().getStat();
+      StatStruct statStruct = files.getResourceController().getStat();
       encodedStat = statStruct.EncodeStat();
       ByteEncoder.copyBytesTo(encodedStat, statBuff, ptr, encodedStat.length);
       ptr += encodedStat.length;

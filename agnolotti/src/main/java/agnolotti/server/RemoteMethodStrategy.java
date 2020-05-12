@@ -25,7 +25,6 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.google.gson.JsonSyntaxException;
 import com.google.gson.stream.JsonReader;
-import com.google.gson.stream.MalformedJsonException;
 import gelato.GelatoFileDescriptor;
 import gelato.GelatoSession;
 import gelato.server.manager.RequestConnection;
@@ -90,7 +89,7 @@ public class RemoteMethodStrategy extends GelatoResourceControllerImpl implement
         setWriteRequestHandler(this);
         setStatRequestHandler(this);
         setCloseRequestHandler(this);
-        getResource().getStat().setName(methodDecorator());
+        getResourceController().getStat().setName(methodDecorator());
         StatStruct newStat = getStat();
         newStat.setAccessTime(Instant.now().getEpochSecond());
         newStat.setModifiedTime(newStat.getAccessTime());
@@ -280,7 +279,7 @@ public class RemoteMethodStrategy extends GelatoResourceControllerImpl implement
     public void setResourceController(GelatoResourceController resourceController) {}
 
     @Override
-    public GelatoResourceController getResource() {
+    public GelatoResourceController getResourceController() {
         return this;
     }
 
