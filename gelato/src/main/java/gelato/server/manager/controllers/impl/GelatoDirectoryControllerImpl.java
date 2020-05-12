@@ -90,6 +90,10 @@ public class GelatoDirectoryControllerImpl
     return count;
   }
 
+  public GelatoServerManager getServerManager() {
+    return serverManager;
+  }
+
   // Directory Functionality
 
   @Override
@@ -140,6 +144,8 @@ public class GelatoDirectoryControllerImpl
     this.parentDir.updateSize();
   }
 
+
+
   @Override
   public void addDirectory(GelatoDirectoryController newDirectory) {
     if (files.containsKey(newDirectory.getDirectoryName())) {
@@ -158,15 +164,21 @@ public class GelatoDirectoryControllerImpl
   @Override
   public void addFile(GelatoFileController newFile) {
     if (files.containsKey(newFile.getResource().resourceName())) {
-      logger.error("Cannot add the a File Handler which is a Directory");
+      logger.error("Cannot add the same file twice");
       return;
     }
     if (directories.containsKey(newFile.getResource().resourceName())) {
-      logger.error("Cannot add the same file twice");
+      logger.error("Cannot add the a File Handler which is a Directory");
       return;
     }
     files.put(newFile.getResource().resourceName(), newFile);
     serverManager.addResource(newFile);
+  }
+
+  @Override
+  public void removeFile(GelatoFileController file) {
+    files.remove(file.getResource().resourceName());
+    serverManager.removeResource(file);
   }
 
   // Provided built in functionality that can be overridden

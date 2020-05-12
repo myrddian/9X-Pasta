@@ -17,7 +17,6 @@
 package ciotola;
 
 import ciotola.implementation.DefaultCiotolaContainer;
-import ciotola.pools.CiotolaConnectionService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -94,18 +93,23 @@ public class Ciotola implements CiotolaContext {
   }
 
   @Override
-  public void injectService(CiotolaServiceInterface newService) {
-    serviceContainer.injectService(newService);
+  public void removeService(int serviceId) {
+    serviceContainer.removeService(serviceId);
   }
 
   @Override
-  public void injectService(CiotolaServiceInterface newService, boolean skipInjection) {
-    serviceContainer.injectService(newService, skipInjection);
+  public int injectService(CiotolaServiceInterface newService) {
+    return serviceContainer.injectService(newService);
   }
 
   @Override
-  public void injectService(Object newService) {
-    serviceContainer.injectService(newService);
+  public int injectService(CiotolaServiceInterface newService, boolean skipInjection) {
+    return serviceContainer.injectService(newService, skipInjection);
+  }
+
+  @Override
+  public int injectService(Object newService) {
+    return serviceContainer.injectService(newService);
   }
 
   @Override
@@ -114,8 +118,18 @@ public class Ciotola implements CiotolaContext {
   }
 
   @Override
-  public void injectService(Object newService, boolean skipInjection) {
-    serviceContainer.injectService(newService, skipInjection);
+  public void addDependency(Object dependency) {
+    serviceContainer.addDependency(dependency);
+  }
+
+  @Override
+  public void addDependency(Class name, Object wire) {
+    serviceContainer.addDependency(name,wire);
+  }
+
+  @Override
+  public int injectService(Object newService, boolean skipInjection) {
+    return serviceContainer.injectService(newService, skipInjection);
   }
 
   @Override

@@ -14,20 +14,7 @@
  *    limitations under the License.
  */
 
-package gelato.server.manager;
+package sorbet.driver;
 
-import gelato.GelatoFileDescriptor;
-import gelato.server.manager.controllers.GelatoResourceController;
-import protocol.QID;
-
-public interface GelatoQIDManager {
-
-  long generateQIDFieldID(String assetName);
-
-  QID generateAuthQID();
-
-  boolean mapResourceHandler(GelatoFileDescriptor id, GelatoResourceController handler);
-
-  GelatoResourceController getHandler(GelatoFileDescriptor id);
-  boolean removeResource(GelatoFileDescriptor id);
+public class SorbetFileAnnotationDriver {
 }

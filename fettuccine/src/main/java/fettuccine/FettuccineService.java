@@ -27,12 +27,8 @@ import org.slf4j.LoggerFactory;
 
 public class FettuccineService {
 
-
-
   private final Logger logger = LoggerFactory.getLogger(FettuccineService.class);
-  private Gelato gelato;
   private FettuccineConfig config;
-  private GelatoServerConnection serverConnection;
   private GelatoServerManager serveletManager;
   private ProcDriver procDriver;
   private Root rootDir;
@@ -40,7 +36,6 @@ public class FettuccineService {
 
   public FettuccineService() {
     logger.info("Fettuccine - Interposer/Root VFS - Service is Initialising");
-    gelato = new Gelato();
     config = new FettuccineConfig();
   }
 
@@ -55,10 +50,8 @@ public class FettuccineService {
 
   public void init() {
     logger.info("Fettuccine - Interposer/Root VFS - Service is Configuring");
-    //logger.info(FettuccineVersionService.getVersion());
     config.loadDefaultConfig();
-    serverConnection = new GelatoServerConnection(gelato, config.generateConfig());
-    serveletManager = new GelatoServerManager(serverConnection, gelato);
+    serveletManager = new GelatoServerManager(config.getPort());
     rootDir = new Root(serveletManager);
     procDriver = new ProcDriver(serveletManager);
     serveletManager.start();

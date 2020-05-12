@@ -14,12 +14,13 @@
  *    limitations under the License.
  */
 
-package ciotola.pools;
+package ciotola;
 
 import java.io.IOException;
 
 public interface CiotolaConnectionService {
 
+    static final int NO_PROXY_TERMINATION = -1;
     int bytesToProcessInbound() throws IOException;
     int messagesToProcessOutbound();
     long getConnectionId();
@@ -30,5 +31,5 @@ public interface CiotolaConnectionService {
     void setProcessedTime(long time);
     long getProcessedTime();
     boolean isClosed();
-
+    int getProxyId();
 }

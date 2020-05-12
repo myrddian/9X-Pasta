@@ -16,6 +16,10 @@
 
 package fettuccine.drivers.proc;
 
+import ciotola.Ciotola;
+import ciotola.annotations.CiotolaServiceRun;
+import ciotola.annotations.CiotolaServiceStart;
+import ciotola.annotations.CiotolaServiceStop;
 import gelato.GelatoConnection;
 import gelato.GelatoFileDescriptor;
 import gelato.server.GelatoServerManager;
@@ -26,33 +30,25 @@ import org.slf4j.LoggerFactory;
 import protocol.messages.response.AttachResponse;
 import common.api.fettuccine.FettuccineConstants;
 
-public class ProcDriver implements ResponseAttachHandler {
+import java.util.List;
+
+public class ProcDriver  {
 
   private final Logger logger = LoggerFactory.getLogger(ProcDriver.class);
   private ProcDir procDir;
   private GelatoServerManager serveletManager;
 
-  public ProcDriver(GelatoServerManager gelatoServerManager) {
 
+  public ProcDriver(GelatoServerManager gelatoServerManager) {
     serveletManager = gelatoServerManager;
     procDir = new ProcDir(serveletManager);
-    serveletManager.getSessionHandler().setResponseAttachHandler(this);
+    Ciotola.getInstance().injectService(procDir);
   }
 
-  @Override
-  public synchronized boolean writeResponse(
-      GelatoConnection connection, GelatoFileDescriptor fileDescriptor, AttachResponse response) {
-    logger.info("Mapping Session " + Long.toString(fileDescriptor.getDescriptorId()) + " to PROC");
-    SimpleDirectoryServelet connectionDir =
-        new SimpleDirectoryServelet(serveletManager,
-            fileDescriptor.getDescriptorId(), Long.toString(fileDescriptor.getDescriptorId()));
-    connectionDir.setUid(FettuccineConstants.FETTUCCINE_SVC_NAME);
-    connectionDir.setGid(FettuccineConstants.FETTUCCINE_SVC_GRP);
-    connectionDir.setMuid(FettuccineConstants.FETTUCCINE_SVC_NAME);
-    procDir.addDirectory(connectionDir);
-    connection.sendMessage(fileDescriptor, response.toMessage());
-    return true;
-  }
+
+
+
+
 
   public ProcDir getProcDir() {
     return procDir;

@@ -85,8 +85,7 @@ public class ServiceManager {
         this.port = port;
         userName = serviceUserName;
         userGroup = serviceUserGroup;
-        serverConnection = new GelatoServerConnection(gelato,port);
-        serveletManager = new GelatoServerManager(serverConnection, gelato);
+        serveletManager = new GelatoServerManager(port);
         root = new ServiceGenericDirectory(userName, userGroup, Agnolotti.ROOT_ID, Agnolotti.ROOT_NAME,serveletManager);
         serviceName = new ServiceGenericDirectory(userName,userGroup, Agnolotti.NAME_ID, nameSpace,serveletManager);
         serviceVersion = new ServiceGenericDirectory(userName, userGroup, Agnolotti.VER_ID, version,serveletManager);

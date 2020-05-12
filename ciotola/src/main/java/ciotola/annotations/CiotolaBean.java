@@ -14,20 +14,13 @@
  *    limitations under the License.
  */
 
-package gelato.server.manager;
+package ciotola.annotations;
 
-import gelato.GelatoFileDescriptor;
-import gelato.server.manager.controllers.GelatoResourceController;
-import protocol.QID;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
-public interface GelatoQIDManager {
-
-  long generateQIDFieldID(String assetName);
-
-  QID generateAuthQID();
-
-  boolean mapResourceHandler(GelatoFileDescriptor id, GelatoResourceController handler);
-
-  GelatoResourceController getHandler(GelatoFileDescriptor id);
-  boolean removeResource(GelatoFileDescriptor id);
-}
+@Retention(RetentionPolicy.RUNTIME)
+@Target(ElementType.TYPE)
+public @interface CiotolaBean {}

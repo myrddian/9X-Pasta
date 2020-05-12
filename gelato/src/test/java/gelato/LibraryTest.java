@@ -16,27 +16,31 @@
 
 package gelato;
 
+import gelato.server.GelatoServerConnection;
+import gelato.server.GelatoServerManager;
+import gelato.server.manager.controllers.GelatoDirectoryController;
+import gelato.server.manager.controllers.impl.GelatoDirectoryControllerImpl;
+import org.junit.jupiter.api.Test;
+import protocol.P9Protocol;
+
 class LibraryTest {
-  // @Test
-  /*void testSomeLibraryMethod() throws InterruptedException {
-     Gelato library = new Gelato();
-     GelatoConfigImpl config = new GelatoConfigImpl();
-     config.setHost("localhost");
-     config.setPort(9093);
-     GelatoServerConnection newServer = new GelatoServerConnection(library, config);
-     GelatoFileServeletManager serveletManager = new GelatoFileServeletManager(newServer, library);
+ /* @Test
+  void testSomeLibraryMethod() throws InterruptedException {
+
+     GelatoServerManager serveletManager = new GelatoServerManager(9090);
      serveletManager.start();
 
-     SimpleDirectoryServelet testServe = new SimpleDirectoryServelet(10l,"");
-     SimpleDirectoryServelet newDirectory = new SimpleDirectoryServelet(11l,"TESTDIR");
+     GelatoDirectoryController testServe = new GelatoDirectoryControllerImpl(serveletManager);
+     testServe.setDirectoryName(GelatoDirectoryController.ROOT_DIR);
+     GelatoDirectoryController newDirectory = new GelatoDirectoryControllerImpl(serveletManager);
      testServe.addDirectory(newDirectory);
      serveletManager.setRootDirectory(testServe);
      serveletManager.addResource(newDirectory);
 
-     GelatoConnection client = library.createClientConnection(config);
+     /*GelatoConnection client = library.createClientConnection(config);
      GelatoFileManager fileManager = new GelatoFileManager(client, library, "TEST", "TEST");
      GelatoDirectory dir = fileManager.getRoot();
      System.out.println("OK");
-
   }*/
+
 }

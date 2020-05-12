@@ -139,7 +139,7 @@ public class NagivationCommands {
     shellHelper.print("Owned by: " + fileInfo.getUid(), PromptColor.YELLOW);
     shellHelper.print("File Mode: "+ fileInfo.getMode(), PromptColor.YELLOW);
     shellHelper.print("File Structure " + fileInfo.getStatSize() + " bytes", PromptColor.YELLOW);
-
+    shellHelper.print("File ID: " + fileInfo.getQid().getLongFileId(), PromptColor.YELLOW);
 
   }
 

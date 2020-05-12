@@ -14,20 +14,10 @@
  *    limitations under the License.
  */
 
-package gelato.server.manager;
+package gelato.server;
 
-import gelato.GelatoFileDescriptor;
-import gelato.server.manager.controllers.GelatoResourceController;
-import protocol.QID;
+import gelato.server.manager.v2.V2ClientDescriptorHandler;
 
-public interface GelatoQIDManager {
-
-  long generateQIDFieldID(String assetName);
-
-  QID generateAuthQID();
-
-  boolean mapResourceHandler(GelatoFileDescriptor id, GelatoResourceController handler);
-
-  GelatoResourceController getHandler(GelatoFileDescriptor id);
-  boolean removeResource(GelatoFileDescriptor id);
+public interface GelatoConnectionNotifier {
+    boolean handle(V2ClientDescriptorHandler newConnection);
 }

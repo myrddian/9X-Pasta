@@ -17,18 +17,11 @@
 package gelato.server;
 
 import ciotola.Ciotola;
-import gelato.Gelato;
-import gelato.GelatoConnection;
 import gelato.GelatoDescriptorManager;
-import gelato.GelatoFileDescriptor;
-import gelato.client.file.GelatoDirectory;
-import gelato.client.file.GelatoResource;
-import gelato.server.manager.GelatoDescriptorHandler;
 import gelato.server.manager.GelatoParallelRequestHandler;
 import gelato.server.manager.GelatoQIDManager;
-import gelato.server.manager.GelatoSessionHandler;
-import gelato.server.manager.GelatoValidateRequestHandler;
 import gelato.server.manager.controllers.GelatoDirectoryController;
+import gelato.server.manager.controllers.GelatoFileController;
 import gelato.server.manager.controllers.GelatoResourceController;
 import gelato.server.manager.implementation.QIDInMemoryManager;
 import org.slf4j.Logger;
@@ -40,78 +33,62 @@ public class GelatoServerManager {
 
   private GelatoServerConnection connection;
   private GelatoQIDManager qidManager;
-  private GelatoSessionHandler sessionHandler;
-  private GelatoDescriptorHandler descriptorHandler;
-  private GelatoValidateRequestHandler validateRequestHandler = new GelatoValidateRequestHandler();
   private GelatoParallelRequestHandler parallelRequestHandler;
-  private GelatoDescriptorManager descriptorManager;
+  private GelatoDescriptorManager descriptorManager = new GelatoDescriptorManager();
   private Ciotola serviceContainer = Ciotola.getInstance();
+  private GelatoDirectoryController rootDirectory;
   private boolean shutdown = false;
 
 
-  private Gelato library;
-
-  public GelatoServerManager(GelatoServerConnection connection, Gelato library) {
-
-    this.connection = connection;
-    qidManager = new QIDInMemoryManager();
-    sessionHandler = new GelatoSessionHandler(qidManager, validateRequestHandler);
-    descriptorHandler = new GelatoDescriptorHandler(library, connection, sessionHandler);
+  public GelatoServerManager(int portNumber) {
+    connection = new GelatoServerConnection(descriptorManager,portNumber);
+    qidManager = new  QIDInMemoryManager();
     parallelRequestHandler = new GelatoParallelRequestHandler(qidManager);
-    descriptorManager = library.getDescriptorManager();
-    validateRequestHandler.setNextHandler(parallelRequestHandler);
-    this.library = library;
+    setup();
+  }
+
+  public GelatoServerManager(GelatoServerConnection connection, GelatoQIDManager qidManager) {
+    this.connection = connection;
+    this.qidManager = qidManager;
+    parallelRequestHandler = new GelatoParallelRequestHandler(qidManager);
+    setup();
+  }
+
+
+  private void setup() {
+    serviceContainer.addDependency(this);
+  }
+
+
+  public void addResource(GelatoResourceController newServerResource) {
+    qidManager.mapResourceHandler(newServerResource.getFileDescriptor(), newServerResource);
+  }
+
+  public void removeResource(GelatoFileController remove) {
+    qidManager.removeResource(remove.getFileDescriptor());
+  }
+
+  public void setRootDirectory(GelatoDirectoryController rootDirectory) {
+    this.rootDirectory = rootDirectory;
+    addResource(rootDirectory);
+    rootDirectory.setDirectoryName(GelatoDirectoryController.ROOT_DIR);
+  }
+
+  public void start() {
+    serviceContainer.injectService(connection);
   }
 
   public GelatoDescriptorManager getDescriptorManager() {
     return descriptorManager;
   }
 
-  public void addResource(
-      GelatoFileDescriptor fileDescriptor, GelatoResourceController newServerResource) {
-    newServerResource.setFileDescriptor(fileDescriptor);
-    qidManager.mapResourceHandler(fileDescriptor, newServerResource);
-  }
-
-  public void addResource(GelatoResourceController newServerResource) {
-    qidManager.mapResourceHandler(newServerResource.getFileDescriptor(), newServerResource);
-  }
-
-  public void setRootDirectory(GelatoDirectoryController rootDirectory) {
-    sessionHandler.setRootAttach(rootDirectory);
-    addResource(rootDirectory);
-    rootDirectory.setDirectoryName(GelatoDirectoryController.ROOT_DIR);
-  }
-
-  public void start() {
-    serviceContainer.injectService(descriptorHandler);
-    serviceContainer.injectService(connection);
-  }
-
-  public void hold() {
-    while (!shutdown) {
-      try {
-        Thread.sleep(5000);
-      } catch (InterruptedException e) {
-        e.printStackTrace();
-        return;
-      }
-    }
-  }
-
-  public Gelato getLibrary() {
-    return library;
-  }
-
-
   public GelatoServerConnection getConnection() {
     return connection;
   }
 
   public GelatoDirectoryController getRoot() {
-    return sessionHandler.getRootAttach();
+    return rootDirectory;
   }
-
 
   public synchronized void shutdown() {
     shutdown = true;
@@ -121,7 +98,24 @@ public class GelatoServerManager {
     return shutdown;
   }
 
-  public GelatoSessionHandler getSessionHandler() {
-    return sessionHandler;
+  public void hold() {
+    while (!isShutdown()) {
+      try {
+        Thread.sleep(5000);
+      } catch (InterruptedException e) {
+        logger.error("Server Manager Interrupted" , e);
+        shutdown = true;
+        return;
+      }
+    }
   }
+
+  public GelatoParallelRequestHandler getParallelRequestHandler() {
+    return parallelRequestHandler;
+  }
+
+  public void setParallelRequestHandler(GelatoParallelRequestHandler parallelRequestHandler) {
+    this.parallelRequestHandler = parallelRequestHandler;
+  }
+
 }

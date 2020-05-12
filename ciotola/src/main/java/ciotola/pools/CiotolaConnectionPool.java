@@ -16,6 +16,7 @@
 
 package ciotola.pools;
 
+import ciotola.CiotolaConnectionService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

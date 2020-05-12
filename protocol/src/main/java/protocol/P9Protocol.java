@@ -20,6 +20,7 @@ public interface P9Protocol {
   public static final String protocolVersion = "9P/X";
   public static final String currentPath = ".";
   public static final String parentPath = "..";
+  public static final String defaultNameSpace = "";
   public static final long KILO_BYTE = 1024;
   public static final long MEGA_BYTE = 1024 * KILO_BYTE;
   public static final int DEFAULT_MSG_SIZE = 65535;

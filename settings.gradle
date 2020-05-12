@@ -12,4 +12,5 @@ include 'protocol', 'gelato', 'fettuccine', 'fettuccineshell', 'ciotola'
 include 'agnolotti'
 include 'agnolottidemo'
 include 'common'
+include 'sorbet'
 

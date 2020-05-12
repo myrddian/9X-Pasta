@@ -47,19 +47,6 @@ public class Gelato {
     return connection;
   }
 
-  public GelatoConnection createConnection(GelatoConfigImpl config) {
-    if (config.getMode() == MODE.CLIENT) {
-      return createClientConnection(config);
-    } else if (config.getMode() == MODE.SERVER) {
-      return createServer(config);
-    }
-    return createServer(config);
-  }
-
-  public GelatoServerConnection createServer(GelatoConfigImpl con) {
-    GelatoServerConnection connection = new GelatoServerConnection(this, con);
-    return connection;
-  }
 
   public int threadCapacity() {
     return Runtime.getRuntime().availableProcessors();

@@ -22,10 +22,10 @@ import ciotola.annotations.CiotolaServiceRun;
 import ciotola.annotations.CiotolaServiceStart;
 import ciotola.annotations.CiotolaServiceStop;
 import gelato.Gelato;
-import gelato.GelatoConfigImpl;
 import gelato.GelatoConnection;
 import gelato.GelatoDescriptorManager;
 import gelato.GelatoFileDescriptor;
+import gelato.server.manager.v2.V2ClientDescriptorHandler;
 import gelato.server.manager.v2.V2TCPTransport;
 import gelato.transport.GelatoTransport;
 import org.slf4j.Logger;
@@ -40,21 +40,21 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-public class GelatoServerConnection implements GelatoConnection {
+public class GelatoServerConnection implements GelatoConnection, GelatoConnectionNotifier {
 
   private final Logger logger = LoggerFactory.getLogger(GelatoServerConnection.class);
   private int portNumber = 7073;
   private ServerSocket serverSocket;
   private GelatoDescriptorManager descriptorManager;
-  private Map<GelatoFileDescriptor, GelatoTransport> connections = new ConcurrentHashMap<>();
+  private Map<GelatoFileDescriptor, V2TCPTransport> connections = new ConcurrentHashMap<>();
   private boolean shutdown = false;
   private boolean started = false;
-  private MODE transportMode = MODE.V2_API;
+  private GelatoConnectionNotifier notifier = this;
   @CiotolaAutowire private CiotolaContext context;
 
-  public GelatoServerConnection(Gelato library, GelatoConfigImpl config) {
-    portNumber = config.getPortNumber();
-    descriptorManager = library.getDescriptorManager();
+
+  public GelatoServerConnection(GelatoDescriptorManager descriptorManager, int portNumber) {
+    this.descriptorManager = descriptorManager;
     logger.debug("Starting Server on port: " + Integer.toString(portNumber));
     try {
       serverSocket = new ServerSocket(portNumber);
@@ -66,18 +66,7 @@ public class GelatoServerConnection implements GelatoConnection {
     }
   }
 
-  public GelatoServerConnection(Gelato library, int portNumber) {
-    descriptorManager = library.getDescriptorManager();
-    logger.debug("Starting Server on port: " + Integer.toString(portNumber));
-    try {
-      serverSocket = new ServerSocket(portNumber);
-      logger.debug("Server Started listening");
 
-    } catch (IOException e) {
-      logger.error("Unable to Start server", e);
-      throw new RuntimeException("Unable to start server");
-    }
-  }
 
   public void startServer() {
     started = true;
@@ -106,11 +95,7 @@ public class GelatoServerConnection implements GelatoConnection {
   @CiotolaServiceRun
   public void run() {
     logger.debug("Server Bound and waiting Connections");
-    if (transportMode == MODE.V1_SELECT) {
-      oldV1Api();
-    } else if (transportMode == MODE.V2_API || transportMode == MODE.API_LATEST) {
-      processMessages();
-    }
+    processMessages();
   }
 
   private void processMessages() {
@@ -118,12 +103,16 @@ public class GelatoServerConnection implements GelatoConnection {
       try {
         Socket clientSocket = serverSocket.accept();
         GelatoFileDescriptor fileDescriptor = descriptorManager.generateDescriptor();
+        V2ClientDescriptorHandler clientDescriptorHandler = new V2ClientDescriptorHandler(fileDescriptor);
         logger.debug(
             "Connected Client - File Descriptor: "
                 + Long.toString(fileDescriptor.getDescriptorId()));
-        V2TCPTransport tcpTransport = new V2TCPTransport(clientSocket, fileDescriptor);
-        context.injectDependencies(tcpTransport);
+        V2TCPTransport tcpTransport = new V2TCPTransport(clientSocket, fileDescriptor, clientDescriptorHandler);
+        int proxy = context.injectService(clientDescriptorHandler);
+        tcpTransport.setSvcProxy(proxy);
+        notifier.handle(clientDescriptorHandler);
         context.execute(tcpTransport);
+        connections.put(fileDescriptor, tcpTransport);
       } catch (IOException e) {
         logger.error("Unable to handle connections ", e);
       }
@@ -184,13 +173,20 @@ public class GelatoServerConnection implements GelatoConnection {
     throw new RuntimeException("Invalid Operation");
   }
 
-  private void oldV1Api() {
-    throw new RuntimeException("Model not supported");
+  @Override
+  public boolean handle(V2ClientDescriptorHandler newConnection) {
+    return true;
   }
 
-  public enum MODE {
-    V1_SELECT,
-    V2_API,
-    API_LATEST
+  public GelatoConnectionNotifier getNotifier() {
+    return notifier;
+  }
+
+  public void setNotifier(GelatoConnectionNotifier notifier) {
+    this.notifier = notifier;
+  }
+
+  public V2TCPTransport getTransport(GelatoFileDescriptor descriptor) {
+    return connections.get(descriptor);
   }
 }

@@ -129,12 +129,15 @@ public class GelatoResourceControllerImpl implements GelatoResourceController {
 
   @Override
   public GelatoFileDescriptor getFileDescriptor() {
-    return fileDescriptor;
+    GelatoFileDescriptor tmp = new GelatoFileDescriptor();
+    tmp.setQid(getQID());
+    tmp.setDescriptorId(getQID().getLongFileId());
+    return tmp;
   }
 
   @Override
   public void setFileDescriptor(GelatoFileDescriptor descriptor) {
-    fileDescriptor = descriptor;
+    setQID(descriptor.getQid());
   }
 
   @Override

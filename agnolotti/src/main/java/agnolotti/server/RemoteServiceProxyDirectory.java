@@ -18,6 +18,7 @@ package agnolotti.server;
 
 import agnolotti.Agnolotti;
 import com.google.gson.Gson;
+import gelato.GelatoFileDescriptor;
 import gelato.server.GelatoServerManager;
 import gelato.server.manager.controllers.impl.GelatoDirectoryControllerImpl;
 import gelato.server.manager.controllers.impl.GelatoFileControllerImpl;
@@ -53,7 +54,8 @@ public class RemoteServiceProxyDirectory extends GelatoDirectoryControllerImpl {
         definedIDL = gson.toJson(jsonMap);
         logger.debug("EXPORTING IDL: " + definedIDL);
         ByteArrayInputStream arrayInputStream = new ByteArrayInputStream(definedIDL.getBytes());
-        fileIdl = new GelatoFileControllerImpl(Agnolotti.IDL, arrayInputStream,definedIDL.getBytes().length, manager.getDescriptorManager().generateDescriptor());
+        GelatoFileDescriptor newDescriptor =  manager.getDescriptorManager().generateDescriptor();
+        fileIdl = new GelatoFileControllerImpl(Agnolotti.IDL, arrayInputStream,definedIDL.getBytes().length, newDescriptor);
         fileIdl.getStat().setUid(Agnolotti.DEFAULT_NAME);
         fileIdl.getStat().setGid(Agnolotti.DEFAULT_NAME);
         fileIdl.getStat().setMuid(Agnolotti.DEFAULT_NAME);

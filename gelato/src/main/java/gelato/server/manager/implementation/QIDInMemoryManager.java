@@ -78,4 +78,10 @@ public class QIDInMemoryManager implements GelatoQIDManager {
     logger.error("INVALID ID");
     return null;
   }
+
+  @Override
+  public boolean removeResource(GelatoFileDescriptor id) {
+    resourceHandlerMap.remove(id.getQid().getLongFileId());
+    return true;
+  }
 }

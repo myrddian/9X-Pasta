@@ -47,6 +47,7 @@ public class GelatoDescriptorManager {
       return generateDescriptor();
     }
     newDescriptor.setRawFileDescriptor(val);
+    newDescriptor.getQid().setLongFileId(newDescriptor.getDescriptorId());
     usedFid.put(newDescriptor.getDescriptorId(), true);
 
     return newDescriptor;

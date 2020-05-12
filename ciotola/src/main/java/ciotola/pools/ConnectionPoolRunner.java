@@ -16,6 +16,8 @@
 
 package ciotola.pools;
 
+import ciotola.Ciotola;
+import ciotola.CiotolaConnectionService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -123,6 +125,9 @@ public class  ConnectionPoolRunner extends Thread{
     private synchronized void removeDeadServices(List<CiotolaConnectionService> removal) {
         for(CiotolaConnectionService service: removal) {
             logger.trace("Removing Service - " + Long.toString(service.getConnectionId()));
+            if(service.getProxyId() != CiotolaConnectionService.NO_PROXY_TERMINATION ) {
+                Ciotola.getInstance().removeService(service.getProxyId());
+            }
             serviceList.remove(service);
         }
     }

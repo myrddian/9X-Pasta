@@ -20,9 +20,10 @@ import ciotola.Ciotola;
 import ciotola.CiotolaContext;
 import ciotola.CiotolaServiceInterface;
 import ciotola.annotations.CiotolaAutowire;
+import ciotola.annotations.CiotolaBean;
 import ciotola.annotations.CiotolaService;
 import ciotola.pools.CiotolaConnectionPool;
-import ciotola.pools.CiotolaConnectionService;
+import ciotola.CiotolaConnectionService;
 import ciotola.pools.CiotolaKeyPool;
 import io.github.classgraph.ClassGraph;
 import io.github.classgraph.ClassInfo;
@@ -37,7 +38,6 @@ import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -52,6 +52,7 @@ public class DefaultCiotolaContainer implements CiotolaContext {
   private Map<String, CiotolaServiceInterface> serviceInterfaceMap = new ConcurrentHashMap<>();
   private Map<String, Class> candidateService = new ConcurrentHashMap<>();
   private Map<String, Object> autoWires = new ConcurrentHashMap<>();
+  private Map<String, Object> beans = new ConcurrentHashMap<>();
   private Map<String, Logger> loggerMap = new ConcurrentHashMap<>();
   private List<String> loadedJars = new ArrayList<>();
   private List<String> scanAnnotations = new ArrayList<>();
@@ -100,7 +101,13 @@ public class DefaultCiotolaContainer implements CiotolaContext {
   }
 
   @Override
-  public void injectService(CiotolaServiceInterface newService, boolean skipInjection) {
+  public void removeService(int serviceId) {
+    serviceRunners.get(serviceId-1).stop();
+    serviceRunners.remove(serviceId-1);
+  }
+
+  @Override
+  public int injectService(CiotolaServiceInterface newService, boolean skipInjection) {
 
     int svcCounter = serviceRunners.size() + 1;
     PooledServiceRunner runner = new PooledServiceRunner(newService, svcCounter);
@@ -114,16 +121,23 @@ public class DefaultCiotolaContainer implements CiotolaContext {
     runner.start();
     executorService.execute(runner);
     serviceRunners.add(runner);
+    return svcCounter;
   }
 
   @Override
-  public void injectService(CiotolaServiceInterface newService) {
-    injectService(newService,false);
+  public int injectService(Object newService, boolean skipInjection) {
+    AnnotatedJavaServiceRunner runner = new AnnotatedJavaServiceRunner(newService);
+    return injectService(runner, skipInjection);
   }
 
   @Override
-  public void injectService(Object newService) {
-    injectService(newService, false);
+  public int injectService(CiotolaServiceInterface newService) {
+    return injectService(newService,false);
+  }
+
+  @Override
+  public int injectService(Object newService) {
+    return injectService(newService, false);
   }
 
   @Override
@@ -132,9 +146,13 @@ public class DefaultCiotolaContainer implements CiotolaContext {
   }
 
   @Override
-  public void injectService(Object newService, boolean skipInjection) {
-    AnnotatedJavaServiceRunner runner = new AnnotatedJavaServiceRunner(newService);
-    injectService(runner, skipInjection);
+  public void addDependency(Object dependency) {
+    beans.put(dependency.getClass().getName(), dependency);
+  }
+
+  @Override
+  public void addDependency(Class name, Object wire) {
+    beans.put(name.getName(), wire);
   }
 
   @Override
@@ -238,12 +256,12 @@ public class DefaultCiotolaContainer implements CiotolaContext {
       for (Annotation annotation : objField.getDeclaredAnnotations()) {
         if (annotation instanceof CiotolaAutowire) {
           Object autoWrite = serviceInterfaceMap.get(objField.getType().getName());
-          if (autoWrite == null) {
-            if (objField.getType() == CiotolaContext.class) {
-              autoWrite = this;
-            } else {
-              logger.error(Ciotola.UNKNOWN_COMPONENT_SPECIFIED);
-            }
+          Object beanWire = beans.get(objField.getType().getName());
+          if (autoWrite == null && beanWire != null) {
+            autoWrite = beanWire;
+          } else {
+            logger.error(Ciotola.UNKNOWN_COMPONENT_SPECIFIED);
+            break;
           }
           if (autoWrite.getClass().getName().equals(AnnotatedJavaServiceRunner.class.getName())) {
             AnnotatedJavaServiceRunner runner = (AnnotatedJavaServiceRunner) autoWrite;
@@ -291,6 +309,8 @@ public class DefaultCiotolaContainer implements CiotolaContext {
     scanAnnotations.clear();
     scanAnnotations.add(CiotolaAutowire.class.getName());
     scanAnnotations.add(CiotolaService.class.getName());
+    scanAnnotations.add(CiotolaBean.class.getName());
+    addDependency(CiotolaContext.class, this);
     connectionPool.setIdleTimeout(240);
   }
 }

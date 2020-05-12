@@ -16,8 +16,6 @@
 
 package ciotola;
 
-import ciotola.pools.CiotolaConnectionService;
-
 import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
@@ -27,16 +25,20 @@ public interface CiotolaContext {
   Collection<CiotolaServiceInterface> getServices();
 
   void addService(CiotolaServiceInterface newService);
-
   void addService(Object newService);
 
-  void injectService(CiotolaServiceInterface newService);
+  void removeService(int serviceId);
 
-  void injectService(CiotolaServiceInterface newService, boolean skipInjection);
+  int injectService(CiotolaServiceInterface newService);
+  int injectService(CiotolaServiceInterface newService, boolean skipInjection);
+  int injectService(Object newService, boolean skipInjection);
+  int injectService(Object newService);
 
-  void injectService(Object newService);
   void injectDependencies(Object newService);
-  void injectService(Object newService, boolean skipInjection);
+
+  void addDependency(Object dependency);
+  void addDependency(Class name, Object wire);
+
 
   boolean startContainer();
 

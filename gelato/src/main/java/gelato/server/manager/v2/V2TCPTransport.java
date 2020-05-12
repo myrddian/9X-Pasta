@@ -16,13 +16,8 @@
 
 package gelato.server.manager.v2;
 
-import ciotola.annotations.CiotolaAutowire;
-import ciotola.annotations.CiotolaServiceRun;
-import ciotola.annotations.CiotolaServiceStart;
-import ciotola.annotations.CiotolaServiceStop;
-import ciotola.pools.CiotolaConnectionService;
+import ciotola.CiotolaConnectionService;
 import gelato.GelatoFileDescriptor;
-import gelato.server.manager.GelatoDescriptorHandler;
 import gelato.transport.GelatoTransport;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -35,7 +30,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.Socket;
-import java.time.LocalDateTime;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 
@@ -43,7 +37,7 @@ public class V2TCPTransport implements GelatoTransport, CiotolaConnectionService
 
   final Logger logger = LoggerFactory.getLogger(V2TCPTransport.class);
 
-  @CiotolaAutowire private GelatoDescriptorHandler descriptorHandler;
+
   private BlockingQueue<Message> readMessageQueue = new LinkedBlockingQueue<>();
   private BlockingQueue<Message> writeMessageQueue = new LinkedBlockingQueue<>();
   private boolean closeConnction = false;
@@ -54,10 +48,21 @@ public class V2TCPTransport implements GelatoTransport, CiotolaConnectionService
   private Socket clientSocket;
   private GelatoFileDescriptor descriptor;
   private long processTime = System.currentTimeMillis();
+  private V2ClientDescriptorHandler nextHandler;
+  private int svcProxy = CiotolaConnectionService.NO_PROXY_TERMINATION;
 
-  public V2TCPTransport(Socket cliSocket, GelatoFileDescriptor connectionDescriptor) {
+  public V2TCPTransport(Socket cliSocket, GelatoFileDescriptor connectionDescriptor, V2ClientDescriptorHandler clientDescriptorHandler) {
     descriptor = connectionDescriptor;
     clientSocket = cliSocket;
+    nextHandler = clientDescriptorHandler;
+  }
+
+  public int getSourcePort() {
+    return clientSocket.getPort();
+  }
+
+  public String getAddress() {
+    return clientSocket.getInetAddress().toString();
   }
 
   @Override
@@ -143,14 +148,19 @@ public class V2TCPTransport implements GelatoTransport, CiotolaConnectionService
     newMessage.setMessage(msg);
     newMessage.setDescriptor(descriptor);
     newMessage.setClientConnection(proxy);
-    descriptorHandler.addMessage(newMessage);
+    nextHandler.addMessage(newMessage);
+
+    if(nextHandler.isShutdown()) {
+      notifyClose();
+    }
+
   }
 
   public InputStream getSocketInputStream() {
     try {
       return clientSocket.getInputStream();
     } catch (IOException e) {
-      e.printStackTrace();
+      logger.error("Unable to open Input stream", e);
     }
     return null;
   }
@@ -159,7 +169,7 @@ public class V2TCPTransport implements GelatoTransport, CiotolaConnectionService
     try {
       return clientSocket.getOutputStream();
     } catch (IOException e) {
-      e.printStackTrace();
+      logger.error("Unable to open Output stream", e);
     }
     return null;
   }
@@ -169,7 +179,7 @@ public class V2TCPTransport implements GelatoTransport, CiotolaConnectionService
     try {
       clientSocket.close();
     } catch (IOException e) {
-      e.printStackTrace();
+      logger.error("Unable to close socket", e);
     }
   }
 
@@ -224,5 +234,19 @@ public class V2TCPTransport implements GelatoTransport, CiotolaConnectionService
   @Override
   public boolean isClosed() {
     return closeConnction;
+  }
+
+  @Override
+  public int getProxyId() {
+    return svcProxy;
+  }
+
+
+  public int getSvcProxy() {
+    return svcProxy;
+  }
+
+  public void setSvcProxy(int svcProxy) {
+    this.svcProxy = svcProxy;
   }
 }

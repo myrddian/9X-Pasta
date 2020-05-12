@@ -20,6 +20,9 @@ import ciotola.Ciotola;
 import ciotola.annotations.CiotolaServiceRun;
 import ciotola.annotations.CiotolaServiceStart;
 import ciotola.annotations.CiotolaServiceStop;
+import gelato.client.file.impl.GelatoDirectoryImpl;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -28,7 +31,7 @@ public class GelatoClientCache {
 
     private boolean shutdown = false;
     private Map<Integer,GelatoResource> cachedResources = new ConcurrentHashMap<>();
-
+    private final Logger logger = LoggerFactory.getLogger(GelatoClientCache.class);
     public void addResource(GelatoResource newResource) {
         newResource.cacheValidate();
         cachedResources.put(newResource.getFileDescriptor().getRawFileDescriptor(),newResource);
@@ -42,7 +45,7 @@ public class GelatoClientCache {
         try {
             Thread.sleep(500);
         } catch (InterruptedException e) {
-            e.printStackTrace();
+            logger.error("Thread killed - ", e);
         }
     }
 

@@ -109,7 +109,7 @@ public class GelatoDirectoryImpl extends GelatoFileImpl implements GelatoDirecto
       if (directoryMap.containsKey(entry.getName()) == false && entry.getQid().getType() == P9Protocol.QID_DIR) {
         walkToTarget(entry);
       } else if(entry.getQid().getType() == P9Protocol.QID_DIR){
-        directoryMap.get(entry.getName()).refreshStatStruct();
+        directoryMap.get(entry.getName()).refreshSelf();
       }
       if(fileMap.containsKey(entry.getName()) == false && entry.getQid().getType() == P9Protocol.QID_FILE) {
         walkToTarget(entry);

@@ -63,9 +63,15 @@ public class GelatoFileControllerImpl
     resourceController.getStat().setLength(resourceSize);
     resourceController.getStat().getQid().setType(P9Protocol.QID_FILE);
     resourceController.setFileDescriptor(descriptor);
-    resourceController.getStat().getQid().setLongFileId(descriptor.getDescriptorId());
-    descriptor.setQid(resourceController.getQID());
     resourceController.getStat().updateSize();
+  }
+
+  public InputStream getFileInputStream() {
+    return fileInputStream;
+  }
+
+  public void setFileInputStream(InputStream fileInputStream) {
+    this.fileInputStream = fileInputStream;
   }
 
   // Defaults
