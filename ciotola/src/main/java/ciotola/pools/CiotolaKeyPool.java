@@ -26,9 +26,10 @@ public class CiotolaKeyPool {
 
     private List<CiotolaKeyPoolRunner> workerPool = new ArrayList<>();
     private final Logger logger = LoggerFactory.getLogger(CiotolaKeyPool.class);
-    private int threadCapacity  = Runtime.getRuntime().availableProcessors();
+    private int threadCapacity;
 
-    public CiotolaKeyPool() {
+    public CiotolaKeyPool(int threadCapacity) {
+        this.threadCapacity = threadCapacity;
         logger.debug("Pool is initialising with - " + Integer.toString(threadCapacity) +" workers");
         for(int counter= 0 ; counter < threadCapacity; ++counter) {
             CiotolaKeyPoolRunner runner = new CiotolaKeyPoolRunner();
@@ -40,7 +41,6 @@ public class CiotolaKeyPool {
 
     public synchronized void addJob(Runnable job, long key) {
         int scheduleGroup =  Math.abs((int) (key % threadCapacity));
-        //logger.trace("Job key: " + Long.toString(key) + " Mapped to " + Integer.toString(scheduleGroup));
         workerPool.get(scheduleGroup).addJob(job);
     }
 

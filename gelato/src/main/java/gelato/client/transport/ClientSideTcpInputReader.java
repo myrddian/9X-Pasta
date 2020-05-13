@@ -19,21 +19,15 @@ package gelato.client.transport;
 import ciotola.annotations.CiotolaServiceRun;
 import ciotola.annotations.CiotolaServiceStart;
 import ciotola.annotations.CiotolaServiceStop;
-import gelato.client.GelatoMessage;
 import gelato.client.GelatoMessaging;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import protocol.Decoder;
-import protocol.P9Protocol;
 import protocol.messages.Message;
 import protocol.messages.MessageRaw;
-import protocol.messages.response.ErrorMessage;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.rmi.server.ExportException;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 
 public class ClientSideTcpInputReader {
 
@@ -65,7 +59,8 @@ public class ClientSideTcpInputReader {
             if (val != -1) {
                 minHeaderBuffer[byteCount] = (byte) (val & 0xFF);
             } else {
-                logger.error("Unable to read header");
+                logger.error(INCORRECT_HEADER);
+                shutdown();
                 throw new IOException(INCORRECT_HEADER);
             }
         }
@@ -76,7 +71,8 @@ public class ClientSideTcpInputReader {
         int rsize = netWorkInputStream.read(content);
         if(rsize != bytesToRead) {
             logger.error(INVALID_BYTE_COUNT);
-            throw new ExportException(INVALID_BYTE_COUNT);
+            shutdown();
+            throw new IOException(INVALID_BYTE_COUNT);
         }
         msg.messageContent = content;
         return msg;
@@ -98,7 +94,7 @@ public class ClientSideTcpInputReader {
     }
 
     @CiotolaServiceRun
-    public void process() throws IOException, InterruptedException{
+    public void process() throws IOException{
         while (!isShutdown()) {
             processMessages();
         }

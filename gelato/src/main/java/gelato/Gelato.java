@@ -48,19 +48,14 @@ public class Gelato {
   }
 
 
-  public int threadCapacity() {
-    return Runtime.getRuntime().availableProcessors();
-  }
-
-  public enum TRANSPORT {
-    GELATO_TCP
-  }
-
   public enum MODE {
     SERVER,
     CLIENT
   }
 
+
+
   //256 KB buffer for network io
   public final static int DEFAULT_NET_IO_MEM_BUFFER = 256*1024;
+  public final static String DEFAULT_NAME_SPACE = "";
 }

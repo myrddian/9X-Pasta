@@ -150,7 +150,7 @@ public class GelatoClientSession implements GelatoSession {
     GelatoMessage<AttachRequest,AttachResponse> request = connection.createAttachTransaction();
 
     request.getMessage().setUsername(getUserName());
-    request.getMessage().setNamespace(""); // default should always be blank/empty
+    request.getMessage().setNamespace(getNameSpace()); // default should always be blank/empty
     request.getMessage().setFid(attachDescriptor.getRawFileDescriptor());
     request.getMessage().setAfid(authorisationDescriptor.getRawFileDescriptor());
 
@@ -163,29 +163,9 @@ public class GelatoClientSession implements GelatoSession {
     return true;
   }
 
+  //This is done differently
   public boolean authHandler() {
-    GelatoMessage<AuthRequest,AuthResponse> authRequest = connection.createAuthTransaction();
-    authRequest.getMessage().setUserName(getUserName());
-    authRequest.getMessage().setUserAuth(getUserAuth());
-
-    if (this.authorisationDescriptor == null) {
-      authorisationDescriptor = manager.generateDescriptor();
-    }
-    authRequest.getMessage().setAuthFileID(authorisationDescriptor.getRawFileDescriptor());
-    connection.submitMessage(authRequest);
-
-    AuthResponse authResponse = authRequest.getResponse();
-    authorisationDescriptor.setQid(authResponse.getQid());
-    if (authResponse.getQid().getType() == QID.QID_AUTH_NOT_REQUIRED) {
-      logger.info("Server requires no authorisation");
-    }
-    logger.info(
-        "Authorisation Complete - QID: "
-            + Long.toString(authResponse.getQid().getLongFileId())
-            + " "
-            + Byte.toString(authResponse.getQid().getType()));
-    tags.closeTag(authRequest.getTag());
-    return true;
+    return false;
   }
 
   @Override
@@ -198,15 +178,6 @@ public class GelatoClientSession implements GelatoSession {
     this.tags = tags;
   }
 
-  @Override
-  public String getUserAuth() {
-    return userAuth;
-  }
-
-  @Override
-  public void setUserAuth(String userAuth) {
-    this.userAuth = userAuth;
-  }
 
   public boolean isUseAuth() {
     return useAuth;

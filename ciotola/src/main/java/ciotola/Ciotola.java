@@ -173,6 +173,16 @@ public class Ciotola implements CiotolaContext {
   }
 
   @Override
+  public long getConnectionTimeOut() {
+    return serviceContainer.getConnectionTimeOut();
+  }
+
+  @Override
+  public void setConnectionTimeOut(long connectionTimeOut) {
+    serviceContainer.setConnectionTimeOut(connectionTimeOut);
+  }
+
+  @Override
   public void execute(Runnable job, long key) {
     serviceContainer.execute(job,key);
   }

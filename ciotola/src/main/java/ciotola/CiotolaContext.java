@@ -55,7 +55,8 @@ public interface CiotolaContext {
   void setExecutorService(ExecutorService executorService);
 
   int threadCapacity();
-
+  long getConnectionTimeOut();
+  void setConnectionTimeOut(long connectionTimeOut);
   void execute(Runnable job, long key);
   void execute(CiotolaConnectionService connectionService);
   void stop();

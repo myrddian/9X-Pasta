@@ -33,7 +33,6 @@ public class ServiceManager {
     private String userName = Agnolotti.DEFAULT_NAME;
     private String userGroup = Agnolotti.DEFAULT_NAME;
     private int port;
-    private Gelato gelato;
     private GelatoServerConnection serverConnection;
     private GelatoServerManager serveletManager;
     private final Logger logger = LoggerFactory.getLogger(ServiceManager.class);
@@ -69,6 +68,7 @@ public class ServiceManager {
                 serveletManager.getDescriptorManager().generateDescriptor().getDescriptorId(),version,serveletManager);
         this.serviceName.addDirectory(this.serviceVersion);
         root.addDirectory(this.serviceName);
+        logger.info("Agnolotti - Remote RPC Server - Service is Initialising");
         factory = new RemoteServiceFactory(serveletManager);
     }
 
@@ -81,7 +81,6 @@ public class ServiceManager {
         version = newVersion;
         nameSpace = newName;
         logger.info("Agnolotti - Remote RPC Server - Service is Initialising");
-        gelato = new Gelato();
         this.port = port;
         userName = serviceUserName;
         userGroup = serviceUserGroup;
@@ -93,7 +92,7 @@ public class ServiceManager {
         serviceName.addDirectory(serviceVersion);
         serveletManager.start();
         serveletManager.setRootDirectory(root);
-        factory = new RemoteServiceFactory(gelato.getDescriptorManager(), serveletManager);
+        factory = new RemoteServiceFactory(serveletManager);
     }
 
 

@@ -32,6 +32,9 @@ import io.github.classgraph.ScanResult;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
@@ -56,12 +59,46 @@ public class DefaultCiotolaContainer implements CiotolaContext {
   private Map<String, Logger> loggerMap = new ConcurrentHashMap<>();
   private List<String> loadedJars = new ArrayList<>();
   private List<String> scanAnnotations = new ArrayList<>();
-  private List<PooledServiceRunner> serviceRunners = new ArrayList<>();
-  private CiotolaKeyPool keyPoolExecutor = new CiotolaKeyPool();
-  private CiotolaConnectionPool connectionPool = new CiotolaConnectionPool();
+  private Map<Integer,PooledServiceRunner> serviceRunners = new ConcurrentHashMap<>();
+  private CiotolaKeyPool keyPoolExecutor;
+  private CiotolaConnectionPool connectionPool;
+  private long connectionTimeOut = 240;
 
   public DefaultCiotolaContainer() {
     resetDefaults();
+  }
+
+  private void resetDefaults() {
+
+    int physicalCores = getNumberOfCPUCores();
+
+    /*
+      Default schema for this is 1/4 Connection
+       Min 2
+       3/4 For the remaining key pool
+       min 2
+     */
+
+    //Initialise pools - some default allocations
+    int connectionPoolCounter = physicalCores /4;
+    int keyPool = connectionPoolCounter * 3;
+    if(connectionPoolCounter <=1 ) {
+      connectionPoolCounter = 2;
+    }
+    if(keyPool <= 1) {
+      keyPool = 2;
+    }
+    connectionPool = new CiotolaConnectionPool(connectionPoolCounter);
+    keyPoolExecutor = new CiotolaKeyPool(keyPool);
+
+    //Setup the system
+    scanAnnotations.clear();
+    scanAnnotations.add(CiotolaAutowire.class.getName());
+    scanAnnotations.add(CiotolaService.class.getName());
+    scanAnnotations.add(CiotolaBean.class.getName());
+    addDependency(CiotolaContext.class, this);
+    connectionPool.setIdleTimeout(connectionTimeOut);
+
   }
 
   @Override
@@ -102,8 +139,7 @@ public class DefaultCiotolaContainer implements CiotolaContext {
 
   @Override
   public void removeService(int serviceId) {
-    serviceRunners.get(serviceId-1).stop();
-    serviceRunners.remove(serviceId-1);
+    serviceRunners.remove(serviceId);
   }
 
   @Override
@@ -120,7 +156,7 @@ public class DefaultCiotolaContainer implements CiotolaContext {
     }
     runner.start();
     executorService.execute(runner);
-    serviceRunners.add(runner);
+    serviceRunners.put(svcCounter,runner);
     return svcCounter;
   }
 
@@ -192,6 +228,18 @@ public class DefaultCiotolaContainer implements CiotolaContext {
   }
 
   @Override
+  public long getConnectionTimeOut() {
+    return connectionTimeOut;
+  }
+
+  @Override
+  public void setConnectionTimeOut(long connectionTimeOut) {
+    this.connectionTimeOut = connectionTimeOut;
+  }
+
+
+
+  @Override
   public boolean startContainer() {
     // Assumption we are embedded some how - dont do additional parsing
     logger.debug("Ciotola Container - Running");
@@ -220,13 +268,13 @@ public class DefaultCiotolaContainer implements CiotolaContext {
   }
 
   private boolean startServices() {
-    int counter = 0;
+    int counter = serviceRunners.size();
     for (String key : serviceInterfaceMap.keySet()) {
       PooledServiceRunner runner = new PooledServiceRunner(serviceInterfaceMap.get(key), counter);
       runner.start();
       executorService.execute(runner);
       ++counter;
-      serviceRunners.add(runner);
+      serviceRunners.put(counter,runner);
     }
     return true;
   }
@@ -305,12 +353,63 @@ public class DefaultCiotolaContainer implements CiotolaContext {
     return true;
   }
 
-  private void resetDefaults() {
-    scanAnnotations.clear();
-    scanAnnotations.add(CiotolaAutowire.class.getName());
-    scanAnnotations.add(CiotolaService.class.getName());
-    scanAnnotations.add(CiotolaBean.class.getName());
-    addDependency(CiotolaContext.class, this);
-    connectionPool.setIdleTimeout(240);
+  private int getNumberOfCPUCores() {
+    OSValidator osValidator = new OSValidator();
+    String command = "";
+    if(osValidator.isMac()){
+      logger.debug("System is running Mac OS");
+      command = "sysctl -n machdep.cpu.core_count";
+    }else if(osValidator.isUnix()){
+      logger.debug("System is running a Linux/Unix variant - trying lscpu");
+      command = "lscpu";
+    }else if(osValidator.isWindows()){
+      logger.debug("System is running Microsoft Windows");
+      command = "cmd /C WMIC CPU Get /Format:List";
+    }
+    Process process = null;
+    int numberOfCores = 0;
+    int sockets = 0;
+    try {
+      if(osValidator.isMac()){
+        String[] cmd = { "/bin/sh", "-c", command};
+        process = Runtime.getRuntime().exec(cmd);
+      }else{
+        process = Runtime.getRuntime().exec(command);
+      }
+    } catch (IOException e) {
+      logger.error("Unable to determine physical processor layout - returning default",e);
+      return threadCapacity();
+    }
+
+    BufferedReader reader = new BufferedReader(
+            new InputStreamReader(process.getInputStream()));
+    String line;
+
+    try {
+      while ((line = reader.readLine()) != null) {
+        if(osValidator.isMac()){
+          numberOfCores = line.length() > 0 ? Integer.parseInt(line) : 0;
+        }else if (osValidator.isUnix()) {
+          if (line.contains("Core(s) per socket:")) {
+            numberOfCores = Integer.parseInt(line.split("\\s+")[line.split("\\s+").length - 1]);
+          }
+          if(line.contains("Socket(s):")){
+            sockets = Integer.parseInt(line.split("\\s+")[line.split("\\s+").length - 1]);
+          }
+        } else if (osValidator.isWindows()) {
+          if (line.contains("NumberOfCores")) {
+            numberOfCores = Integer.parseInt(line.split("=")[1]);
+          }
+        }
+      }
+    } catch (IOException e) {
+      logger.error("Unable to determine physical processor layout - returning default",e);
+      return threadCapacity();
+    }
+    if(osValidator.isUnix()){
+      return numberOfCores * sockets;
+    }
+    return numberOfCores;
   }
+
 }

@@ -24,6 +24,7 @@ import ciotola.annotations.CiotolaServiceStop;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
 public class AnnotatedJavaServiceRunner implements CiotolaServiceInterface {
@@ -107,8 +108,10 @@ public class AnnotatedJavaServiceRunner implements CiotolaServiceInterface {
     try {
       runMethod.invoke(javaServiceObject);
       return true;
-    } catch (Exception e) {
-      logger.error(Ciotola.GENERIC_SERVICE_START_ERROR, e);
+    } catch (InvocationTargetException e) {
+      logger.error(Ciotola.GENERIC_SERVICE_START_ERROR, e.getCause());
+    } catch (Exception ex) {
+      logger.error(Ciotola.GENERIC_SERVICE_START_ERROR, ex.getCause());
     }
     return false;
   }

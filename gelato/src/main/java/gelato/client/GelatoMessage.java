@@ -45,17 +45,9 @@ public class GelatoMessage<M,R>  implements TransactionMessage, Iterator, Iterab
     private boolean messageIsProxied = false;
     private MessageProxy proxy;
     private int proxyId;
+    private long packetCount = 0;
+    private long expectedPackets = 1;
 
-    private void takeMessage() {
-        if(!isComplete()) {
-            try {
-                futureMessage = future.take();
-                setCompleted();
-            } catch (InterruptedException e) {
-                logger.error("Problem fetching future");
-            }
-        }
-    }
 
     public void setProxyState(boolean isProxied) {
         messageIsProxied = isProxied;
@@ -76,7 +68,14 @@ public class GelatoMessage<M,R>  implements TransactionMessage, Iterator, Iterab
     }
 
     public R getResponse() {
-       takeMessage();
+        if(futureMessage == null) {
+            try {
+                futureMessage = future.take();
+            } catch (InterruptedException e) {
+                logger.error("Problem fetching future");
+            }
+            setCompleted();
+        }
        return futureMessage;
     }
 
@@ -180,7 +179,7 @@ public class GelatoMessage<M,R>  implements TransactionMessage, Iterator, Iterab
         if(messageType() != P9Protocol.RREAD) {
             throw new RuntimeException("Invalid operation on Non READ message type");
         }
-        takeMessage();
+        getResponse();
         location = 0;
         return this;
     }
@@ -194,5 +193,30 @@ public class GelatoMessage<M,R>  implements TransactionMessage, Iterator, Iterab
         this.proxyId = proxyId;
     }
 
+    public long getPacketCount() {
+        return packetCount;
+    }
 
+    public void setPacketCount(long packetCount) {
+        this.packetCount = packetCount;
+    }
+
+    public long getExpectedPackets() {
+        return expectedPackets;
+    }
+
+    public void setExpectedPackets(long expectedPackets) {
+        this.expectedPackets = expectedPackets;
+    }
+
+    public void incrementCount() {
+        packetCount++;
+    }
+
+    public boolean packetsFinalised() {
+        if(packetCount >= expectedPackets) {
+            return true;
+        }
+        return false;
+    }
 }

@@ -41,12 +41,8 @@ public class CiotolaKeyPoolRunner extends Thread {
         logger.trace("Worker [" + Integer.toString(runnerId) + "] Executing jobs from pool");
         while (isRunning()) {
           try {
-                if (readMessageQueue.size() > 0) {
                   Runnable job = readMessageQueue.take();
                   job.run();
-                } else {
-                  Thread.sleep(10);
-                }
               } catch (InterruptedException e) {
                 logger.error("Interrupted while runnign job: ", e);
                 return;

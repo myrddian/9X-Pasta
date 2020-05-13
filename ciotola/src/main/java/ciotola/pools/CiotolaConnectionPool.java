@@ -27,10 +27,11 @@ public class CiotolaConnectionPool {
 
     private List<ConnectionPoolRunner> workerPool = new ArrayList<>();
     private final Logger logger = LoggerFactory.getLogger(CiotolaConnectionPool.class);
-    private int threadCapacity  = Runtime.getRuntime().availableProcessors();
+    private int threadCapacity = 1;
     private int jobsScheduled = 0;
 
-    public CiotolaConnectionPool() {
+    public CiotolaConnectionPool(int threadCapacity) {
+        this.threadCapacity = threadCapacity;
         logger.debug("Pool is initialising with - " + Integer.toString(threadCapacity) +" workers");
         for(int counter= 0 ; counter < threadCapacity; ++counter) {
             ConnectionPoolRunner runner = new ConnectionPoolRunner();

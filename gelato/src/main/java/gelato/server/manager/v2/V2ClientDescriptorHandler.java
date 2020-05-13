@@ -16,6 +16,7 @@
 
 package gelato.server.manager.v2;
 
+import ciotola.Ciotola;
 import ciotola.annotations.CiotolaAutowire;
 import ciotola.annotations.CiotolaServiceRun;
 import ciotola.annotations.CiotolaServiceStart;
@@ -48,6 +49,7 @@ import protocol.messages.response.AttachResponse;
 
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.TimeUnit;
 
 public class V2ClientDescriptorHandler extends GelatoAbstractGenericRequestHandler implements VersionRequestHandler,
         AttachRequestHandler, AuthRequestHandler, UnknownRequestHandler {
@@ -85,12 +87,12 @@ public class V2ClientDescriptorHandler extends GelatoAbstractGenericRequestHandl
     private void processMessages() {
         boolean completedOk = true;
         try {
-            V2Message message = readMessageQueue.take();
+            V2Message message = readMessageQueue.poll(Ciotola.getInstance().getConnectionTimeOut() , TimeUnit.SECONDS);
             Message msg = message.getMessage();
             GelatoConnection clientConnection = message.getClientConnection();
             completedOk = genericRequestHandler.processRequest(clientConnection,clientFileDescriptor,clientSession,msg);
-        } catch (InterruptedException e) {
-            logger.error("Error processing message queue", e);
+        } catch (InterruptedException | NullPointerException e) {
+            logger.debug("Connection interrupted - Possible time out - Stopping");
             shutdown();
             return;
         }

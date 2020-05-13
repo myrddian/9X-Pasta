@@ -33,7 +33,6 @@ public class GelatoServerSession implements GelatoSession {
   private GelatoFileDescriptor authorisationDescriptor = null;
   private String userName;
   private String nameSpace;
-  private String userAuth;
   private GelatoConnection connection;
   private GelatoDescriptorManager manager = null;
   private GelatoTags tags;
@@ -114,13 +113,4 @@ public class GelatoServerSession implements GelatoSession {
     this.tags = tags;
   }
 
-  @Override
-  public String getUserAuth() {
-    return userAuth;
-  }
-
-  @Override
-  public void setUserAuth(String userAuth) {
-    this.userAuth = userAuth;
-  }
 }

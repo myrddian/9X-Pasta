@@ -43,7 +43,7 @@ public class ShellConnection {
 
   public boolean connect(String hostName, int port, String userName) {
     try {
-      fileManager = new GelatoFileManager(hostName,port,userName,userName);
+      fileManager = new GelatoFileManager(hostName,port,userName);
     } catch (IOException e) {
       e.printStackTrace();
     }

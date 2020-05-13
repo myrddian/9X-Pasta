@@ -43,9 +43,10 @@ public class GelatoClientCache {
             resource.cacheValidate();
         }
         try {
-            Thread.sleep(500);
+            Thread.sleep(250);
         } catch (InterruptedException e) {
             logger.error("Thread killed - ", e);
+            shutdown();
         }
     }
 

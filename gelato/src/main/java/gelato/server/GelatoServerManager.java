@@ -118,4 +118,14 @@ public class GelatoServerManager {
     this.parallelRequestHandler = parallelRequestHandler;
   }
 
+  public void setParallelPolicy(ParallelHandlerMode mode) {
+    parallelRequestHandler.setHandlerMode(mode);
+  }
+
+  public enum ParallelHandlerMode {
+    CONTENTION,
+    ROUNDROBIN,
+    SESSION_CONTENTION
+  }
+
 }

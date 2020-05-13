@@ -124,16 +124,26 @@ public class NagivationCommands {
       return;
     }
 
+    StatStruct fileInfo;
+    String path ="";
     GelatoFile targetFile = currentDirectory.getFile(file);
     if(targetFile == null) {
-      shellHelper.print("File Not found", PromptColor.RED);
-      return;
+      GelatoDirectory targetDir = currentDirectory.getDirectory(file);
+      if(targetDir == null) {
+        shellHelper.print("File/Directory Not found", PromptColor.RED);
+        return;
+      }
+      fileInfo = targetDir.getStatStruct();
+      path = targetDir.getPath();
+    } else {
+      fileInfo = targetFile.getStatStruct();
+      path = targetFile.getPath();
     }
 
-    StatStruct fileInfo = targetFile.getStatStruct();
+
 
     shellHelper.print("File Name: " + fileInfo.getName(), PromptColor.YELLOW);
-    shellHelper.print("File Path: " + targetFile.getPath(), PromptColor.YELLOW);
+    shellHelper.print("File Path: " + path, PromptColor.YELLOW);
     shellHelper.print("File Size: " + Long.toString(fileInfo.getLength()) + " bytes", PromptColor.YELLOW);
     shellHelper.print("File Type: "  + fileInfo.getQid().getType(), PromptColor.YELLOW);
     shellHelper.print("Owned by: " + fileInfo.getUid(), PromptColor.YELLOW);

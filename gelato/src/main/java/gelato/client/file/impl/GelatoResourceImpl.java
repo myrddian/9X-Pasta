@@ -19,7 +19,6 @@ package gelato.client.file.impl;
 import gelato.GelatoFileDescriptor;
 import gelato.client.GelatoMessage;
 import gelato.client.GelatoMessaging;
-import gelato.client.file.GelatoClientCache;
 import gelato.client.file.GelatoResource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

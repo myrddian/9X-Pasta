@@ -33,12 +33,6 @@ public class RemoteServiceFactory {
     private GelatoServerManager manager;
     public static final SystemMapper typeMapper = new SystemMapper();
 
-    public RemoteServiceFactory(GelatoDescriptorManager gelatoDescriptorManager,
-                                GelatoServerManager serverManager) {
-        descriptorManager = gelatoDescriptorManager;
-        manager = serverManager;
-    }
-
     public RemoteServiceFactory(GelatoServerManager serverManager) {
         descriptorManager = serverManager.getDescriptorManager();
         manager = serverManager;

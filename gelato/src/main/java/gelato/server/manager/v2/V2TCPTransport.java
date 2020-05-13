@@ -69,6 +69,8 @@ public class V2TCPTransport implements GelatoTransport, CiotolaConnectionService
   public synchronized void close() {
     logger.debug("Closing Connection");
     closeConnction = true;
+    nextHandler.shutdown();
+    nextHandler = null;
     closeStream();
   }
 

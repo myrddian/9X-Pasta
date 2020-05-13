@@ -47,7 +47,4 @@ public interface GelatoSession {
 
   void setTags(GelatoTags tags);
 
-  String getUserAuth();
-
-  void setUserAuth(String userAuth);
 }

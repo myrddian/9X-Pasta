@@ -17,7 +17,6 @@
 package fettuccine.drivers.proc;
 
 
-import agnolotti.Agnolotti;
 import ciotola.annotations.CiotolaServiceRun;
 import ciotola.annotations.CiotolaServiceStart;
 import ciotola.annotations.CiotolaServiceStop;
@@ -26,7 +25,6 @@ import gelato.GelatoFileDescriptor;
 import gelato.server.GelatoServerManager;
 import gelato.server.manager.controllers.impl.GelatoDirectoryControllerImpl;
 import gelato.server.manager.controllers.impl.GelatoFileControllerImpl;
-import gelato.server.manager.controllers.impl.GelatoResourceControllerImpl;
 import gelato.server.manager.v2.V2TCPTransport;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -41,7 +39,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
 
 public class ProcDir extends GelatoDirectoryControllerImpl {
 

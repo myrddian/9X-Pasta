@@ -190,9 +190,23 @@ public class GelatoMessaging {
             completion.setMessage(message);
             normalProcess(completion);
         }
+
+        future.incrementCount();
+        if(future.packetsFinalised()) {
+            replyBucket.remove(message.tag);
+        }
+    }
+
+    private void flushAndClose() {
+        logger.error("An error has occurred in the connection");
+        logger.error("Unable to complete transactions - Connection reset all T-id's are invalid");
+        replyBucket.clear();
     }
 
     private void processMessages() throws InterruptedException {
+        if(inputReader.isShutdown() || outputWriter.isShutdown()) {
+            flushAndClose();
+        }
         messageCompletion(incomingMessages.take());
     }
 
@@ -223,10 +237,19 @@ public class GelatoMessaging {
     }
 
     public void submitMessage(GelatoMessage message) {
+        if(message.messageType() == P9Protocol.TREAD) {
+            //Calulate number of Packets
+            ReadRequest readRequest = Decoder.decodeReadRequest(message.toMessage());
+            long total = (long) Math.ceil(readRequest.getBytesToRead() / P9Protocol.MAX_MSG_CONTENT_SIZE);
+            message.setExpectedPackets(total);
+        }
         outputWriter.sendMessage(message);
     }
 
     public void submitAndClose(GelatoMessage message) {
+        if(inputReader.isShutdown() || outputWriter.isShutdown()) {
+            throw new RuntimeException("Sockets Closed");
+        }
         message.setCompleted();
         outputWriter.sendMessage(message);
     }

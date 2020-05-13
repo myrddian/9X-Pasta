@@ -108,13 +108,9 @@ public class GelatoDirectoryImpl extends GelatoFileImpl implements GelatoDirecto
       }
       if (directoryMap.containsKey(entry.getName()) == false && entry.getQid().getType() == P9Protocol.QID_DIR) {
         walkToTarget(entry);
-      } else if(entry.getQid().getType() == P9Protocol.QID_DIR){
-        directoryMap.get(entry.getName()).refreshSelf();
       }
       if(fileMap.containsKey(entry.getName()) == false && entry.getQid().getType() == P9Protocol.QID_FILE) {
         walkToTarget(entry);
-      } else if(entry.getQid().getType()  == P9Protocol.QID_FILE) {
-        fileMap.get(entry.getName()).refreshSelf();
       }
     }
   }
@@ -169,6 +165,10 @@ public class GelatoDirectoryImpl extends GelatoFileImpl implements GelatoDirecto
 
     getMessaging().submitMessage(walkRequest);
     WalkResponse walkResponse = walkRequest.getResponse();
+    if(walkRequest.isError()) {
+      logger.error("Error validating cache for object " + walkRequest.getErrorMessage());
+      return;
+    }
     newFileDescriptor.setQid(walkResponse.getQID());
     if (newEntry.getQid().getType() == P9Protocol.QID_DIR) {
       addDirectory(newEntry,walkResponse,newFileDescriptor);

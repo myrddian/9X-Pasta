@@ -43,7 +43,12 @@ public class GelatoFileManager {
   private GelatoMessaging messaging;
 
   public GelatoFileManager(String hostName, int portNumber,
-                           String userName, String userAuth) throws IOException {
+                           String userName) throws IOException {
+    this(hostName,portNumber,userName,Gelato.DEFAULT_NAME_SPACE);
+  }
+
+  public GelatoFileManager(String hostName, int portNumber,
+                           String userName, String nameSpace) throws IOException {
 
     gelato = new Gelato();
     messaging = new GelatoMessaging(hostName, portNumber);
@@ -57,9 +62,9 @@ public class GelatoFileManager {
     clientSession.setManager(gelato.getDescriptorManager());
     clientSession.setAuthorisationDescriptor(authDescriptor);
     clientSession.setUserName(userName);
-    clientSession.setUserAuth(userAuth);
+    clientSession.setNameSpace(nameSpace);
 
-    if (clientSession.initSession() != true) {
+    if (!clientSession.initSession()) {
       logger.error("Unable to establish session");
       throw new RuntimeException("Unable to establish session");
     }

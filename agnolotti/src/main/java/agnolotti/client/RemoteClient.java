@@ -42,7 +42,7 @@ public class RemoteClient {
         this.serviceName = serviceName;
         this.serviceVersion = version;
         try {
-            fileManager = new GelatoFileManager(server,port, user, user);
+            fileManager = new GelatoFileManager(server,port, user);
         } catch (IOException e) {
            logger.error("Unable to connect or read remote server", e);
            throw new RuntimeException("Unable to connect");
