@@ -142,7 +142,8 @@ public class RemoteMethodStrategy extends GelatoResourceControllerImpl implement
     private void invokeNoRetNoParam() {
         logger.trace("Invoking No-Parameter-No-Return Strategy");
         try {
-            invoke.invoke(service,null);
+            Object []nullObj = null;
+            invoke.invoke(service,nullObj);
         } catch (IllegalAccessException e) {
             logger.error("Method Access is illegal ", e);
         } catch (InvocationTargetException e) {
