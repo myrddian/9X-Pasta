@@ -17,12 +17,8 @@
 package gelato;
 
 import gelato.client.ClientConnection;
-import gelato.server.GelatoServerConnection;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 
 public class Gelato {
   final Logger logger = LoggerFactory.getLogger(Gelato.class);

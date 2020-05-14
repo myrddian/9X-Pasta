@@ -33,7 +33,6 @@ import protocol.messages.request.StatRequest;
 import protocol.messages.request.WalkRequest;
 import protocol.messages.response.StatResponse;
 
-
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 

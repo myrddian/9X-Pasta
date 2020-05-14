@@ -20,8 +20,6 @@ import ciotola.Ciotola;
 import ciotola.annotations.CiotolaServiceRun;
 import ciotola.annotations.CiotolaServiceStart;
 import ciotola.annotations.CiotolaServiceStop;
-import gelato.GelatoConnection;
-import gelato.GelatoSession;
 import gelato.client.transport.ClientSideOutTcpWrite;
 import gelato.client.transport.ClientSideTcpInputReader;
 import gelato.client.transport.MessageCompletion;

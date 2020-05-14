@@ -17,13 +17,13 @@
 package ciotola.implementation;
 
 import ciotola.Ciotola;
+import ciotola.CiotolaConnectionService;
 import ciotola.CiotolaContext;
 import ciotola.CiotolaServiceInterface;
 import ciotola.annotations.CiotolaAutowire;
 import ciotola.annotations.CiotolaBean;
 import ciotola.annotations.CiotolaService;
 import ciotola.pools.CiotolaConnectionPool;
-import ciotola.CiotolaConnectionService;
 import ciotola.pools.CiotolaKeyPool;
 import io.github.classgraph.ClassGraph;
 import io.github.classgraph.ClassInfo;

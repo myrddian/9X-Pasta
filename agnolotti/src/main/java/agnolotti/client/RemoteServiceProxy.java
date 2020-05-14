@@ -17,6 +17,7 @@
 package agnolotti.client;
 
 import agnolotti.server.RemoteServiceFactory;
+
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.util.List;

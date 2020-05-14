@@ -16,13 +16,6 @@
 
 package gelato;
 
-import gelato.server.GelatoServerConnection;
-import gelato.server.GelatoServerManager;
-import gelato.server.manager.controllers.GelatoDirectoryController;
-import gelato.server.manager.controllers.impl.GelatoDirectoryControllerImpl;
-import org.junit.jupiter.api.Test;
-import protocol.P9Protocol;
-
 class LibraryTest {
  /* @Test
   void testSomeLibraryMethod() throws InterruptedException {

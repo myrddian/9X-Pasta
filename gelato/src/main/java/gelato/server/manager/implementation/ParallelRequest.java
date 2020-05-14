@@ -19,7 +19,6 @@ package gelato.server.manager.implementation;
 import gelato.GelatoConnection;
 import gelato.GelatoFileDescriptor;
 import gelato.GelatoSession;
-import gelato.client.file.GelatoOutputStream;
 import gelato.server.manager.controllers.GelatoResourceController;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

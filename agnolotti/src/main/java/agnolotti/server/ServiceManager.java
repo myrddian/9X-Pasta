@@ -17,7 +17,6 @@
 package agnolotti.server;
 
 import agnolotti.Agnolotti;
-import gelato.Gelato;
 import gelato.server.GelatoServerConnection;
 import gelato.server.GelatoServerManager;
 import gelato.server.manager.controllers.GelatoDirectoryController;

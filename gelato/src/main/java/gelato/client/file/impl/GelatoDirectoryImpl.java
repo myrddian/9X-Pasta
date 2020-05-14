@@ -32,6 +32,7 @@ import protocol.messages.request.StatRequest;
 import protocol.messages.request.WalkRequest;
 import protocol.messages.response.StatResponse;
 import protocol.messages.response.WalkResponse;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;

@@ -25,18 +25,12 @@ import gelato.client.GelatoMessage;
 import gelato.client.GelatoMessaging;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import protocol.Decoder;
 import protocol.P9Protocol;
-import protocol.QID;
-import protocol.messages.Message;
 import protocol.messages.MessageRaw;
 import protocol.messages.VersionRequest;
 import protocol.messages.request.AttachRequest;
-import protocol.messages.request.AuthRequest;
 import protocol.messages.response.AttachResponse;
-import protocol.messages.response.AuthResponse;
 
-import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 

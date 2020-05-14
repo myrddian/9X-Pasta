@@ -20,7 +20,6 @@ import ciotola.Ciotola;
 import ciotola.annotations.CiotolaServiceRun;
 import ciotola.annotations.CiotolaServiceStart;
 import ciotola.annotations.CiotolaServiceStop;
-import gelato.client.file.impl.GelatoDirectoryImpl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

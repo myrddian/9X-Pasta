@@ -16,7 +16,6 @@
 
 package gelato.server.manager.processchain;
 
-import gelato.GelatoFileDescriptor;
 import gelato.server.manager.RequestConnection;
 import protocol.messages.request.AuthRequest;
 

@@ -18,7 +18,6 @@ package gelato.client.file;
 
 import ciotola.Ciotola;
 import gelato.Gelato;
-import gelato.GelatoConnection;
 import gelato.GelatoFileDescriptor;
 import gelato.GelatoTagManager;
 import gelato.client.GelatoMessaging;
