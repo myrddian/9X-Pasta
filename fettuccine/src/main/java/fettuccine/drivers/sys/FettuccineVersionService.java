@@ -14,11 +14,10 @@
  *    limitations under the License.
  */
 
-package fettuccine;
+package fettuccine.drivers.sys;
 
 
 import common.api.fettuccine.FettuccineVersion;
-import gelato.Gelato;
 import gelato.GelatoVersion;
 import protocol.P9Protocol;
 

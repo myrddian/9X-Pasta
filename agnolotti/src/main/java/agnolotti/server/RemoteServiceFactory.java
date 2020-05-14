@@ -16,14 +16,13 @@
 
 package agnolotti.server;
 
-import agnolotti.primitives.SystemMapper;
+import agnolotti.schema.SystemMapper;
 import gelato.GelatoDescriptorManager;
 import gelato.GelatoFileDescriptor;
 import gelato.server.GelatoServerManager;
 
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
-import java.lang.reflect.Proxy;
 import java.util.HashMap;
 import java.util.Map;
 

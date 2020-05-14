@@ -14,8 +14,9 @@
  *    limitations under the License.
  */
 
-package fettuccine.drivers;
+package fettuccine.drivers.sys;
 
+import common.api.fettuccine.FettuccineConstants;
 import gelato.server.GelatoServerManager;
 import gelato.server.manager.controllers.impl.GelatoDirectoryControllerImpl;
 import org.slf4j.Logger;
@@ -23,7 +24,6 @@ import org.slf4j.LoggerFactory;
 import protocol.P9Protocol;
 import protocol.QID;
 import protocol.StatStruct;
-import common.api.fettuccine.FettuccineConstants;
 
 import java.time.Instant;
 

@@ -14,10 +14,11 @@
  *    limitations under the License.
  */
 
-package agnolotti.primitives;
-import java.util.Map;
-import java.util.HashMap;
+package agnolotti.schema;
+
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 
 final class ForName {
     private ForName() {}

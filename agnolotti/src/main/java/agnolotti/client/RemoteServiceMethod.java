@@ -15,13 +15,11 @@
  */
 
 package agnolotti.client;
+
 import agnolotti.Agnolotti;
-import agnolotti.primitives.SystemMapper;
-import com.google.gson.Gson;
+import agnolotti.schema.AgnelottiSchema;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
-import com.google.gson.stream.JsonReader;
 import gelato.client.file.GelatoFile;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -29,23 +27,15 @@ import protocol.StatStruct;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.io.OutputStream;
-import java.io.Reader;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 
 public class RemoteServiceMethod {
 
-    private GelatoFile remoteMethodFile;
-    private JsonObject idl;
+    private final GelatoFile remoteMethodFile;
+    private final JsonObject idl;
     private boolean noReturn = false;
     private boolean noParameters= false;
     private final Logger logger = LoggerFactory.getLogger(RemoteServiceMethod.class);
-    private Gson gson = new Gson();
-    private SystemMapper mapper = new SystemMapper();
 
     public RemoteServiceMethod(GelatoFile file, JsonObject methodIdl) {
         remoteMethodFile = file;
@@ -57,14 +47,6 @@ public class RemoteServiceMethod {
         if(methodParameters.size() == 0 ) {
             noParameters = true;
         }
-
-    }
-
-    private Map<String, Object> generateRequest() {
-        Map<String,Object> topLevel = new HashMap<>();
-        topLevel.put(Agnolotti.PARAMETER_NAME, getMethodName());
-        topLevel.put(Agnolotti.PARAMETERS, new ArrayList<>());
-        return topLevel;
     }
 
     public String getMethodName() {
@@ -73,12 +55,11 @@ public class RemoteServiceMethod {
 
     private Object invokeNoRetNoParam() {
 
-        Map<String, Object> invocationMap = generateRequest();
-        String jsonString = gson.toJson(invocationMap);
-        OutputStream invokeStream = remoteMethodFile.getFileOutputStream();
+        String jsonString = AgnelottiSchema.getInstance().generateInvocationJson(getMethodName());
         try {
-            byte [] bytesTosend = jsonString.getBytes();
-            invokeStream.write(bytesTosend);
+            byte [] bytesToSend = jsonString.getBytes();
+            OutputStream invokeStream = remoteMethodFile.getFileOutputStream();
+            invokeStream.write(bytesToSend);
             invokeStream.close();
         } catch (IOException e) {
             logger.error("Error Invoking handler exception:",e);
@@ -86,24 +67,9 @@ public class RemoteServiceMethod {
         return null;
     }
 
+
     private Object invokeParamNoReturn(Object [] parameters) {
-        Map<String,Object> invocationMap = generateRequest();
-
-        JsonArray parameterArray = idl.getAsJsonArray(Agnolotti.PARAMETERS);
-        int number = parameterArray.size();
-        if(number != parameters.length) {
-            throw new RuntimeException("Invalid Parameter Count");
-        }
-
-        List<Object> paramters = (List<Object>)invocationMap.get(Agnolotti.PARAMETERS);
-        for(int i=0; i < number; ++i){
-            Map<String,Object> param = new HashMap<>();
-            param.put(Agnolotti.PARAMETER_POS, i);
-            param.put(Agnolotti.PARAMETER_VALUE,parameters[i]);
-            paramters.add(param);
-        }
-
-        String jsonString = gson.toJson(invocationMap);
+        String jsonString = AgnelottiSchema.getInstance().generateInvocationJson(getMethodName(),idl, parameters);
         try {
             OutputStream invokeStream = remoteMethodFile.getFileOutputStream();
             invokeStream.write(jsonString.getBytes());
@@ -123,23 +89,13 @@ public class RemoteServiceMethod {
             logger.error("CLIENT RPC - Failed - Expected return got NULL");
             throw new RuntimeException("RPC-Error");
         }
-
-        InputStream fileStream = remoteMethodFile.getFileInputStream();
-        Reader reader = new InputStreamReader(fileStream);
-        JsonReader jsonReader = new JsonReader(reader);
-        JsonObject jsonObject = JsonParser.parseReader(jsonReader).getAsJsonObject();
-        String returnType = idl.get(Agnolotti.RETURN_FIELD).getAsString();
-        try {
-            fileStream.close();
-            return mapper.getValue(jsonObject.get(Agnolotti.RETURN_FIELD), returnType);
-        } catch (ClassNotFoundException e ) {
-            logger.error("Converting to Class failed",e);
-            throw new RuntimeException("Error Converting return");
-        } catch (IOException e) {
-            logger.error("Error reading stream ",e);
-            throw new RuntimeException("Error Converting return");
+        try  {
+            InputStream fileStream = remoteMethodFile.getFileInputStream();
+            return AgnelottiSchema.getInstance().parseReturnJson(fileStream, idl);
+        } catch (Exception ex) {
+            logger.error("Unable to parse/process return data");
+            throw new RuntimeException("Parse Exception");
         }
-
     }
 
 

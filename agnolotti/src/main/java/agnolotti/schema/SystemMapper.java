@@ -14,7 +14,7 @@
  *    limitations under the License.
  */
 
-package agnolotti.primitives;
+package agnolotti.schema;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonElement;

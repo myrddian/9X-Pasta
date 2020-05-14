@@ -17,10 +17,8 @@
 package agnolotti.server;
 
 import agnolotti.Agnolotti;
-import agnolotti.primitives.SystemMapper;
-import com.google.gson.Gson;
-import com.google.gson.JsonArray;
-import com.google.gson.JsonElement;
+import agnolotti.schema.AgnelottiSchema;
+import agnolotti.schema.JsonContract;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.google.gson.JsonSyntaxException;
@@ -38,7 +36,6 @@ import gelato.server.manager.processchain.StatRequestHandler;
 import gelato.server.manager.processchain.WriteRequestHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import protocol.ByteEncoder;
 import protocol.P9Protocol;
 import protocol.QID;
 import protocol.StatStruct;
@@ -53,11 +50,9 @@ import java.io.InputStreamReader;
 import java.io.Reader;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.lang.reflect.Parameter;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -68,15 +63,8 @@ public class RemoteMethodStrategy extends GelatoResourceControllerImpl implement
 
     private Method invoke;
     private Object service;
-    private boolean noReturn = false;
-    private boolean noParameters= false;
     private final Logger logger = LoggerFactory.getLogger(RemoteMethodStrategy.class);
-    private boolean hasReturnType() {
-        return !invoke.getReturnType().isInstance(void.class);
-    }
-    private Gson gson = new Gson();
-    private Map<String, Object> jsonFieldMap;
-    private SystemMapper mapper = new SystemMapper();
+    private JsonContract contract;
 
 
     public RemoteMethodStrategy(Method method, Object service, long id) {
@@ -104,6 +92,7 @@ public class RemoteMethodStrategy extends GelatoResourceControllerImpl implement
         newStat.updateSize();
         setStat(newStat);
         logger.debug("Binding Method to file: " + methodDecorator());
+        contract = AgnelottiSchema.getInstance().getJsonIdlForMethod(invoke);
     }
 
     public String methodDecorator() {
@@ -120,59 +109,13 @@ public class RemoteMethodStrategy extends GelatoResourceControllerImpl implement
 
 
     public Map<String, Object> getJsonContract() {
-        jsonFieldMap = new HashMap<>();
-        List arrayList = new ArrayList();
-        jsonFieldMap.put(Agnolotti.PARAMETERS, arrayList);
-        jsonFieldMap.put(Agnolotti.RETURN_FIELD, mapper.mapGenericName(invoke.getReturnType().getName()));
-        int fieldPosition = 0;
-        for(Parameter param: invoke.getParameters()) {
-            Map<String, Object> methodsMap = new HashMap<>();
-            methodsMap.put(Agnolotti.PARAMETER_NAME, param.getName());
-            String typeMapper = mapper.mapGenericName(param.getType().getName());
-            methodsMap.put(Agnolotti.PARAMETER_TYPE, typeMapper);
-            methodsMap.put(Agnolotti.PARAMETER_POS, fieldPosition);
-            arrayList.add(methodsMap);
-            ++fieldPosition;
-        }
-
-        if(invoke.getReturnType().getName().equals(Agnolotti.PARAMETER_VOID)) {
-            noReturn = true;
-        }
-
-        if(arrayList.isEmpty()) {
-            noParameters = true;
-        }
-
-        return jsonFieldMap;
-    }
-
-    private Object[] getParameters(JsonObject marshalledObject) {
-        JsonArray parameters = marshalledObject.getAsJsonArray(Agnolotti.PARAMETERS);
-        Object[] invokeParameters = invoke.getParameters();
-        Object[] methodParameter = new Object[invokeParameters.length];
-        List arrayList = (List) jsonFieldMap.get(Agnolotti.PARAMETERS);
-        try {
-            for(int i=0; i < invokeParameters.length; ++i) {
-                JsonElement parameter = parameters.get(i);
-                JsonObject objectParamerter = parameter.getAsJsonObject();
-                int location = objectParamerter.get(Agnolotti.PARAMETER_POS).getAsInt();
-                Map<String, Object> methodsMap = (Map) arrayList.get(location);
-                JsonElement fieldValue = objectParamerter.get(Agnolotti.PARAMETER_VALUE);
-                String jsonClassType = (String)methodsMap.get(Agnolotti.PARAMETER_TYPE);
-                Object objectValue = mapper.getValue(fieldValue,jsonClassType);
-                methodParameter[location] = objectValue;
-            }
-            return methodParameter;
-        } catch (ClassNotFoundException e) {
-            logger.error("Cannot Find Class Initialiser",e);
-            throw new RuntimeException("");
-        }
+        return contract.getJsonMapping();
     }
 
     private void invokeParamNoReturn(JsonObject marshalledObject) {
         logger.trace("Invoking Parameter-No-Return Strategy");
         try {
-            Object [] methodParameter = getParameters(marshalledObject);
+            Object [] methodParameter = AgnelottiSchema.getInstance().getParametersFromJson(marshalledObject, contract);
             invoke.invoke(service,methodParameter);
         } catch (IllegalAccessException e) {
             logger.error("Method Access is illegal ", e);
@@ -185,10 +128,9 @@ public class RemoteMethodStrategy extends GelatoResourceControllerImpl implement
     private void invokeReturnNoParam(Map<String, Object> sessionDescriptorVar) {
         logger.trace("Invoking No-Parameter-Return Strategy");
         try {
-            Object  retValue = invoke.invoke(service,null);
-            Map<String, Object> retMap = new HashMap<>();
-            retMap.put(Agnolotti.RETURN_FIELD,retValue);
-            setReturnData(gson.toJson(retMap), sessionDescriptorVar);
+            Object []nullObj = null;
+            Object retValue = invoke.invoke(service,nullObj);
+            setReturnData(AgnelottiSchema.getInstance().generateReturnJson(retValue), sessionDescriptorVar);
         } catch (IllegalAccessException e) {
             logger.error("Method Access is illegal ", e);
         } catch (InvocationTargetException e) {
@@ -211,11 +153,9 @@ public class RemoteMethodStrategy extends GelatoResourceControllerImpl implement
     private void invokeRetParam(JsonObject marshalledObject, Map<String, Object> sessionDescriptorVar) {
         logger.trace("Invoking Parameter-Return Strategy");
         try {
-            Object []parameter = getParameters(marshalledObject);
+            Object []parameter = AgnelottiSchema.getInstance().getParametersFromJson(marshalledObject,contract);
             Object  retValue = invoke.invoke(service,parameter);
-            Map<String, Object> retMap = new HashMap<>();
-            retMap.put(Agnolotti.RETURN_FIELD,retValue);
-            setReturnData(gson.toJson(retMap), sessionDescriptorVar);
+            setReturnData(AgnelottiSchema.getInstance().generateReturnJson(retValue), sessionDescriptorVar);
         } catch (IllegalAccessException e) {
             logger.error("Method Access is illegal ", e);
         } catch (InvocationTargetException e) {
@@ -232,36 +172,21 @@ public class RemoteMethodStrategy extends GelatoResourceControllerImpl implement
         putReturnData(sessionDescriptorVar, bytes);
     }
 
-    private String decodeJson(List<byte[]> byteArray) {
-        int byteArraySize = 0;
-        for(byte[] item: byteArray) {
-            byteArraySize += item.length;
-        }
-        byte[] buffer = new byte[byteArraySize];
-        int ptr=0;
-        for(byte[] section: byteArray) {
-            ByteEncoder.copyBytesTo(section,buffer,ptr,section.length);
-            ptr+= section.length;
-        }
-
-        return new String(buffer);
-    }
-
     private void invokeServiceMethod(List<byte[]> writes, Map<String, Object> sessionDescriptorVar) {
         logger.trace("Remote Invoke of Service: " + invoke.getName());
-        String jsonHeader = decodeJson(writes);
+        String jsonHeader = AgnelottiSchema.getInstance().decodeJson(writes);
         Reader reader = new InputStreamReader(new ByteArrayInputStream(jsonHeader.getBytes()));
         JsonReader jsonReader = new JsonReader(reader);
         JsonObject jsonObject = JsonParser.parseReader(jsonReader).getAsJsonObject();
         try {
-            if(noReturn) {
-                if(noParameters) {
+            if(contract.isVoidMethod()) {
+                if(contract.isNoParameters()) {
                     invokeNoRetNoParam();
                 } else  {
                     invokeParamNoReturn(jsonObject);
                 }
             } else {
-                if(noParameters) {
+                if(contract.isVoidMethod()) {
                     invokeReturnNoParam(sessionDescriptorVar);
                 } else  {
                     invokeRetParam(jsonObject, sessionDescriptorVar);

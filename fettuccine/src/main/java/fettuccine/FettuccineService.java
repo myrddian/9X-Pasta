@@ -16,11 +16,9 @@
 
 package fettuccine;
 
-import fettuccine.drivers.Root;
 import fettuccine.drivers.proc.ProcDriver;
-import fettuccine.sys.SysDriver;
-import gelato.Gelato;
-import gelato.server.GelatoServerConnection;
+import fettuccine.drivers.sys.Root;
+import fettuccine.drivers.sys.SysDriver;
 import gelato.server.GelatoServerManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
