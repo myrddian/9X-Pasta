@@ -16,6 +16,7 @@
 
 package protocol.messages;
 
+import protocol.Encoder;
 import protocol.P9Protocol;
 
 public class VersionRequest implements TransactionMessage {

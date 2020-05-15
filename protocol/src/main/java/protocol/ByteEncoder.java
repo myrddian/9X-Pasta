@@ -102,7 +102,8 @@ public class ByteEncoder {
     bytesBuffer.put(numBuffer);
     bytesBuffer.flip();
     short val = bytesBuffer.getShort();
-    return (int) val;
+    int shortVal  = val & 0xffff; //java special stupid with unsigneds
+    return shortVal;
   }
 
   public static void encodeShort(int value, byte[] buffer, int position) {

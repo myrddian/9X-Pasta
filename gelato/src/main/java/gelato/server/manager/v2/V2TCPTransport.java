@@ -22,7 +22,7 @@ import gelato.transport.GelatoTransport;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import protocol.Decoder;
-import protocol.messages.Encoder;
+import protocol.Encoder;
 import protocol.messages.Message;
 import protocol.messages.MessageRaw;
 

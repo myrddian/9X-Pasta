@@ -59,11 +59,6 @@ dependencies {
     implementation project(':ciotola')
     implementation 'com.google.code.gson:gson:2.8.6'
 
-    // Use JUnit Jupiter API for testing.
-    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.5.1'
-
-    // Use JUnit Jupiter Engine for testing.
-    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.5.1'
 }
 
 application {
@@ -71,7 +66,3 @@ application {
     mainClassName = 'fettuccine.FettuccineService'
 }
 
-test {
-    // Use junit platform for unit tests
-    useJUnitPlatform()
-}

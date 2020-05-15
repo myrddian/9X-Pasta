@@ -16,8 +16,8 @@
 
 package protocol.messages.request;
 
+import protocol.Encoder;
 import protocol.P9Protocol;
-import protocol.messages.Encoder;
 import protocol.messages.Message;
 import protocol.messages.TransactionMessage;
 

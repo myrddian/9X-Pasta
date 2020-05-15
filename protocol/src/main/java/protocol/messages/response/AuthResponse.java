@@ -16,9 +16,9 @@
 
 package protocol.messages.response;
 
+import protocol.Encoder;
 import protocol.P9Protocol;
 import protocol.QID;
-import protocol.messages.Encoder;
 import protocol.messages.Message;
 import protocol.messages.TransactionMessage;
 

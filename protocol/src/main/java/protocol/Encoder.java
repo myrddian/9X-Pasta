@@ -14,10 +14,10 @@
  *    limitations under the License.
  */
 
-package protocol.messages;
+package protocol;
 
-import protocol.ByteEncoder;
-import protocol.P9Protocol;
+import protocol.messages.MessageRaw;
+import protocol.messages.VersionRequest;
 import protocol.messages.request.AuthRequest;
 import protocol.messages.request.FlushRequest;
 import protocol.messages.response.AuthResponse;

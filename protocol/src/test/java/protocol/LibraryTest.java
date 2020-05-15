@@ -17,7 +17,6 @@
 package protocol;
 
 import org.junit.jupiter.api.Test;
-import protocol.messages.Encoder;
 import protocol.messages.Message;
 import protocol.messages.MessageRaw;
 import protocol.messages.VersionRequest;

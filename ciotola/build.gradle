@@ -27,18 +27,7 @@ jar {
 
 
 dependencies {
-
     implementation group: 'org.slf4j', name: 'slf4j-api', version: '1.7.28'
     implementation  group: 'io.github.classgraph', name: 'classgraph', version: '4.6.3'
-
-    // Use JUnit Jupiter API for testing.
-    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.5.2'
-
-    // Use JUnit Jupiter Engine for testing.
-    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.5.2'
 }
 
-test {
-    // Use junit platform for unit tests
-    useJUnitPlatform()
-}

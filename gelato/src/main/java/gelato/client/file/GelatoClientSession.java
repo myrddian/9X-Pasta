@@ -128,6 +128,7 @@ public class GelatoClientSession implements GelatoSession {
             + Integer.toString(rspVersion.getMaxMsgSize())
             + " Max Content Size: "
             + Integer.toString(rspVersion.getMaxMsgSize() - MessageRaw.minSize));
+    connection.close(versionRequest);
 
     if (useAuth) {
       if (authHandler() == false) {
@@ -154,6 +155,7 @@ public class GelatoClientSession implements GelatoSession {
     attachDescriptor.setQid(response.getServerID());
     this.fileServiceRoot = attachDescriptor;
     logger.info("Client Attached to Root of File Service");
+    connection.close(request);
     return true;
   }
 

@@ -41,7 +41,6 @@ dependencies {
     implementation project(':agnolotti')
     implementation project(':common')
     implementation 'com.google.code.gson:gson:2.8.6'
-    testImplementation 'org.springframework.boot:spring-boot-starter-test'
 }
 
 application {

@@ -23,8 +23,8 @@ import gelato.client.GelatoMessage;
 import gelato.client.GelatoMessaging;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import protocol.Encoder;
 import protocol.P9Protocol;
-import protocol.messages.Encoder;
 import protocol.messages.MessageRaw;
 
 import java.io.IOException;
@@ -64,6 +64,9 @@ public class ClientSideOutTcpWrite {
           currentTagClient = 0;
       } else  {
           outbound.setTag(msgTag);
+      }
+      if(outbound.getTag() < 0 ){
+          outbound.setTag(0);
       }
       messaging.addFuture(outbound);
       MessageRaw raw = outbound.toMessage().toRaw();
