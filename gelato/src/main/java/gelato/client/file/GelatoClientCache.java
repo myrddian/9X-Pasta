@@ -28,63 +28,59 @@ import java.util.concurrent.ConcurrentHashMap;
 
 public class GelatoClientCache {
 
-    private boolean shutdown = false;
-    private Map<Integer,GelatoResource> cachedResources = new ConcurrentHashMap<>();
-    private final Logger logger = LoggerFactory.getLogger(GelatoClientCache.class);
-    public void addResource(GelatoResource newResource) {
-        newResource.cacheValidate();
-        cachedResources.put(newResource.getFileDescriptor().getRawFileDescriptor(),newResource);
-    }
+  private static GelatoClientCache SINGLE_INSTANCE = null;
+  private final Logger logger = LoggerFactory.getLogger(GelatoClientCache.class);
+  private boolean shutdown = false;
+  private Map<Integer, GelatoResource> cachedResources = new ConcurrentHashMap<>();
 
+  private GelatoClientCache() {}
 
-    private void processMessages() {
-        for(GelatoResource resource: cachedResources.values()) {
-            resource.cacheValidate();
-        }
-        try {
-            Thread.sleep(250);
-        } catch (InterruptedException e) {
-            logger.error("Thread killed - ", e);
-            shutdown();
-        }
-    }
-
-    @CiotolaServiceStop
-    public synchronized void shutdown() {
-        shutdown = true;
-    }
-
-    @CiotolaServiceStart
-    public synchronized void start() {
-        shutdown = false;
-    }
-
-    @CiotolaServiceRun
-    public void process() {
-        while (!isShutdown()) {
-            processMessages();
-        }
-    }
-
-    public synchronized boolean isShutdown() {
-        return shutdown;
-    }
-
-
-
-    private static GelatoClientCache SINGLE_INSTANCE = null;
-
-    private GelatoClientCache() {}
-
-    public static GelatoClientCache getInstance() {
+  public static GelatoClientCache getInstance() {
+    if (SINGLE_INSTANCE == null) {
+      synchronized (Ciotola.class) {
         if (SINGLE_INSTANCE == null) {
-            synchronized (Ciotola.class) {
-                if (SINGLE_INSTANCE == null) {
-                    SINGLE_INSTANCE = new GelatoClientCache();
-                }
-            }
+          SINGLE_INSTANCE = new GelatoClientCache();
         }
-        return SINGLE_INSTANCE;
+      }
     }
+    return SINGLE_INSTANCE;
+  }
 
+  public void addResource(GelatoResource newResource) {
+    newResource.cacheValidate();
+    cachedResources.put(newResource.getFileDescriptor().getRawFileDescriptor(), newResource);
+  }
+
+  private void processMessages() {
+    for (GelatoResource resource : cachedResources.values()) {
+      resource.cacheValidate();
+    }
+    try {
+      Thread.sleep(250);
+    } catch (InterruptedException e) {
+      logger.error("Thread killed - ", e);
+      shutdown();
+    }
+  }
+
+  @CiotolaServiceStop
+  public synchronized void shutdown() {
+    shutdown = true;
+  }
+
+  @CiotolaServiceStart
+  public synchronized void start() {
+    shutdown = false;
+  }
+
+  @CiotolaServiceRun
+  public void process() {
+    while (!isShutdown()) {
+      processMessages();
+    }
+  }
+
+  public synchronized boolean isShutdown() {
+    return shutdown;
+  }
 }

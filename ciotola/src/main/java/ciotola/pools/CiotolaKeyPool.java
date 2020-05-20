@@ -24,31 +24,30 @@ import java.util.List;
 
 public class CiotolaKeyPool {
 
-    private List<CiotolaKeyPoolRunner> workerPool = new ArrayList<>();
-    private final Logger logger = LoggerFactory.getLogger(CiotolaKeyPool.class);
-    private int threadCapacity;
+  private final Logger logger = LoggerFactory.getLogger(CiotolaKeyPool.class);
+  private List<CiotolaKeyPoolRunner> workerPool = new ArrayList<>();
+  private int threadCapacity;
 
-    public CiotolaKeyPool(int threadCapacity) {
-        this.threadCapacity = threadCapacity;
-        logger.debug("Pool is initialising with - " + Integer.toString(threadCapacity) +" workers");
-        for(int counter= 0 ; counter < threadCapacity; ++counter) {
-            CiotolaKeyPoolRunner runner = new CiotolaKeyPoolRunner();
-            runner.setRunnerId(counter);
-            workerPool.add(runner);
-            runner.start();
-        }
+  public CiotolaKeyPool(int threadCapacity) {
+    this.threadCapacity = threadCapacity;
+    logger.debug("Pool is initialising with - " + Integer.toString(threadCapacity) + " workers");
+    for (int counter = 0; counter < threadCapacity; ++counter) {
+      CiotolaKeyPoolRunner runner = new CiotolaKeyPoolRunner();
+      runner.setRunnerId(counter);
+      workerPool.add(runner);
+      runner.start();
     }
+  }
 
-    public synchronized void addJob(Runnable job, long key) {
-        int scheduleGroup =  Math.abs((int) (key % threadCapacity));
-        workerPool.get(scheduleGroup).addJob(job);
+  public synchronized void addJob(Runnable job, long key) {
+    int scheduleGroup = Math.abs((int) (key % threadCapacity));
+    workerPool.get(scheduleGroup).addJob(job);
+  }
+
+  public synchronized void shutdown() {
+    logger.debug("Stopping workers");
+    for (CiotolaKeyPoolRunner runner : workerPool) {
+      runner.stopWorker();
     }
-
-    public synchronized void shutdown() {
-        logger.debug("Stopping workers");
-        for(CiotolaKeyPoolRunner runner: workerPool) {
-            runner.stopWorker();
-        }
-    }
-
+  }
 }

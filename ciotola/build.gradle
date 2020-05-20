@@ -28,6 +28,6 @@ jar {
 
 dependencies {
     implementation group: 'org.slf4j', name: 'slf4j-api', version: '1.7.28'
-    implementation  group: 'io.github.classgraph', name: 'classgraph', version: '4.6.3'
+    implementation group: 'io.github.classgraph', name: 'classgraph', version: '4.6.3'
 }
 

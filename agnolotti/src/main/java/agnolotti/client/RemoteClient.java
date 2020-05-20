@@ -26,70 +26,62 @@ import java.io.IOException;
 
 public class RemoteClient {
 
-    private GelatoFileManager fileManager;
-    private Gelato gelato;
-    private String serviceName;
-    private String serviceVersion;
-    private RemoteFactory remoteFactory;
-    private Logger logger = LoggerFactory.getLogger(RemoteClient.class);
+  private GelatoFileManager fileManager;
+  private Gelato gelato;
+  private String serviceName;
+  private String serviceVersion;
+  private RemoteFactory remoteFactory;
+  private Logger logger = LoggerFactory.getLogger(RemoteClient.class);
 
-    public RemoteClient(String server,
-                        int port,
-                        String serviceName,
-                        String version,
-                        String user) {
+  public RemoteClient(String server, int port, String serviceName, String version, String user) {
 
-
-        this.serviceName = serviceName;
-        this.serviceVersion = version;
-        try {
-            fileManager = new GelatoFileManager(server,port, user);
-        } catch (IOException e) {
-           logger.error("Unable to connect or read remote server", e);
-           throw new RuntimeException("Unable to connect");
-        }
-        remoteFactory = new RemoteFactory(serviceName,version, fileManager.getRoot());
+    this.serviceName = serviceName;
+    this.serviceVersion = version;
+    try {
+      fileManager = new GelatoFileManager(server, port, user);
+    } catch (IOException e) {
+      logger.error("Unable to connect or read remote server", e);
+      throw new RuntimeException("Unable to connect");
     }
+    remoteFactory = new RemoteFactory(serviceName, version, fileManager.getRoot());
+  }
 
-    public RemoteClient(GelatoFileManager fileManager, String serviceName, String  serviceVersion) {
-        this.fileManager = fileManager;
-        this.serviceName = serviceName;
-        this.serviceVersion = serviceVersion;
-        remoteFactory = new RemoteFactory(serviceName,serviceVersion, fileManager.getRoot());
-    }
+  public RemoteClient(GelatoFileManager fileManager, String serviceName, String serviceVersion) {
+    this.fileManager = fileManager;
+    this.serviceName = serviceName;
+    this.serviceVersion = serviceVersion;
+    remoteFactory = new RemoteFactory(serviceName, serviceVersion, fileManager.getRoot());
+  }
 
-    public Object getRemoteService(Class remoteInterface) {
-        return remoteFactory.generateRemoteService(remoteInterface);
-    }
+  public Object getRemoteService(Class remoteInterface) {
+    return remoteFactory.generateRemoteService(remoteInterface);
+  }
 
-    public GelatoFileManager getFileManager() {
-        return fileManager;
-    }
+  public GelatoFileManager getFileManager() {
+    return fileManager;
+  }
 
-    public void setFileManager(GelatoFileManager fileManager) {
-        this.fileManager = fileManager;
-    }
+  public void setFileManager(GelatoFileManager fileManager) {
+    this.fileManager = fileManager;
+  }
 
-    public Gelato getGelato() {
-        return gelato;
-    }
+  public Gelato getGelato() {
+    return gelato;
+  }
 
-    public void setGelato(Gelato gelato) {
-        this.gelato = gelato;
-    }
+  public void setGelato(Gelato gelato) {
+    this.gelato = gelato;
+  }
 
+  public String getServiceName() {
+    return serviceName;
+  }
 
-    public String getServiceName() {
-        return serviceName;
-    }
+  public String getServiceVersion() {
+    return serviceVersion;
+  }
 
-    public String getServiceVersion() {
-        return serviceVersion;
-    }
-
-
-    public void stop() {
-        Ciotola.getInstance().stop();
-    }
-
+  public void stop() {
+    Ciotola.getInstance().stop();
+  }
 }

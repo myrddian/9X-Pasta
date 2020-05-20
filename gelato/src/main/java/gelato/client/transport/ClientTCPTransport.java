@@ -39,6 +39,7 @@ public class ClientTCPTransport extends TCPTransport {
   public ClientTCPTransport(GelatoConfigImpl configuration) {
     try {
       clientSocket = new Socket(configuration.getHostName(), configuration.getPortNumber());
+      clientSocket.setTcpNoDelay(true);
     } catch (UnknownHostException e) {
       e.printStackTrace();
     } catch (IOException e) {

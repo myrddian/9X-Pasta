@@ -21,76 +21,72 @@ import gelato.client.GelatoMessage;
 import gelato.server.manager.RequestConnection;
 
 public class GelatoMessageProxy {
-    private GelatoMessage forwardedMessage;
-    private long timeSent = 0;
-    private int queueSize = 0;
-    private int originalTransactionId = 0;
-    private long connectionDescriptor = 0;
+  private GelatoMessage forwardedMessage;
+  private long timeSent = 0;
+  private int queueSize = 0;
+  private int originalTransactionId = 0;
+  private long connectionDescriptor = 0;
 
+  private RequestConnection requestConnection = new RequestConnection();
+  private GelatoConnection originatingSource;
 
-    private RequestConnection requestConnection = new RequestConnection();
+  public GelatoConnection getOriginatingSource() {
+    return originatingSource;
+  }
 
-    public GelatoConnection getOriginatingSource() {
-        return originatingSource;
-    }
+  public void setOriginatingSource(GelatoConnection originatingSource) {
+    this.originatingSource = originatingSource;
+  }
 
-    public void setOriginatingSource(GelatoConnection originatingSource) {
-        this.originatingSource = originatingSource;
-    }
+  public GelatoMessage getForwardedMessage() {
+    return forwardedMessage;
+  }
 
-    private GelatoConnection originatingSource;
+  public void setForwardedMessage(GelatoMessage forwardedMessage) {
+    this.forwardedMessage = forwardedMessage;
+  }
 
-    public GelatoMessage getForwardedMessage() {
-        return forwardedMessage;
-    }
+  public long getTimeSent() {
+    return timeSent;
+  }
 
-    public void setForwardedMessage(GelatoMessage forwardedMessage) {
-        this.forwardedMessage = forwardedMessage;
-    }
+  public void setTimeSent(long timeSent) {
+    this.timeSent = timeSent;
+  }
 
-    public long getTimeSent() {
-        return timeSent;
-    }
+  public int getQueueSize() {
+    return queueSize;
+  }
 
-    public void setTimeSent(long timeSent) {
-        this.timeSent = timeSent;
-    }
+  public void setQueueSize(int queueSize) {
+    this.queueSize = queueSize;
+  }
 
-    public int getQueueSize() {
-        return queueSize;
-    }
+  public int getOriginalTransactionId() {
+    return originalTransactionId;
+  }
 
-    public void setQueueSize(int queueSize) {
-        this.queueSize = queueSize;
-    }
+  public void setOriginalTransactionId(int originalTransactionId) {
+    this.originalTransactionId = originalTransactionId;
+  }
 
-    public int getOriginalTransactionId() {
-        return originalTransactionId;
-    }
+  public long getConnectionDescriptor() {
+    return connectionDescriptor;
+  }
 
-    public void setOriginalTransactionId(int originalTransactionId) {
-        this.originalTransactionId = originalTransactionId;
-    }
+  public void setConnectionDescriptor(long connectionDescriptor) {
+    this.connectionDescriptor = connectionDescriptor;
+  }
 
-    public long getConnectionDescriptor() {
-        return connectionDescriptor;
-    }
+  public String messageId() {
+    return MountPoint.generateId(this);
+  }
 
-    public void setConnectionDescriptor(long connectionDescriptor) {
-        this.connectionDescriptor = connectionDescriptor;
-    }
+  public RequestConnection getRequestConnection() {
+    return requestConnection;
+  }
 
-    public String messageId() {
-        return MountPoint.generateId(this);
-    }
-
-    public RequestConnection getRequestConnection() {
-        return requestConnection;
-    }
-
-
-
-    public void setRequestConnection(RequestConnection requestConnection) {
-        this.requestConnection = requestConnection;
-    }
+  public void setRequestConnection(RequestConnection requestConnection) {
+    this.requestConnection = requestConnection;
+  }
 }

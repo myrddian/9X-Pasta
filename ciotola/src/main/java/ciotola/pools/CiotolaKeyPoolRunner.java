@@ -24,50 +24,49 @@ import java.util.concurrent.LinkedBlockingQueue;
 
 public class CiotolaKeyPoolRunner extends Thread {
 
-    private final Logger logger = LoggerFactory.getLogger(CiotolaKeyPoolRunner.class);
-    private BlockingQueue<Runnable> readMessageQueue = new LinkedBlockingQueue<>();
-    private boolean isRunning = true;
-    private int runnerId = 0;
+  private final Logger logger = LoggerFactory.getLogger(CiotolaKeyPoolRunner.class);
+  private BlockingQueue<Runnable> readMessageQueue = new LinkedBlockingQueue<>();
+  private boolean isRunning = true;
+  private int runnerId = 0;
 
-    public void addJob(Runnable request) {
-        try {
-            readMessageQueue.put(request);
-        } catch (InterruptedException e) {
-            logger.error("Interrupted ", e);
-        }
+  public void addJob(Runnable request) {
+    try {
+      readMessageQueue.put(request);
+    } catch (InterruptedException e) {
+      logger.error("Interrupted ", e);
     }
+  }
 
-    @Override
-    public void run() {
-        logger.trace("Worker [" + Integer.toString(runnerId) + "] Executing jobs from pool");
-        while (isRunning()) {
-          try {
-                  Runnable job = readMessageQueue.take();
-                  job.run();
-              } catch (InterruptedException e) {
-                logger.error("Interrupted while runnign job: ", e);
-                return;
-              } catch (Exception ex) {
-                logger.error("Exception thrown by job: ", ex);
-                return;
-              }
-        }
+  @Override
+  public void run() {
+    logger.trace("Worker [" + Integer.toString(runnerId) + "] Executing jobs from pool");
+    while (isRunning()) {
+      try {
+        Runnable job = readMessageQueue.take();
+        job.run();
+      } catch (InterruptedException e) {
+        logger.error("Interrupted while runnign job: ", e);
+        return;
+      } catch (Exception ex) {
+        logger.error("Exception thrown by job: ", ex);
+        return;
+      }
     }
+  }
 
-    public void setRunnerId(int runnerId) {
-        this.runnerId = runnerId;
-    }
+  public void setRunnerId(int runnerId) {
+    this.runnerId = runnerId;
+  }
 
-    public synchronized boolean isRunning() {
-        return isRunning;
-    }
+  public synchronized boolean isRunning() {
+    return isRunning;
+  }
 
-    public synchronized void startWorker() {
-        isRunning = true;
-    }
+  public synchronized void startWorker() {
+    isRunning = true;
+  }
 
-
-    public synchronized void stopWorker() {
-        isRunning = false;
-    }
+  public synchronized void stopWorker() {
+    isRunning = false;
+  }
 }

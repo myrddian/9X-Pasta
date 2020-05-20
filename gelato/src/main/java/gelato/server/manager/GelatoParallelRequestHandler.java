@@ -34,12 +34,12 @@ import protocol.messages.response.ErrorMessage;
 
 public class GelatoParallelRequestHandler implements GenericRequestHandler {
 
-
   private final Logger logger = LoggerFactory.getLogger(GelatoParallelRequestHandler.class);
   private GelatoQIDManager resources;
   private RequestFlushHandler flushResponseHandler = new DefaultFlushHandler();
 
-  private GelatoServerManager.ParallelHandlerMode handlerMode = GelatoServerManager.ParallelHandlerMode.CONTENTION;
+  private GelatoServerManager.ParallelHandlerMode handlerMode =
+      GelatoServerManager.ParallelHandlerMode.CONTENTION;
   private long requestCount = 0;
 
   public GelatoParallelRequestHandler(GelatoQIDManager qidManager) {
@@ -94,10 +94,10 @@ public class GelatoParallelRequestHandler implements GenericRequestHandler {
 
     if (!session.getManager().validDescriptor(requestedResource)) {
       logger.error("Invalid Descriptor request in Message");
-      logger.error("Resource: " + requestedResource.getDescriptorId() +" Does not exist!");
+      logger.error("Resource: " + requestedResource.getDescriptorId() + " Does not exist!");
       logger.error("Message Tag: " + request.tag);
       logger.error("Messaage Type: " + request.messageType);
-      sendError("Invalid resource", request.tag,descriptor, connection);
+      sendError("Invalid resource", request.tag, descriptor, connection);
       return false;
     }
 
@@ -113,24 +113,29 @@ public class GelatoParallelRequestHandler implements GenericRequestHandler {
     parallelRequest.setMessage(request);
 
     long key = 0;
-    if(handlerMode == GelatoServerManager.ParallelHandlerMode.CONTENTION) {
+    if (handlerMode == GelatoServerManager.ParallelHandlerMode.CONTENTION) {
       key = serverResource.getQid().getLongFileId();
-    } else if (handlerMode == GelatoServerManager.ParallelHandlerMode.ROUNDROBIN){
-      key = requestCount;
-    } else if(handlerMode == GelatoServerManager.ParallelHandlerMode.SESSION_CONTENTION){
+    } else if (handlerMode == GelatoServerManager.ParallelHandlerMode.ROUNDROBIN) {
+      key = getRequestCount();
+    } else if (handlerMode == GelatoServerManager.ParallelHandlerMode.SESSION_CONTENTION) {
       key = descriptor.getDescriptorId() + serverResource.getQid().getLongFileId();
     }
 
-    Ciotola.getInstance().execute(parallelRequest,key);
+    Ciotola.getInstance().execute(parallelRequest, Math.abs(key));
 
-    ++requestCount;
-    //sanity over flow check - just reset to zero
-    if(requestCount < 0 ) {
-      requestCount =0;
-    }
     return true;
   }
 
+  private synchronized long getRequestCount() {
+    long cur = requestCount;
+    ++requestCount;
+    // sanity over flow check - just reset to zero
+    if (requestCount < 0) {
+      requestCount = 0;
+    }
+
+    return cur;
+  }
 
   public GelatoServerManager.ParallelHandlerMode getHandlerMode() {
     return handlerMode;
@@ -140,12 +145,11 @@ public class GelatoParallelRequestHandler implements GenericRequestHandler {
     this.handlerMode = handlerMode;
   }
 
-
-  private void sendError(String error, int tag, GelatoFileDescriptor connDesc, GelatoConnection connection) {
+  private void sendError(
+      String error, int tag, GelatoFileDescriptor connDesc, GelatoConnection connection) {
     ErrorMessage msg = new ErrorMessage();
     msg.setTag(tag);
     msg.setErrorMessage(error);
-    connection.sendMessage(connDesc,msg.toMessage());
+    connection.sendMessage(connDesc, msg.toMessage());
   }
-
 }

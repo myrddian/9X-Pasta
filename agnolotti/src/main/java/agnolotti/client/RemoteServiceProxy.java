@@ -24,24 +24,24 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-public class RemoteServiceProxy  implements InvocationHandler {
+public class RemoteServiceProxy implements InvocationHandler {
 
-    Map<String, RemoteServiceMethod> methodMap = new ConcurrentHashMap<>();
+  Map<String, RemoteServiceMethod> methodMap = new ConcurrentHashMap<>();
 
-    public RemoteServiceProxy(List<RemoteServiceMethod> methods) {
-        for(RemoteServiceMethod method: methods) {
-            methodMap.put(method.getMethodName(), method);
-        }
+  public RemoteServiceProxy(List<RemoteServiceMethod> methods) {
+    for (RemoteServiceMethod method : methods) {
+      methodMap.put(method.getMethodName(), method);
     }
+  }
 
-    @Override
-    public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
+  @Override
+  public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
 
-        String methodDecorator = RemoteServiceFactory.getMethodDecorator(method);
-        if(!methodMap.containsKey(methodDecorator)) {
-            throw new RuntimeException("Invalid Function " + methodDecorator);
-        }
-        RemoteServiceMethod serviceMethod = methodMap.get(methodDecorator);
-        return serviceMethod.invoke(args);
+    String methodDecorator = RemoteServiceFactory.getMethodDecorator(method);
+    if (!methodMap.containsKey(methodDecorator)) {
+      throw new RuntimeException("Invalid Function " + methodDecorator);
     }
+    RemoteServiceMethod serviceMethod = methodMap.get(methodDecorator);
+    return serviceMethod.invoke(args);
+  }
 }

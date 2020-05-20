@@ -28,27 +28,29 @@ import java.time.Instant;
 
 class ServiceGenericDirectory extends GelatoDirectoryControllerImpl {
 
-    private final Logger logger = LoggerFactory.getLogger(ServiceGenericDirectory.class);
+  private final Logger logger = LoggerFactory.getLogger(ServiceGenericDirectory.class);
 
-    public ServiceGenericDirectory(String serviceUserName,
-                                   String serviceUserGroup,
-                                   long directoryID,
-                                   String directoryName, GelatoServerManager serverManager) {
-        super(serverManager);
-        setResourceName(directoryName);
-        StatStruct newStat = getStat();
-        newStat.setAccessTime(Instant.now().getEpochSecond());
-        newStat.setModifiedTime(newStat.getAccessTime());
-        newStat.setUid(serviceUserName);
-        newStat.setGid(serviceUserGroup);
-        newStat.setMuid(serviceUserName);
-        QID qid = getQID();
-        qid.setType(P9Protocol.QID_DIR);
-        qid.setVersion(0);
-        qid.setLongFileId(directoryID);
-        newStat.setQid(qid);
-        setQID(qid);
-        setStat(newStat);
-        newStat.updateSize();
-    }
+  public ServiceGenericDirectory(
+      String serviceUserName,
+      String serviceUserGroup,
+      long directoryID,
+      String directoryName,
+      GelatoServerManager serverManager) {
+    super(serverManager);
+    setResourceName(directoryName);
+    StatStruct newStat = getStat();
+    newStat.setAccessTime(Instant.now().getEpochSecond());
+    newStat.setModifiedTime(newStat.getAccessTime());
+    newStat.setUid(serviceUserName);
+    newStat.setGid(serviceUserGroup);
+    newStat.setMuid(serviceUserName);
+    QID qid = getQID();
+    qid.setType(P9Protocol.QID_DIR);
+    qid.setVersion(0);
+    qid.setLongFileId(directoryID);
+    newStat.setQid(qid);
+    setQID(qid);
+    setStat(newStat);
+    newStat.updateSize();
+  }
 }

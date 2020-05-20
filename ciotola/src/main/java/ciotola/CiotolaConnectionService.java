@@ -20,16 +20,27 @@ import java.io.IOException;
 
 public interface CiotolaConnectionService {
 
-    static final int NO_PROXY_TERMINATION = -1;
-    int bytesToProcessInbound() throws IOException;
-    int messagesToProcessOutbound();
-    long getConnectionId();
-    void processInbound() throws IOException, InterruptedException;
-    void processOutbound() throws IOException, InterruptedException;
-    void notifyClose();
-    boolean isRunning();
-    void setProcessedTime(long time);
-    long getProcessedTime();
-    boolean isClosed();
-    int getProxyId();
+  static final int NO_PROXY_TERMINATION = -1;
+
+  int bytesToProcessInbound() throws IOException;
+
+  int messagesToProcessOutbound();
+
+  long getConnectionId();
+
+  void processInbound() throws IOException, InterruptedException;
+
+  void processOutbound() throws IOException, InterruptedException;
+
+  void notifyClose();
+
+  boolean isRunning();
+
+  long getProcessedTime();
+
+  void setProcessedTime(long time);
+
+  boolean isClosed();
+
+  int getProxyId();
 }

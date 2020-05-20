@@ -20,7 +20,9 @@ import java.util.List;
 
 public interface FettuccineNameSpace {
 
-    List<String> getNameSpaces();
-    boolean createNameSpace(String nsName);
-    boolean deleteNameSpace(String nsName);
+  List<String> getNameSpaces();
+
+  boolean createNameSpace(String nsName);
+
+  boolean deleteNameSpace(String nsName);
 }

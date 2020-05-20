@@ -25,38 +25,37 @@ import java.util.List;
 
 public class CiotolaConnectionPool {
 
-    private List<ConnectionPoolRunner> workerPool = new ArrayList<>();
-    private final Logger logger = LoggerFactory.getLogger(CiotolaConnectionPool.class);
-    private int threadCapacity = 1;
-    private int jobsScheduled = 0;
+  private final Logger logger = LoggerFactory.getLogger(CiotolaConnectionPool.class);
+  private List<ConnectionPoolRunner> workerPool = new ArrayList<>();
+  private int threadCapacity = 1;
+  private int jobsScheduled = 0;
 
-    public CiotolaConnectionPool(int threadCapacity) {
-        this.threadCapacity = threadCapacity;
-        logger.debug("Pool is initialising with - " + Integer.toString(threadCapacity) +" workers");
-        for(int counter= 0 ; counter < threadCapacity; ++counter) {
-            ConnectionPoolRunner runner = new ConnectionPoolRunner();
-            runner.setRunnerId(counter);
-            workerPool.add(runner);
-            runner.start();
-        }
+  public CiotolaConnectionPool(int threadCapacity) {
+    this.threadCapacity = threadCapacity;
+    logger.debug("Pool is initialising with - " + Integer.toString(threadCapacity) + " workers");
+    for (int counter = 0; counter < threadCapacity; ++counter) {
+      ConnectionPoolRunner runner = new ConnectionPoolRunner();
+      runner.setRunnerId(counter);
+      workerPool.add(runner);
+      runner.start();
     }
+  }
 
-    public synchronized void addConnection(CiotolaConnectionService service) {
-        int scheduleGroup =  Math.abs((jobsScheduled % threadCapacity));
-        workerPool.get(scheduleGroup).addService(service);
-        ++jobsScheduled;
+  public synchronized void addConnection(CiotolaConnectionService service) {
+    int scheduleGroup = Math.abs((jobsScheduled % threadCapacity));
+    workerPool.get(scheduleGroup).addService(service);
+    ++jobsScheduled;
+  }
+
+  public synchronized void setIdleTimeout(long timeInSeconds) {
+    for (ConnectionPoolRunner runner : workerPool) {
+      runner.setConnectionCloseExpiry(timeInSeconds);
     }
+  }
 
-    public synchronized void setIdleTimeout(long timeInSeconds) {
-        for(ConnectionPoolRunner runner:workerPool) {
-            runner.setConnectionCloseExpiry(timeInSeconds);
-        }
+  public synchronized void shutDownPool() {
+    for (ConnectionPoolRunner runner : workerPool) {
+      runner.stopWorker();
     }
-
-    public synchronized void shutDownPool() {
-        for(ConnectionPoolRunner runner:workerPool) {
-            runner.stopWorker();
-        }
-    }
-
+  }
 }

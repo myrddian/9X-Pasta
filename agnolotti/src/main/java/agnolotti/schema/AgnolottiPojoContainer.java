@@ -23,12 +23,11 @@ import java.util.concurrent.ConcurrentHashMap;
 
 public class AgnolottiPojoContainer implements InvocationHandler {
 
-    private Map<String,Object> mappedValues = new ConcurrentHashMap<>();
-    private String containerName;
+  private Map<String, Object> mappedValues = new ConcurrentHashMap<>();
+  private String containerName;
 
-
-    @Override
-    public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
-        return null;
-    }
+  @Override
+  public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
+    return null;
+  }
 }

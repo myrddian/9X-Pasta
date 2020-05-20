@@ -20,5 +20,5 @@ import gelato.server.manager.RequestConnection;
 import protocol.messages.request.AuthRequest;
 
 public interface AuthRequestHandler {
-    boolean processAuthRequest(RequestConnection request, AuthRequest authRequest);
+  boolean processAuthRequest(RequestConnection request, AuthRequest authRequest);
 }

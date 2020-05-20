@@ -31,9 +31,6 @@ public class GelatoFileManager {
 
   private final Logger logger = LoggerFactory.getLogger(GelatoFileManager.class);
 
-
-
-
   private GelatoClientSession clientSession;
   private Gelato gelato;
   private GelatoTagManager tagManager;
@@ -41,13 +38,12 @@ public class GelatoFileManager {
   private GelatoDirectoryImpl root;
   private GelatoMessaging messaging;
 
-  public GelatoFileManager(String hostName, int portNumber,
-                           String userName) throws IOException {
-    this(hostName,portNumber,userName,Gelato.DEFAULT_NAME_SPACE);
+  public GelatoFileManager(String hostName, int portNumber, String userName) throws IOException {
+    this(hostName, portNumber, userName, Gelato.DEFAULT_NAME_SPACE);
   }
 
-  public GelatoFileManager(String hostName, int portNumber,
-                           String userName, String nameSpace) throws IOException {
+  public GelatoFileManager(String hostName, int portNumber, String userName, String nameSpace)
+      throws IOException {
 
     gelato = new Gelato();
     messaging = new GelatoMessaging(hostName, portNumber);
@@ -55,7 +51,6 @@ public class GelatoFileManager {
     authDescriptor = gelato.getDescriptorManager().generateDescriptor();
     tagManager = gelato.getTagManager();
     tagManager.createTagHandler(authDescriptor);
-
 
     clientSession = new GelatoClientSession(messaging);
     clientSession.setManager(gelato.getDescriptorManager());
@@ -72,14 +67,15 @@ public class GelatoFileManager {
     GelatoClientCache.getInstance().addResource(root);
   }
 
-
-
   public GelatoDirectory getRoot() {
     return root;
   }
-  public GelatoMessaging getConnection() { return messaging;}
+
+  public GelatoMessaging getConnection() {
+    return messaging;
+  }
+
   public GelatoClientSession getClientSession() {
     return clientSession;
   }
-
 }

@@ -33,43 +33,50 @@ import java.util.concurrent.ConcurrentMap;
 
 public class MountService implements Mount {
 
-    private ConcurrentMap<String, MountPoint> mountPoints = new ConcurrentHashMap<>();
-    private GelatoDirectoryController mountDirectory;
-    private GelatoServerManager serverManager;
-    private final Logger logger = LoggerFactory.getLogger(MountService.class);
+  private final Logger logger = LoggerFactory.getLogger(MountService.class);
+  private ConcurrentMap<String, MountPoint> mountPoints = new ConcurrentHashMap<>();
+  private GelatoDirectoryController mountDirectory;
+  private GelatoServerManager serverManager;
 
-    public MountService(GelatoServerManager manager) {
-        serverManager = manager;
-        mountDirectory = new GelatoDirectoryControllerImpl(manager);
-        mountDirectory.setDirectoryName(FettuccineConstants.MOUNT_DIR);
-        mountDirectory.getQID().setLongFileId(manager.getDescriptorManager().generateDescriptor().getDescriptorId());
-        serverManager.getRoot().addDirectory(mountDirectory);
+  public MountService(GelatoServerManager manager) {
+    serverManager = manager;
+    mountDirectory = new GelatoDirectoryControllerImpl(manager);
+    mountDirectory.setDirectoryName(FettuccineConstants.MOUNT_DIR);
+    mountDirectory
+        .getQID()
+        .setLongFileId(manager.getDescriptorManager().generateDescriptor().getDescriptorId());
+    serverManager.getRoot().addDirectory(mountDirectory);
+  }
+
+  public GelatoServerManager getServerManager() {
+    return serverManager;
+  }
+
+  public GelatoDirectoryController getMountDirectory() {
+    return mountDirectory;
+  }
+
+  @Override
+  public boolean mount(String server, int port, String userName, String point) {
+    try {
+      MountPoint mountPoint = new MountPoint(server, port, userName, point, this);
+      mountPoints.put(point, mountPoint);
+      mountDirectory.addDirectory(mountPoint.getDirectory());
+      return true;
+    } catch (IOException e) {
+      logger.error("Failed to mount : " + point);
+      logger.error("Exception ", e);
     }
+    return false;
+  }
 
-    public GelatoServerManager getServerManager() { return serverManager;}
-    public GelatoDirectoryController getMountDirectory() { return mountDirectory;}
+  @Override
+  public List<String> listMounts() {
+    List<String> retlist = new ArrayList<>();
 
-    @Override
-    public boolean mount(String server, int port, String userName,  String point) {
-        try {
-            MountPoint mountPoint = new MountPoint(server,port,userName,point, this);
-            mountPoints.put(point, mountPoint);
-            mountDirectory.addDirectory(mountPoint.getDirectory());
-            return true;
-        } catch (IOException e) {
-            logger.error("Failed to mount : " + point);
-            logger.error("Exception ", e);
-        }
-        return false;
+    for (MountPoint mount : mountPoints.values()) {
+      retlist.add(mount.getMountDetail());
     }
-
-    @Override
-    public List<String> listMounts() {
-        List<String> retlist = new ArrayList<>();
-
-        for(MountPoint mount: mountPoints.values()) {
-            retlist.add(mount.getMountDetail());
-        }
-        return retlist;
-    }
+    return retlist;
+  }
 }

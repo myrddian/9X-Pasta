@@ -14,29 +14,29 @@
  *    limitations under the License.
  */
 
-public class TestServiceProxy implements TestBomb{
-    @Override
-    public void hello() {
-        System.out.println("hello");
-    }
+public class TestServiceProxy implements TestBomb {
+  @Override
+  public void hello() {
+    System.out.println("hello");
+  }
 
-    @Override
-    public String sayHello(String Name) {
-        return "hello " + Name;
-    }
+  @Override
+  public String sayHello(String Name) {
+    return "hello " + Name;
+  }
 
-    @Override
-    public String sayHello(String Name, int Age) {
-        return sayHello(Name) + " " + Integer.toString(Age);
-    }
+  @Override
+  public String sayHello(String Name, int Age) {
+    return sayHello(Name) + " " + Integer.toString(Age);
+  }
 
-    @Override
-    public String sayHello(int Age, String Name) {
-        return sayHello(Name, Age);
-    }
+  @Override
+  public String sayHello(int Age, String Name) {
+    return sayHello(Name, Age);
+  }
 
-    @Override
-    public void hello(String name) {
-        System.out.println("hello " +name);
-    }
+  @Override
+  public void hello(String name) {
+    System.out.println("hello " + name);
+  }
 }

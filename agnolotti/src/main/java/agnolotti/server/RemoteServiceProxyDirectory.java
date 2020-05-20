@@ -35,63 +35,64 @@ import java.util.Map;
 
 public class RemoteServiceProxyDirectory extends GelatoDirectoryControllerImpl {
 
-    private Map<String, RemoteMethodStrategy> methodStrategyMap;
-    private final Logger logger = LoggerFactory.getLogger(RemoteServiceProxyDirectory.class);
-    private String definedIDL = "";
-    private Gson gson = new Gson();
-    private GelatoServerManager manager;
-    private GelatoFileControllerImpl fileIdl;
+  private final Logger logger = LoggerFactory.getLogger(RemoteServiceProxyDirectory.class);
+  private Map<String, RemoteMethodStrategy> methodStrategyMap;
+  private String definedIDL = "";
+  private Gson gson = new Gson();
+  private GelatoServerManager manager;
+  private GelatoFileControllerImpl fileIdl;
 
-    private void initRpc() {
-        Map<String, Object> jsonMap = new HashMap<>();
-        Map<String, Object> methodMap = new HashMap<>();
-        jsonMap.put(Agnolotti.SERVICE_NAME,getDirectoryName());
-        jsonMap.put(Agnolotti.METHOD_FIELD, methodMap);
-        for(RemoteMethodStrategy element: methodStrategyMap.values()) {
-            methodMap.put(element.methodDecorator(), element.getJsonContract());
-            addFile(element);
-        }
-        definedIDL = gson.toJson(jsonMap);
-        logger.debug("EXPORTING IDL: " + definedIDL);
-        ByteArrayInputStream arrayInputStream = new ByteArrayInputStream(definedIDL.getBytes());
-        GelatoFileDescriptor newDescriptor =  manager.getDescriptorManager().generateDescriptor();
-        fileIdl = new GelatoFileControllerImpl(Agnolotti.IDL, arrayInputStream,definedIDL.getBytes().length, newDescriptor);
-        fileIdl.getStat().setUid(Agnolotti.DEFAULT_NAME);
-        fileIdl.getStat().setGid(Agnolotti.DEFAULT_NAME);
-        fileIdl.getStat().setMuid(Agnolotti.DEFAULT_NAME);
-        fileIdl.getStat().updateSize();
-        addFile(fileIdl);
+  public RemoteServiceProxyDirectory(
+      Map<String, RemoteMethodStrategy> methodStrategyMap,
+      String dirName,
+      long id,
+      GelatoServerManager serverManager) {
+
+    super(serverManager);
+    manager = serverManager;
+    this.methodStrategyMap = methodStrategyMap;
+    setResourceName(dirName);
+    StatStruct newStat = getStat();
+    newStat.setAccessTime(Instant.now().getEpochSecond());
+    newStat.setModifiedTime(newStat.getAccessTime());
+    newStat.setUid(Agnolotti.DEFAULT_NAME);
+    newStat.setGid(Agnolotti.DEFAULT_NAME);
+    newStat.setMuid(Agnolotti.DEFAULT_NAME);
+    QID qid = getQID();
+    qid.setType(P9Protocol.QID_DIR);
+    qid.setVersion(0);
+    qid.setLongFileId(id);
+    newStat.setQid(qid);
+    newStat.updateSize();
+    setQID(qid);
+    setStat(newStat);
+    initRpc();
+  }
+
+  private void initRpc() {
+    Map<String, Object> jsonMap = new HashMap<>();
+    Map<String, Object> methodMap = new HashMap<>();
+    jsonMap.put(Agnolotti.SERVICE_NAME, getDirectoryName());
+    jsonMap.put(Agnolotti.METHOD_FIELD, methodMap);
+    for (RemoteMethodStrategy element : methodStrategyMap.values()) {
+      methodMap.put(element.methodDecorator(), element.getJsonContract());
+      addFile(element);
     }
+    definedIDL = gson.toJson(jsonMap);
+    logger.debug("EXPORTING IDL: " + definedIDL);
+    ByteArrayInputStream arrayInputStream = new ByteArrayInputStream(definedIDL.getBytes());
+    GelatoFileDescriptor newDescriptor = manager.getDescriptorManager().generateDescriptor();
+    fileIdl =
+        new GelatoFileControllerImpl(
+            Agnolotti.IDL, arrayInputStream, definedIDL.getBytes().length, newDescriptor);
+    fileIdl.getStat().setUid(Agnolotti.DEFAULT_NAME);
+    fileIdl.getStat().setGid(Agnolotti.DEFAULT_NAME);
+    fileIdl.getStat().setMuid(Agnolotti.DEFAULT_NAME);
+    fileIdl.getStat().updateSize();
+    addFile(fileIdl);
+  }
 
-
-    public String getIDL() {
-        return definedIDL;
-    }
-
-    public RemoteServiceProxyDirectory(Map<String, RemoteMethodStrategy> methodStrategyMap,
-                                       String dirName,
-                                       long id, GelatoServerManager serverManager) {
-
-
-        super(serverManager);
-        manager = serverManager;
-        this.methodStrategyMap = methodStrategyMap;
-        setResourceName(dirName);
-        StatStruct newStat = getStat();
-        newStat.setAccessTime(Instant.now().getEpochSecond());
-        newStat.setModifiedTime(newStat.getAccessTime());
-        newStat.setUid(Agnolotti.DEFAULT_NAME);
-        newStat.setGid(Agnolotti.DEFAULT_NAME);
-        newStat.setMuid(Agnolotti.DEFAULT_NAME);
-        QID qid = getQID();
-        qid.setType(P9Protocol.QID_DIR);
-        qid.setVersion(0);
-        qid.setLongFileId(id);
-        newStat.setQid(qid);
-        newStat.updateSize();
-        setQID(qid);
-        setStat(newStat);
-        initRpc();
-    }
-
+  public String getIDL() {
+    return definedIDL;
+  }
 }

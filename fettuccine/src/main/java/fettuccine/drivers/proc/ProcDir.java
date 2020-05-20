@@ -16,7 +16,6 @@
 
 package fettuccine.drivers.proc;
 
-
 import ciotola.annotations.CiotolaServiceRun;
 import ciotola.annotations.CiotolaServiceStart;
 import ciotola.annotations.CiotolaServiceStop;
@@ -43,13 +42,13 @@ import java.util.concurrent.ConcurrentHashMap;
 public class ProcDir extends GelatoDirectoryControllerImpl {
 
   public static final long PROC_ID = 100l;
+  private final Logger logger = LoggerFactory.getLogger(ProcDir.class);
   private boolean shutdown = false;
-  private Map<GelatoFileDescriptor, GelatoFileControllerImpl> connectionFiles = new ConcurrentHashMap<>();
+  private Map<GelatoFileDescriptor, GelatoFileControllerImpl> connectionFiles =
+      new ConcurrentHashMap<>();
   private Gson gson = new Gson();
 
-  private final Logger logger = LoggerFactory.getLogger(ProcDir.class);
-
-    public ProcDir(GelatoServerManager serverManager) {
+  public ProcDir(GelatoServerManager serverManager) {
     super(serverManager);
     setResourceName(FettuccineConstants.PROC_DIR);
     StatStruct newStat = getStat();
@@ -72,38 +71,41 @@ public class ProcDir extends GelatoDirectoryControllerImpl {
   public void process() {
     while (!isShutdown()) {
 
-      List<GelatoFileDescriptor> activeConnections = getServerManager().getConnection().getConnections();
+      List<GelatoFileDescriptor> activeConnections =
+          getServerManager().getConnection().getConnections();
       synchronized (this) {
-
-        for(GelatoFileDescriptor file: connectionFiles.keySet()) {
-          if(!activeConnections.contains(file)) {
+        for (GelatoFileDescriptor file : connectionFiles.keySet()) {
+          if (!activeConnections.contains(file)) {
             GelatoFileControllerImpl deleted = connectionFiles.get(file);
             connectionFiles.remove(file);
             removeFile(deleted);
           }
         }
 
-        for(GelatoFileDescriptor con: activeConnections) {
-          if(!connectionFiles.containsKey(con)) {
+        for (GelatoFileDescriptor con : activeConnections) {
+          if (!connectionFiles.containsKey(con)) {
             V2TCPTransport tcpTransport = getServerManager().getConnection().getTransport(con);
             Map<String, Object> detail = new HashMap<>();
             detail.put("port", tcpTransport.getSourcePort());
             detail.put("addr", tcpTransport.getAddress());
             detail.put("id", tcpTransport.getConnectionId());
             detail.put("idlecycle", tcpTransport.getProcessedTime());
-            ByteArrayInputStream arrayInputStream = new ByteArrayInputStream(gson.toJson(detail).getBytes());
-            GelatoFileControllerImpl newFile = new GelatoFileControllerImpl(Long.toString(con.getDescriptorId()),
-                    arrayInputStream,gson.toJson(detail).getBytes().length,
+            ByteArrayInputStream arrayInputStream =
+                new ByteArrayInputStream(gson.toJson(detail).getBytes());
+            GelatoFileControllerImpl newFile =
+                new GelatoFileControllerImpl(
+                    Long.toString(con.getDescriptorId()),
+                    arrayInputStream,
+                    gson.toJson(detail).getBytes().length,
                     getServerManager().getDescriptorManager().generateDescriptor());
-            newFile.getStat().setUid(FettuccineConstants.FETTUCCINE_SVC_NAME );
+            newFile.getStat().setUid(FettuccineConstants.FETTUCCINE_SVC_NAME);
             newFile.getStat().setGid(FettuccineConstants.FETTUCCINE_SVC_GRP);
             newFile.getStat().setMuid(FettuccineConstants.FETTUCCINE_SVC_GRP);
             newFile.getStat().updateSize();
             addFile(newFile);
-            connectionFiles.put(con,newFile);
+            connectionFiles.put(con, newFile);
           }
         }
-
       }
       sleep();
     }
@@ -130,5 +132,4 @@ public class ProcDir extends GelatoDirectoryControllerImpl {
   public synchronized boolean isShutdown() {
     return shutdown;
   }
-
 }

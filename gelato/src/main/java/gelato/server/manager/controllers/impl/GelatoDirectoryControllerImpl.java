@@ -144,8 +144,6 @@ public class GelatoDirectoryControllerImpl
     this.parentDir.updateSize();
   }
 
-
-
   @Override
   public void addDirectory(GelatoDirectoryController newDirectory) {
     if (files.containsKey(newDirectory.getDirectoryName())) {

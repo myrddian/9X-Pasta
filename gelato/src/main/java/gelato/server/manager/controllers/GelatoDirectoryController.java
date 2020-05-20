@@ -38,5 +38,6 @@ public interface GelatoDirectoryController extends GelatoResourceController {
   void addDirectory(GelatoDirectoryController newDirectory);
 
   void addFile(GelatoFileController newFile);
+
   void removeFile(GelatoFileController file);
 }

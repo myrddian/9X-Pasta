@@ -14,7 +14,6 @@
  *    limitations under the License.
  */
 
-
 import agnolotti.Agnolotti;
 import agnolotti.client.RemoteClient;
 import agnolotti.server.ServiceManager;
@@ -22,38 +21,36 @@ import org.junit.Test;
 
 public class ServiceTest {
 
-    @Test
-    public void serviceInitTest() throws InterruptedException {
-        ServiceManager serviceManager = new ServiceManager(Agnolotti.DEFAULT_VER,"test", 9092,
-                "example", "example");
-        serviceManager.addRemoteService(TestBomb.class,new TestServiceProxy());
+  @Test
+  public void serviceInitTest() throws InterruptedException {
+    ServiceManager serviceManager =
+        new ServiceManager(Agnolotti.DEFAULT_VER, "test", 9092, "example", "example");
+    serviceManager.addRemoteService(TestBomb.class, new TestServiceProxy());
 
-        Thread.sleep(100);
+    Thread.sleep(100);
 
-        RemoteClient client = new RemoteClient("localhost",9092,"test", Agnolotti.DEFAULT_VER,
-               "test");
+    RemoteClient client =
+        new RemoteClient("localhost", 9092, "test", Agnolotti.DEFAULT_VER, "test");
 
-        TestBomb tst = (TestBomb) client.getRemoteService(TestBomb.class);
-        //tst.hello();
-        //tst.hello("fun");
-        //Thread.sleep(4000);
+    TestBomb tst = (TestBomb) client.getRemoteService(TestBomb.class);
+    // tst.hello();
+    // tst.hello("fun");
+    // Thread.sleep(4000);
 
-        //RemoteClient client2 = new RemoteClient("localhost",9092,"test", Agnolotti.DEFAULT_VER,
-        //        "test");
+    // RemoteClient client2 = new RemoteClient("localhost",9092,"test", Agnolotti.DEFAULT_VER,
+    //        "test");
 
-        //TestBomb tst2 = (TestBomb) client2.getRemoteService(TestBomb.class);
-        //tst2.hello();
-        //tst2.hello("fun2");
+    // TestBomb tst2 = (TestBomb) client2.getRemoteService(TestBomb.class);
+    // tst2.hello();
+    // tst2.hello("fun2");
 
-        //tst.hello("test1");
-        //tst2.hello("test2");
-        //System.out.println(tst.sayHello("tst"));
-        //System.out.println(tst.sayHello("tst2"));
-        //System.out.println(tst.sayHello("tst3"));
-        //System.out.println(tst.sayHello("tst"));
-        System.out.println(tst.sayHello(10,"bob"));
-        Thread.sleep(4000);
-
-    }
-
+    // tst.hello("test1");
+    // tst2.hello("test2");
+    // System.out.println(tst.sayHello("tst"));
+    // System.out.println(tst.sayHello("tst2"));
+    // System.out.println(tst.sayHello("tst3"));
+    // System.out.println(tst.sayHello("tst"));
+    System.out.println(tst.sayHello(10, "bob"));
+    Thread.sleep(4000);
+  }
 }

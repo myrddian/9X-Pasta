@@ -42,7 +42,6 @@ public abstract class TCPTransport implements GelatoTransport, Runnable {
   private long dutyCycle = 0;
   private long lastProcessed = 0;
 
-
   @Override
   public synchronized void close() {
     logger.info("Closing Connection");
@@ -99,9 +98,9 @@ public abstract class TCPTransport implements GelatoTransport, Runnable {
 
   private void processOutbound(OutputStream os) throws InterruptedException, IOException {
     int messages = writeMessageQueue.size();
-    if(messages == 0 )  {
-      dutyCycle = System.currentTimeMillis()  - lastProcessed;
-      if(dutyCycle >= sleepCycle) {
+    if (messages == 0) {
+      dutyCycle = System.currentTimeMillis() - lastProcessed;
+      if (dutyCycle >= sleepCycle) {
         dutyCycle = sleepCycle;
       }
       Thread.sleep(dutyCycle);

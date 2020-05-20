@@ -31,74 +31,69 @@ import java.io.InputStream;
 
 public class ClientSideTcpInputReader {
 
-    private InputStream netWorkInputStream;
-    private byte[] minHeaderBuffer = new byte[MessageRaw.minSize];
-    private boolean shutdown = false;
-    private final Logger logger = LoggerFactory.getLogger(ClientSideTcpInputReader.class);
-    private GelatoMessaging messaging;
+  public static final String INCORRECT_HEADER = "Incorrect header";
+  public static final String INVALID_BYTE_COUNT =
+      "Number of bytes read from stream does not match required amount";
+  private final Logger logger = LoggerFactory.getLogger(ClientSideTcpInputReader.class);
+  private InputStream netWorkInputStream;
+  private byte[] minHeaderBuffer = new byte[MessageRaw.minSize];
+  private boolean shutdown = false;
+  private GelatoMessaging messaging;
 
-    public static final String INCORRECT_HEADER = "Incorrect header";
-    public static final String INVALID_BYTE_COUNT = "Number of bytes read from stream does not match required amount";
+  public ClientSideTcpInputReader(InputStream inputStream, GelatoMessaging broker) {
+    netWorkInputStream = inputStream;
+    messaging = broker;
+  }
 
+  public void processMessages() throws IOException {
+    Message message = getMessage();
+    messaging.addMessageToProcess(message);
+  }
 
-    public ClientSideTcpInputReader(InputStream inputStream, GelatoMessaging broker) {
-        netWorkInputStream = inputStream;
-        messaging = broker;
+  public Message getMessage() throws IOException {
+
+    for (int byteCount = 0; byteCount < MessageRaw.minSize; ++byteCount) {
+      int val = netWorkInputStream.read();
+      if (val != -1) {
+        minHeaderBuffer[byteCount] = (byte) (val & 0xFF);
+      } else {
+        logger.error(INCORRECT_HEADER);
+        shutdown();
+        throw new IOException(INCORRECT_HEADER);
+      }
     }
-
-    public void processMessages() throws IOException {
-        Message message = getMessage();
-        messaging.addMessageToProcess(message);
+    MessageRaw minMessage = Decoder.decodeRawHeader(minHeaderBuffer);
+    Message msg = minMessage.toMessage();
+    int bytesToRead = msg.getContentSize();
+    byte[] content = new byte[bytesToRead];
+    int rsize = netWorkInputStream.read(content);
+    if (rsize != bytesToRead) {
+      logger.error(INVALID_BYTE_COUNT);
+      shutdown();
+      throw new IOException(INVALID_BYTE_COUNT);
     }
+    msg.messageContent = content;
+    return msg;
+  }
 
+  @CiotolaServiceStop
+  public synchronized void shutdown() {
+    shutdown = true;
+  }
 
-    public Message getMessage() throws IOException {
+  @CiotolaServiceStart
+  public synchronized void start() {
+    shutdown = false;
+  }
 
-        for (int byteCount = 0; byteCount < MessageRaw.minSize; ++byteCount) {
-            int val = netWorkInputStream.read();
-            if (val != -1) {
-                minHeaderBuffer[byteCount] = (byte) (val & 0xFF);
-            } else {
-                logger.error(INCORRECT_HEADER);
-                shutdown();
-                throw new IOException(INCORRECT_HEADER);
-            }
-        }
-        MessageRaw minMessage = Decoder.decodeRawHeader(minHeaderBuffer);
-        Message msg = minMessage.toMessage();
-        int bytesToRead = msg.getContentSize();
-        byte[] content = new byte[bytesToRead];
-        int rsize = netWorkInputStream.read(content);
-        if(rsize != bytesToRead) {
-            logger.error(INVALID_BYTE_COUNT);
-            shutdown();
-            throw new IOException(INVALID_BYTE_COUNT);
-        }
-        msg.messageContent = content;
-        return msg;
+  public synchronized boolean isShutdown() {
+    return shutdown;
+  }
+
+  @CiotolaServiceRun
+  public void process() throws IOException {
+    while (!isShutdown()) {
+      processMessages();
     }
-
-
-    @CiotolaServiceStop
-    public synchronized void shutdown() {
-        shutdown = true;
-    }
-
-    @CiotolaServiceStart
-    public synchronized void start() {
-        shutdown = false;
-    }
-
-    public synchronized boolean isShutdown() {
-        return shutdown;
-    }
-
-    @CiotolaServiceRun
-    public void process() throws IOException{
-        while (!isShutdown()) {
-            processMessages();
-        }
-    }
-
-
+  }
 }

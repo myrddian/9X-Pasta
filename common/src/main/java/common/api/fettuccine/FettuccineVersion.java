@@ -17,5 +17,5 @@
 package common.api.fettuccine;
 
 public interface FettuccineVersion {
-    String getVersion();
+  String getVersion();
 }

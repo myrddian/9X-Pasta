@@ -54,12 +54,11 @@ public class QIDInMemoryManager implements GelatoQIDManager {
   }
 
   @Override
-  public boolean mapResourceHandler(
-      GelatoFileDescriptor id, GelatoResourceController handler) {
+  public boolean mapResourceHandler(GelatoFileDescriptor id, GelatoResourceController handler) {
     if (resourceHandlerMap.containsKey(id.getQid().getLongFileId()) || handler == null) {
       logger.error("Resource in USE or NULL Handler");
-      if(handler != null) {
-        logger.error("Clashing mapping: " +id.getQid().getLongFileId() );
+      if (handler != null) {
+        logger.error("Clashing mapping: " + id.getQid().getLongFileId());
       } else {
         logger.error("Handler not initialized");
       }

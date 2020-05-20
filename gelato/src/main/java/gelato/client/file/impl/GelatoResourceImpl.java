@@ -28,103 +28,103 @@ import protocol.messages.response.StatResponse;
 
 public abstract class GelatoResourceImpl implements GelatoResource {
 
-    private StatStruct statStruct;
-    private GelatoFileDescriptor descriptor;
-    private GelatoMessaging messaging;
-    private final Logger logger = LoggerFactory.getLogger(GelatoResourceImpl.class);
-    private long cacheLoaded = 0;
-    private long cacheExpiry = 4;
-    private boolean resourceValid = true;
+  private final Logger logger = LoggerFactory.getLogger(GelatoResourceImpl.class);
+  private StatStruct statStruct;
+  private GelatoFileDescriptor descriptor;
+  private GelatoMessaging messaging;
+  private long cacheLoaded = 0;
+  private long cacheExpiry = 4;
+  private boolean resourceValid = true;
 
-    public GelatoResourceImpl(GelatoMessaging messaging,
-                              GelatoFileDescriptor descriptor) {
-        this.descriptor = descriptor;
-        this.messaging = messaging;
-    }
+  public GelatoResourceImpl(GelatoMessaging messaging, GelatoFileDescriptor descriptor) {
+    this.descriptor = descriptor;
+    this.messaging = messaging;
+  }
 
-    @Override
-    public synchronized void cacheValidate() {
-        logger.trace("Validating Cache entries");
-        long lifeSpan = (System.currentTimeMillis() / 1000) - cacheLoaded;
-        if (lifeSpan > cacheExpiry) {
-            refreshSelf();
-            cacheLoaded = (System.currentTimeMillis() / 1000);
-        }
+  @Override
+  public synchronized void cacheValidate() {
+    logger.trace("Validating Cache entries");
+    long lifeSpan = (System.currentTimeMillis() / 1000) - cacheLoaded;
+    if (lifeSpan > cacheExpiry) {
+      refreshSelf();
+      cacheLoaded = (System.currentTimeMillis() / 1000);
     }
+  }
 
-    public void setDescriptor(GelatoFileDescriptor newDescriptor) {
-        descriptor = newDescriptor;
-    }
-    public void setStatStruct(StatStruct newStatStruct) {
-        statStruct = newStatStruct;
-        cacheLoaded = (System.currentTimeMillis() / 1000);
-    }
+  public void setDescriptor(GelatoFileDescriptor newDescriptor) {
+    descriptor = newDescriptor;
+  }
 
-    @Override
-    public void refreshSelf() {
-        GelatoMessage<StatRequest, StatResponse> statRequest = messaging.createStatTransaction();
-        statRequest.getMessage().setFileDescriptor(descriptor.getRawFileDescriptor());
-        messaging.submitMessage(statRequest);
-        if(statRequest.getResponse() ==  null) {
-            resourceValid = false;
-            logger.error(statRequest.getErrorMessage());
-        } else {
-            setStatStruct(statRequest.getResponse().getStatStruct());
-        }
-        messaging.close(statRequest);
+  @Override
+  public void refreshSelf() {
+    GelatoMessage<StatRequest, StatResponse> statRequest = messaging.createStatTransaction();
+    statRequest.getMessage().setFileDescriptor(descriptor.getRawFileDescriptor());
+    messaging.submitMessage(statRequest);
+    if (statRequest.getResponse() == null) {
+      resourceValid = false;
+      logger.error(statRequest.getErrorMessage());
+    } else {
+      setStatStruct(statRequest.getResponse().getStatStruct());
     }
+    messaging.close(statRequest);
+  }
 
-    public boolean isResourceValid() {
-        return resourceValid;
-    }
+  public boolean isResourceValid() {
+    return resourceValid;
+  }
 
-    public void setResourceValid(boolean resourceValid) {
-        this.resourceValid = resourceValid;
-    }
+  public void setResourceValid(boolean resourceValid) {
+    this.resourceValid = resourceValid;
+  }
 
-    public long getCacheExpiry() {
-        return cacheExpiry;
-    }
+  public long getCacheExpiry() {
+    return cacheExpiry;
+  }
 
-    public void setCacheExpiry(long cacheExpiry) {
-        this.cacheExpiry = cacheExpiry;
-    }
+  public void setCacheExpiry(long cacheExpiry) {
+    this.cacheExpiry = cacheExpiry;
+  }
 
-    public StatStruct getStatStruct() {
-        return statStruct;
-    }
+  public StatStruct getStatStruct() {
+    return statStruct;
+  }
 
-    public GelatoMessaging getMessaging() {
-        return messaging;
-    }
+  public void setStatStruct(StatStruct newStatStruct) {
+    statStruct = newStatStruct;
+    cacheLoaded = (System.currentTimeMillis() / 1000);
+  }
 
-    @Override
-    public String getName() {
-        return statStruct.getName();
-    }
+  public GelatoMessaging getMessaging() {
+    return messaging;
+  }
 
-    @Override
-    public long getSize() {
-        return statStruct.getLength();
-    }
+  @Override
+  public String getName() {
+    return statStruct.getName();
+  }
 
-    @Override
-    public GelatoFileDescriptor getFileDescriptor() {
-        return descriptor;
-    }
+  @Override
+  public long getSize() {
+    return statStruct.getLength();
+  }
 
-    @Override
-    public boolean valid() {
-        return resourceValid;
-    }
+  @Override
+  public GelatoFileDescriptor getFileDescriptor() {
+    return descriptor;
+  }
 
-    @Override
-    public long getCacheLoaded() {
-        return cacheLoaded;
-    }
+  @Override
+  public boolean valid() {
+    return resourceValid;
+  }
 
-    @Override
-    public void setCacheLoaded(long cacheLoaded) {
-        this.cacheLoaded = cacheLoaded;
-    }
+  @Override
+  public long getCacheLoaded() {
+    return cacheLoaded;
+  }
+
+  @Override
+  public void setCacheLoaded(long cacheLoaded) {
+    this.cacheLoaded = cacheLoaded;
+  }
 }

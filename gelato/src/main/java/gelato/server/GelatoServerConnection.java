@@ -52,7 +52,6 @@ public class GelatoServerConnection implements GelatoConnection, GelatoConnectio
   private GelatoConnectionNotifier notifier = this;
   @CiotolaAutowire private CiotolaContext context;
 
-
   public GelatoServerConnection(GelatoDescriptorManager descriptorManager, int portNumber) {
     this.descriptorManager = descriptorManager;
     logger.debug("Starting Server on port: " + Integer.toString(portNumber));
@@ -65,8 +64,6 @@ public class GelatoServerConnection implements GelatoConnection, GelatoConnectio
       throw new RuntimeException("Unable to start server");
     }
   }
-
-
 
   public void startServer() {
     started = true;
@@ -102,12 +99,15 @@ public class GelatoServerConnection implements GelatoConnection, GelatoConnectio
     while (!shutdown) {
       try {
         Socket clientSocket = serverSocket.accept();
+        clientSocket.setTcpNoDelay(true);
         GelatoFileDescriptor fileDescriptor = descriptorManager.generateDescriptor();
-        V2ClientDescriptorHandler clientDescriptorHandler = new V2ClientDescriptorHandler(fileDescriptor);
+        V2ClientDescriptorHandler clientDescriptorHandler =
+            new V2ClientDescriptorHandler(fileDescriptor);
         logger.debug(
             "Connected Client - File Descriptor: "
                 + Long.toString(fileDescriptor.getDescriptorId()));
-        V2TCPTransport tcpTransport = new V2TCPTransport(clientSocket, fileDescriptor, clientDescriptorHandler);
+        V2TCPTransport tcpTransport =
+            new V2TCPTransport(clientSocket, fileDescriptor, clientDescriptorHandler);
         int proxy = context.injectService(clientDescriptorHandler);
         tcpTransport.setSvcProxy(proxy);
         notifier.handle(clientDescriptorHandler);

@@ -19,5 +19,5 @@ package gelato.server;
 import gelato.server.manager.v2.V2ClientDescriptorHandler;
 
 public interface GelatoConnectionNotifier {
-    boolean handle(V2ClientDescriptorHandler newConnection);
+  boolean handle(V2ClientDescriptorHandler newConnection);
 }

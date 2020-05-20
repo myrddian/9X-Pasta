@@ -19,6 +19,7 @@ package common.api.fettuccine;
 import java.util.List;
 
 public interface Mount {
-    boolean mount(String server, int port, String userName,  String point);
-    List<String> listMounts();
+  boolean mount(String server, int port, String userName, String point);
+
+  List<String> listMounts();
 }

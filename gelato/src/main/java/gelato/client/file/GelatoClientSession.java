@@ -104,7 +104,7 @@ public class GelatoClientSession implements GelatoSession {
   }
 
   @Override
-  public void setConnection(GelatoConnection connection) { }
+  public void setConnection(GelatoConnection connection) {}
 
   @Override
   public GelatoDescriptorManager getManager() {
@@ -118,7 +118,8 @@ public class GelatoClientSession implements GelatoSession {
 
   public boolean initSession() {
 
-    GelatoMessage<VersionRequest,VersionRequest> versionRequest = connection.createVersionRequest();
+    GelatoMessage<VersionRequest, VersionRequest> versionRequest =
+        connection.createVersionRequest();
     connection.submitMessage(versionRequest);
     VersionRequest rspVersion = versionRequest.getMessage();
     logger.info(
@@ -142,7 +143,7 @@ public class GelatoClientSession implements GelatoSession {
 
     // Now Attach
     GelatoFileDescriptor attachDescriptor = manager.generateDescriptor();
-    GelatoMessage<AttachRequest,AttachResponse> request = connection.createAttachTransaction();
+    GelatoMessage<AttachRequest, AttachResponse> request = connection.createAttachTransaction();
 
     request.getMessage().setUsername(getUserName());
     request.getMessage().setNamespace(getNameSpace()); // default should always be blank/empty
@@ -159,7 +160,7 @@ public class GelatoClientSession implements GelatoSession {
     return true;
   }
 
-  //This is done differently
+  // This is done differently
   public boolean authHandler() {
     return false;
   }
@@ -173,7 +174,6 @@ public class GelatoClientSession implements GelatoSession {
   public void setTags(GelatoTags tags) {
     this.tags = tags;
   }
-
 
   public boolean isUseAuth() {
     return useAuth;

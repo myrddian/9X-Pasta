@@ -39,10 +39,9 @@ public class GelatoServerManager {
   private GelatoDirectoryController rootDirectory;
   private boolean shutdown = false;
 
-
   public GelatoServerManager(int portNumber) {
-    connection = new GelatoServerConnection(descriptorManager,portNumber);
-    qidManager = new  QIDInMemoryManager();
+    connection = new GelatoServerConnection(descriptorManager, portNumber);
+    qidManager = new QIDInMemoryManager();
     parallelRequestHandler = new GelatoParallelRequestHandler(qidManager);
     setup();
   }
@@ -54,11 +53,9 @@ public class GelatoServerManager {
     setup();
   }
 
-
   private void setup() {
     serviceContainer.addDependency(this);
   }
-
 
   public void addResource(GelatoResourceController newServerResource) {
     qidManager.mapResourceHandler(newServerResource.getFileDescriptor(), newServerResource);
@@ -103,7 +100,7 @@ public class GelatoServerManager {
       try {
         Thread.sleep(5000);
       } catch (InterruptedException e) {
-        logger.error("Server Manager Interrupted" , e);
+        logger.error("Server Manager Interrupted", e);
         shutdown = true;
         return;
       }
@@ -127,5 +124,4 @@ public class GelatoServerManager {
     ROUNDROBIN,
     SESSION_CONTENTION
   }
-
 }

@@ -40,7 +40,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-public class GelatoDirectoryImpl extends GelatoFileImpl implements GelatoDirectory{
+public class GelatoDirectoryImpl extends GelatoFileImpl implements GelatoDirectory {
 
   public static final String ERROR_INIT_STAT = "Unable to STAT Directory";
   public static final String ERROR_READ_SIZE_STAT =
@@ -53,9 +53,8 @@ public class GelatoDirectoryImpl extends GelatoFileImpl implements GelatoDirecto
   private GelatoDirectoryImpl parent = this;
   private GelatoSession session;
 
-
-
-  public GelatoDirectoryImpl(GelatoSession session, GelatoMessaging messaging, GelatoFileDescriptor descriptor) {
+  public GelatoDirectoryImpl(
+      GelatoSession session, GelatoMessaging messaging, GelatoFileDescriptor descriptor) {
     super(messaging, descriptor);
     this.session = session;
   }
@@ -104,23 +103,25 @@ public class GelatoDirectoryImpl extends GelatoFileImpl implements GelatoDirecto
     List<StatStruct> entries = refreshStatStruct();
     for (StatStruct entry : entries) {
       if (entry.getName().equals(GelatoDirectoryController.CURRENT_DIR)
-              || entry.getName().equals(GelatoDirectoryController.PARENT_DIR)) {
+          || entry.getName().equals(GelatoDirectoryController.PARENT_DIR)) {
         continue;
       }
-      if (directoryMap.containsKey(entry.getName()) == false && entry.getQid().getType() == P9Protocol.QID_DIR) {
+      if (directoryMap.containsKey(entry.getName()) == false
+          && entry.getQid().getType() == P9Protocol.QID_DIR) {
         walkToTarget(entry);
       }
-      if(fileMap.containsKey(entry.getName()) == false && entry.getQid().getType() == P9Protocol.QID_FILE) {
+      if (fileMap.containsKey(entry.getName()) == false
+          && entry.getQid().getType() == P9Protocol.QID_FILE) {
         walkToTarget(entry);
       }
     }
   }
 
-  private void addFile(StatStruct newEntry, WalkResponse response, GelatoFileDescriptor descriptor) {
-    GelatoFileImpl newDir =
-            new GelatoFileImpl(getMessaging(), descriptor);
+  private void addFile(
+      StatStruct newEntry, WalkResponse response, GelatoFileDescriptor descriptor) {
+    GelatoFileImpl newDir = new GelatoFileImpl(getMessaging(), descriptor);
     String path = "";
-    if(getName().equals(GelatoDirectoryController.ROOT_DIR)) {
+    if (getName().equals(GelatoDirectoryController.ROOT_DIR)) {
       path = "/";
     } else {
       path = getPath() + getName() + GelatoDirectoryController.ROOT_DIR;
@@ -129,18 +130,18 @@ public class GelatoDirectoryImpl extends GelatoFileImpl implements GelatoDirecto
     GelatoClientCache.getInstance().addResource(newDir);
     fileMap.put(newEntry.getName(), newDir);
     logger.debug(
-            "Found FILE : "
-                    + newEntry.getName()
-                    + " Mapped to Resource: "
-                    + Long.toString(descriptor.getDescriptorId()));
+        "Found FILE : "
+            + newEntry.getName()
+            + " Mapped to Resource: "
+            + Long.toString(descriptor.getDescriptorId()));
   }
 
-  private void addDirectory(StatStruct newEntry, WalkResponse response, GelatoFileDescriptor descriptor) {
-    GelatoDirectoryImpl newDir =
-            new GelatoDirectoryImpl(session, getMessaging(), descriptor);
+  private void addDirectory(
+      StatStruct newEntry, WalkResponse response, GelatoFileDescriptor descriptor) {
+    GelatoDirectoryImpl newDir = new GelatoDirectoryImpl(session, getMessaging(), descriptor);
     newDir.setParent(this);
     String path = "";
-    if(getName().equals(GelatoDirectoryController.ROOT_DIR)) {
+    if (getName().equals(GelatoDirectoryController.ROOT_DIR)) {
       path = "/";
     } else {
       path = getPath() + getName() + GelatoDirectoryController.ROOT_DIR;
@@ -149,12 +150,12 @@ public class GelatoDirectoryImpl extends GelatoFileImpl implements GelatoDirecto
     GelatoClientCache.getInstance().addResource(newDir);
     directoryMap.put(newEntry.getName(), newDir);
     logger.debug(
-            "Found : "
-                    + newEntry.getName()
-                    + " Mapped to Resource: "
-                    + Long.toString(descriptor.getDescriptorId())
-                    + " Path: "
-                    + newDir.getPath());
+        "Found : "
+            + newEntry.getName()
+            + " Mapped to Resource: "
+            + Long.toString(descriptor.getDescriptorId())
+            + " Path: "
+            + newDir.getPath());
   }
 
   private void walkToTarget(StatStruct newEntry) {
@@ -166,18 +167,17 @@ public class GelatoDirectoryImpl extends GelatoFileImpl implements GelatoDirecto
 
     getMessaging().submitMessage(walkRequest);
     WalkResponse walkResponse = walkRequest.getResponse();
-    if(walkRequest.isError()) {
+    if (walkRequest.isError()) {
       logger.error("Error validating cache for object " + walkRequest.getErrorMessage());
       return;
     }
     newFileDescriptor.setQid(walkResponse.getQID());
     if (newEntry.getQid().getType() == P9Protocol.QID_DIR) {
-      addDirectory(newEntry,walkResponse,newFileDescriptor);
+      addDirectory(newEntry, walkResponse, newFileDescriptor);
     } else {
-      addFile(newEntry,walkResponse,newFileDescriptor);
+      addFile(newEntry, walkResponse, newFileDescriptor);
     }
     getMessaging().close(walkRequest);
-
   }
 
   private List<StatStruct> refreshStatStruct() {
@@ -188,7 +188,7 @@ public class GelatoDirectoryImpl extends GelatoFileImpl implements GelatoDirecto
     getMessaging().submitMessage(statRequest);
     StatResponse response = statRequest.getResponse();
     getMessaging().close(statRequest);
-    if(response == null) {
+    if (response == null) {
       logger.error(ERROR_INIT_STAT);
       setResourceValid(false);
       logger.error(statRequest.getErrorMessage());
@@ -196,7 +196,7 @@ public class GelatoDirectoryImpl extends GelatoFileImpl implements GelatoDirecto
     }
     StatStruct statStruct = response.getStatStruct();
     setStatStruct(statStruct);
-        // Process the read request for Stat entries
+    // Process the read request for Stat entries
 
     // directory is empty
     if (response.getStatStruct().getLength() == 0) {
@@ -215,7 +215,7 @@ public class GelatoDirectoryImpl extends GelatoFileImpl implements GelatoDirecto
 
     InputStream readStream = getFileInputStream();
     int content;
-    int location =0;
+    int location = 0;
     try {
       while ((content = readStream.read()) != -1) {
         statBuff[location] = (byte) content;

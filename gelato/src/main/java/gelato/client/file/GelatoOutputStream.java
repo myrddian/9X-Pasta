@@ -33,82 +33,80 @@ import java.util.Arrays;
 
 public class GelatoOutputStream extends OutputStream {
 
-    private byte[] buffer = new byte[Gelato.DEFAULT_NET_IO_MEM_BUFFER];
-    private int bufferPtr = 0;
-    private long ioNetworkSize = 0;
-    private GelatoMessaging messaging;
-    private GelatoFileDescriptor fileDescriptor;
-    private final Logger logger = LoggerFactory.getLogger(GelatoOutputStream.class);
-    private boolean closed = false;
+  private final Logger logger = LoggerFactory.getLogger(GelatoOutputStream.class);
+  private byte[] buffer = new byte[Gelato.DEFAULT_NET_IO_MEM_BUFFER];
+  private int bufferPtr = 0;
+  private long ioNetworkSize = 0;
+  private GelatoMessaging messaging;
+  private GelatoFileDescriptor fileDescriptor;
+  private boolean closed = false;
 
+  public GelatoOutputStream(
+      GelatoMessaging messaging, GelatoFileDescriptor descriptor, long ioSize) {
 
-    public GelatoOutputStream( GelatoMessaging messaging,
-                               GelatoFileDescriptor descriptor, long ioSize) {
+    this.messaging = messaging;
+    this.fileDescriptor = descriptor;
+    this.ioNetworkSize = ioSize;
+  }
 
-        this.messaging = messaging;
-        this.fileDescriptor = descriptor;
-        this.ioNetworkSize = ioSize;
+  private void sendMessage(int from, int size) throws IOException {
+
+    GelatoMessage<WriteRequest, WriteResponse> writeMessage = messaging.createWriteTransaction();
+    writeMessage.getMessage().setFileDescriptor(fileDescriptor.getRawFileDescriptor());
+    writeMessage.getMessage().setByteCount(bufferPtr);
+    writeMessage.getMessage().setWriteData(Arrays.copyOfRange(buffer, from, size));
+    messaging.submitAndClose(writeMessage);
+  }
+
+  private void multiBufferFlush() throws IOException {
+    int flushCounter = 0;
+    while (flushCounter != buffer.length) {
+      int totalBytes = buffer.length - flushCounter;
+      if (totalBytes > ioNetworkSize) {
+        totalBytes = (int) ioNetworkSize;
+      }
+      sendMessage(flushCounter, totalBytes);
+      flushCounter += totalBytes;
     }
+  }
 
-    private void sendMessage(int from, int size) throws IOException{
+  private void singleBufferFlush() throws IOException {
+    sendMessage(0, bufferPtr);
+  }
 
-        GelatoMessage<WriteRequest, WriteResponse> writeMessage = messaging.createWriteTransaction();
-        writeMessage.getMessage().setFileDescriptor(fileDescriptor.getRawFileDescriptor());
-        writeMessage.getMessage().setByteCount(bufferPtr);
-        writeMessage.getMessage().setWriteData(Arrays.copyOfRange(buffer,from,size));
-        messaging.submitAndClose(writeMessage);
+  @Override
+  public void flush() throws IOException {
+    if (closed) {
+      throw new IOException("Stream CLOSED");
     }
-
-    private void multiBufferFlush() throws IOException{
-        int flushCounter = 0;
-        while(flushCounter != buffer.length) {
-            int totalBytes = buffer.length - flushCounter;
-            if(totalBytes > ioNetworkSize) {
-                totalBytes = (int) ioNetworkSize;
-            }
-            sendMessage(flushCounter, totalBytes);
-            flushCounter += totalBytes;
-        }
+    if (bufferPtr > ioNetworkSize) {
+      multiBufferFlush();
+    } else {
+      singleBufferFlush();
     }
+    bufferPtr = 0;
+  }
 
-    private void singleBufferFlush() throws  IOException{
-        sendMessage(0, bufferPtr);
+  @Override
+  public void close() throws IOException {
+    if (!closed) {
+      flush();
+      closed = true;
+      GelatoMessage<CloseRequest, CloseResponse> closeRequest = messaging.createCloseTransaction();
+      closeRequest.getMessage().setFileID(fileDescriptor.getRawFileDescriptor());
+      messaging.submitAndClose(closeRequest);
     }
+  }
 
-    @Override
-    public void flush() throws IOException {
-        if(closed) {
-            throw new IOException("Stream CLOSED");
-        }
-        if(bufferPtr > ioNetworkSize) {
-            multiBufferFlush();
-        } else {
-            singleBufferFlush();
-        }
-        bufferPtr = 0;
+  @Override
+  public void write(int b) throws IOException {
+    if (closed) {
+      throw new IOException("Stream closed");
     }
-
-    @Override
-    public void close() throws IOException {
-        if(!closed) {
-            flush();
-            closed = true;
-            GelatoMessage<CloseRequest, CloseResponse> closeRequest = messaging.createCloseTransaction();
-            closeRequest.getMessage().setFileID(fileDescriptor.getRawFileDescriptor());
-            messaging.submitAndClose(closeRequest);
-        }
+    if (bufferPtr >= buffer.length) {
+      flush();
     }
-
-    @Override
-    public void write(int b) throws IOException {
-        if(closed) {
-            throw new IOException("Stream closed");
-        }
-        if(bufferPtr >= buffer.length) {
-            flush();
-        }
-        buffer[bufferPtr] = (byte) b;
-        bufferPtr++;
-    }
-
+    buffer[bufferPtr] = (byte) b;
+    bufferPtr++;
+  }
 }

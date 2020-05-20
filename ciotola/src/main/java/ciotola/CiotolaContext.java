@@ -25,20 +25,24 @@ public interface CiotolaContext {
   Collection<CiotolaServiceInterface> getServices();
 
   void addService(CiotolaServiceInterface newService);
+
   void addService(Object newService);
 
   void removeService(int serviceId);
 
   int injectService(CiotolaServiceInterface newService);
+
   int injectService(CiotolaServiceInterface newService, boolean skipInjection);
+
   int injectService(Object newService, boolean skipInjection);
+
   int injectService(Object newService);
 
   void injectDependencies(Object newService);
 
   void addDependency(Object dependency);
-  void addDependency(Class name, Object wire);
 
+  void addDependency(Class name, Object wire);
 
   boolean startContainer();
 
@@ -55,9 +59,14 @@ public interface CiotolaContext {
   void setExecutorService(ExecutorService executorService);
 
   int threadCapacity();
+
   long getConnectionTimeOut();
+
   void setConnectionTimeOut(long connectionTimeOut);
+
   void execute(Runnable job, long key);
+
   void execute(CiotolaConnectionService connectionService);
+
   void stop();
 }

@@ -18,5 +18,5 @@ package common;
 
 public class Version {
 
-    public final static String SUITE_VERSION = "1.0.0-SNAPSHOT";
+  public static final String SUITE_VERSION = "1.0.0-SNAPSHOT";
 }

@@ -29,5 +29,6 @@ public interface GelatoQIDManager {
   boolean mapResourceHandler(GelatoFileDescriptor id, GelatoResourceController handler);
 
   GelatoResourceController getHandler(GelatoFileDescriptor id);
+
   boolean removeResource(GelatoFileDescriptor id);
 }

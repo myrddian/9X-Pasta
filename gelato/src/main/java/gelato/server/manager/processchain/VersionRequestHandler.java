@@ -20,6 +20,5 @@ import gelato.server.manager.RequestConnection;
 import protocol.messages.VersionRequest;
 
 public interface VersionRequestHandler {
-    boolean versionRequest(RequestConnection connection,
-                           VersionRequest versionRequest);
+  boolean versionRequest(RequestConnection connection, VersionRequest versionRequest);
 }

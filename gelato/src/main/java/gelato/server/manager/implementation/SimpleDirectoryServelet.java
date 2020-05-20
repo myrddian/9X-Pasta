@@ -30,7 +30,8 @@ public class SimpleDirectoryServelet extends GelatoDirectoryControllerImpl {
 
   private final Logger logger = LoggerFactory.getLogger(SimpleDirectoryServelet.class);
 
-  public SimpleDirectoryServelet(GelatoServerManager serverManager,long resourceDescriptor, String name) {
+  public SimpleDirectoryServelet(
+      GelatoServerManager serverManager, long resourceDescriptor, String name) {
     super(serverManager);
     setResourceName(name);
     StatStruct newStat = getStat();

@@ -21,13 +21,20 @@ import protocol.StatStruct;
 
 public interface GelatoResource {
   String getName();
-  long getSize();
-  StatStruct getStatStruct();
-  GelatoFileDescriptor getFileDescriptor();
-  boolean valid();
-  public void cacheValidate();
-  void refreshSelf();
-  long getCacheLoaded();
-  void setCacheLoaded(long cacheLoaded);
 
+  long getSize();
+
+  StatStruct getStatStruct();
+
+  GelatoFileDescriptor getFileDescriptor();
+
+  boolean valid();
+
+  public void cacheValidate();
+
+  void refreshSelf();
+
+  long getCacheLoaded();
+
+  void setCacheLoaded(long cacheLoaded);
 }

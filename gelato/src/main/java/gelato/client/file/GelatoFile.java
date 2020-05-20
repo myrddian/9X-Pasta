@@ -21,8 +21,12 @@ import java.io.OutputStream;
 
 public interface GelatoFile extends GelatoResource {
   InputStream getFileInputStream();
+
   OutputStream getFileOutputStream();
+
   OutputStream getFileOutputStream(int MODE);
+
   String getFullName();
+
   String getPath();
 }

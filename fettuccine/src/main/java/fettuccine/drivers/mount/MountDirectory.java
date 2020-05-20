@@ -38,81 +38,82 @@ import java.util.concurrent.ConcurrentHashMap;
 
 public class MountDirectory extends GelatoDirectoryControllerImpl {
 
-    private Map<String, RemoteResource> artefacts = new ConcurrentHashMap<>();
-    private MountPoint mountPoint;
-    private GelatoFileDescriptor proxiedDescriptor ;
-    private GelatoResource resource;
-    private String mountPointName;
+  private Map<String, RemoteResource> artefacts = new ConcurrentHashMap<>();
+  private MountPoint mountPoint;
+  private GelatoFileDescriptor proxiedDescriptor;
+  private GelatoResource resource;
+  private String mountPointName;
 
+  public MountDirectory(
+      GelatoServerManager gelatoServerManager,
+      MountPoint service,
+      GelatoResource resource,
+      String mountName) {
+    super(gelatoServerManager);
+    mountPoint = service;
+    proxiedDescriptor = mountPoint.getMountPoint().getClientSession().getFileServiceRoot();
+    this.resource = resource;
+    mountPointName = mountName;
+    getStat();
+  }
 
-    public MountDirectory(GelatoServerManager gelatoServerManager, MountPoint service, GelatoResource resource, String mountName) {
-        super(gelatoServerManager);
-        mountPoint = service;
-        proxiedDescriptor = mountPoint.getMountPoint().getClientSession().getFileServiceRoot();
-        this.resource = resource;
-        mountPointName = mountName;
-        getStat();
+  @Override
+  public StatStruct getStat() {
+    resource.refreshSelf();
+    StatStruct background = resource.getStatStruct().duplicate();
+    background.setName(mountPointName);
+    background.updateSize();
+    getResourceController().setStat(background);
+    return background;
+  }
+
+  @Override
+  public boolean processRequest(
+      GelatoConnection connection,
+      GelatoFileDescriptor descriptor,
+      GelatoSession session,
+      Message request) {
+
+    if (request.messageType == P9Protocol.TSTAT) {
+      StatRequest statRequest = Decoder.decodeStatRequest(request);
+      StatResponse rsp = new StatResponse();
+      rsp.setStatStruct(getStat());
+      rsp.setTag(request.tag);
+      connection.sendMessage(descriptor, rsp.toMessage());
+      return true;
     }
 
-    @Override
-    public StatStruct getStat() {
-        resource.refreshSelf();
-        StatStruct background = resource.getStatStruct().duplicate();
-        background.setName(mountPointName);
-        background.updateSize();
-        getResourceController().setStat(background);
-        return background;
+    Message rewrite = request;
+
+    if (request.messageType == P9Protocol.TOPEN) {
+      OpenRequest decoded = Decoder.decodeOpenRequest(request);
+      decoded.setFileDescriptor(proxiedDescriptor.getRawFileDescriptor());
+      rewrite = decoded.toMessage();
     }
 
-    @Override
-    public boolean processRequest(
-            GelatoConnection connection,
-            GelatoFileDescriptor descriptor,
-            GelatoSession session,
-            Message request) {
-
-        if(request.messageType == P9Protocol.TSTAT) {
-            StatRequest statRequest = Decoder.decodeStatRequest(request);
-            StatResponse rsp = new StatResponse();
-            rsp.setStatStruct(getStat());
-            rsp.setTag(request.tag);
-            connection.sendMessage(descriptor,rsp.toMessage());
-            return true;
-        }
-
-        Message rewrite = request;
-
-        if(request.messageType == P9Protocol.TOPEN) {
-            OpenRequest decoded = Decoder.decodeOpenRequest(request);
-            decoded.setFileDescriptor(proxiedDescriptor.getRawFileDescriptor());
-            rewrite = decoded.toMessage();
-        }
-
-        if(request.messageType == P9Protocol.TREAD) {
-            ReadRequest decoded = Decoder.decodeReadRequest(request);
-            decoded.setFileDescriptor(proxiedDescriptor.getRawFileDescriptor());
-            rewrite = decoded.toMessage();
-        }
-
-        if(request.messageType == P9Protocol.TWALK) {
-            WalkRequest walk = Decoder.decodeWalkRequest(request);
-            RemoteResource mappedSource = artefacts.get(walk.getTargetFile());
-            GelatoFileDescriptor clientDescriptor =
-                    generateDescriptor(getQID(), walk.getNewDecriptor());
-            session.getManager().mapQID(clientDescriptor, mappedSource.getFileDescriptor());
-            walk.setBaseDescriptor(proxiedDescriptor.getRawFileDescriptor());
-            rewrite = walk.toMessage();
-        }
-
-
-        RequestConnection requestConnection = createConnection(connection,descriptor,session, request.tag);
-        mountPoint.sendProxyMessage(rewrite,requestConnection);
-
-        return true;
+    if (request.messageType == P9Protocol.TREAD) {
+      ReadRequest decoded = Decoder.decodeReadRequest(request);
+      decoded.setFileDescriptor(proxiedDescriptor.getRawFileDescriptor());
+      rewrite = decoded.toMessage();
     }
 
-    public void addArtefact(RemoteResource newArtefact){
-        artefacts.put(newArtefact.resourceName(),newArtefact);
+    if (request.messageType == P9Protocol.TWALK) {
+      WalkRequest walk = Decoder.decodeWalkRequest(request);
+      RemoteResource mappedSource = artefacts.get(walk.getTargetFile());
+      GelatoFileDescriptor clientDescriptor = generateDescriptor(getQID(), walk.getNewDecriptor());
+      session.getManager().mapQID(clientDescriptor, mappedSource.getFileDescriptor());
+      walk.setBaseDescriptor(proxiedDescriptor.getRawFileDescriptor());
+      rewrite = walk.toMessage();
     }
 
+    RequestConnection requestConnection =
+        createConnection(connection, descriptor, session, request.tag);
+    mountPoint.sendProxyMessage(rewrite, requestConnection);
+
+    return true;
+  }
+
+  public void addArtefact(RemoteResource newArtefact) {
+    artefacts.put(newArtefact.resourceName(), newArtefact);
+  }
 }

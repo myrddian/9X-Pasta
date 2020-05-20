@@ -28,52 +28,58 @@ import java.util.Map;
 
 public class RemoteServiceFactory {
 
-    private GelatoDescriptorManager descriptorManager;
-    private GelatoServerManager manager;
-    public static final SystemMapper typeMapper = new SystemMapper();
+  public static final SystemMapper typeMapper = new SystemMapper();
+  private GelatoDescriptorManager descriptorManager;
+  private GelatoServerManager manager;
 
-    public RemoteServiceFactory(GelatoServerManager serverManager) {
-        descriptorManager = serverManager.getDescriptorManager();
-        manager = serverManager;
+  public RemoteServiceFactory(GelatoServerManager serverManager) {
+    descriptorManager = serverManager.getDescriptorManager();
+    manager = serverManager;
+  }
+
+  public static String getMethodDecorator(Method method) {
+    int count = method.getParameterCount();
+    String methodTypes = "@" + method.getName();
+    for (Parameter parameter : method.getParameters()) {
+      methodTypes =
+          methodTypes
+              + "$"
+              + parameter.getName()
+              + "-"
+              + typeMapper.mapGenericName(parameter.getType().getTypeName());
+    }
+    return methodTypes + "#count:" + Integer.toString(count);
+  }
+
+  private Map<String, RemoteMethodStrategy> pickStrategies(Method[] methods, Object service) {
+    Map<String, RemoteMethodStrategy> retVa = new HashMap<>();
+    for (Method method : methods) {
+      RemoteMethodStrategy strategy =
+          new RemoteMethodStrategy(
+              method, service, descriptorManager.generateDescriptor().getDescriptorId());
+      retVa.put(strategy.methodDecorator(), strategy);
+    }
+    return retVa;
+  }
+
+  public RemoteServiceProxyDirectory generateRpc(Class remoteInterface, Object service) {
+
+    if (!remoteInterface.isInterface()) {
+      throw new RuntimeException("Must be an Interace");
     }
 
-    private Map<String, RemoteMethodStrategy> pickStrategies(Method [] methods, Object service) {
-        Map<String, RemoteMethodStrategy> retVa = new HashMap<>();
-        for(Method method:methods) {
-            RemoteMethodStrategy strategy = new RemoteMethodStrategy(method, service, descriptorManager.generateDescriptor().getDescriptorId());
-            retVa.put(strategy.methodDecorator(), strategy);
-        }
-        return retVa;
+    if (!remoteInterface.isInstance(service)) {
+      throw new RuntimeException("Service must implement Interface");
     }
-
-    public static String getMethodDecorator(Method method) {
-        int count = method.getParameterCount();
-        String methodTypes = "@"+method.getName();
-        for(Parameter parameter:method.getParameters()) {
-            methodTypes = methodTypes+"$"+parameter.getName()+"-"+typeMapper.mapGenericName(parameter.getType().getTypeName());
-        }
-        return methodTypes+"#count:"+Integer.toString(count);
-    }
-
-    public RemoteServiceProxyDirectory generateRpc(Class remoteInterface, Object service) {
-
-        if(!remoteInterface.isInterface()) {
-            throw new RuntimeException("Must be an Interace");
-        }
-
-        if(!remoteInterface.isInstance(service)) {
-            throw new RuntimeException("Service must implement Interface");
-        }
-        ServiceProxySerialiser proxy = new ServiceProxySerialiser(service);
-        String objectName = remoteInterface.getName();
-        Method [] methodList = remoteInterface.getDeclaredMethods();
-        Map<String, RemoteMethodStrategy>  strategyMap = pickStrategies(methodList, service);
-        GelatoFileDescriptor newDescriptor = descriptorManager.generateDescriptor();
-        newDescriptor.getQid().setLongFileId(newDescriptor.getDescriptorId());
-        RemoteServiceProxyDirectory retVal =  new RemoteServiceProxyDirectory(strategyMap, objectName,
-                newDescriptor.getDescriptorId(), manager);
-        return retVal;
-    }
-
-
+    ServiceProxySerialiser proxy = new ServiceProxySerialiser(service);
+    String objectName = remoteInterface.getName();
+    Method[] methodList = remoteInterface.getDeclaredMethods();
+    Map<String, RemoteMethodStrategy> strategyMap = pickStrategies(methodList, service);
+    GelatoFileDescriptor newDescriptor = descriptorManager.generateDescriptor();
+    newDescriptor.getQid().setLongFileId(newDescriptor.getDescriptorId());
+    RemoteServiceProxyDirectory retVal =
+        new RemoteServiceProxyDirectory(
+            strategyMap, objectName, newDescriptor.getDescriptorId(), manager);
+    return retVal;
+  }
 }

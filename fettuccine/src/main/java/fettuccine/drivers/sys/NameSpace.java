@@ -32,40 +32,40 @@ import java.util.concurrent.ConcurrentHashMap;
 
 public class NameSpace implements FettuccineNameSpace {
 
-    private GelatoServerManager serverManager;
-    private final Logger logger = LoggerFactory.getLogger(NameSpace.class);
-    private Map<String, GelatoDirectoryControllerImpl> nameSpace = new ConcurrentHashMap<>();
-    private GelatoDirectoryController rootNsDir;
+  private final Logger logger = LoggerFactory.getLogger(NameSpace.class);
+  private GelatoServerManager serverManager;
+  private Map<String, GelatoDirectoryControllerImpl> nameSpace = new ConcurrentHashMap<>();
+  private GelatoDirectoryController rootNsDir;
 
-    public NameSpace(GelatoServerManager server) {
-        serverManager = server;
-        rootNsDir = new GelatoDirectoryControllerImpl(serverManager);
-        rootNsDir.setDirectoryName(FettuccineConstants.NS_DIR);
-        GelatoFileDescriptor desc = serverManager.getDescriptorManager().generateDescriptor();
-        desc.getQid().setLongFileId(desc.getDescriptorId());
-        rootNsDir.setFileDescriptor(desc);
-        serverManager.getRoot().addDirectory(rootNsDir);
-    }
+  public NameSpace(GelatoServerManager server) {
+    serverManager = server;
+    rootNsDir = new GelatoDirectoryControllerImpl(serverManager);
+    rootNsDir.setDirectoryName(FettuccineConstants.NS_DIR);
+    GelatoFileDescriptor desc = serverManager.getDescriptorManager().generateDescriptor();
+    desc.getQid().setLongFileId(desc.getDescriptorId());
+    rootNsDir.setFileDescriptor(desc);
+    serverManager.getRoot().addDirectory(rootNsDir);
+  }
 
-    @Override
-    public List<String> getNameSpaces() {
-        return new ArrayList<>(nameSpace.keySet());
-    }
+  @Override
+  public List<String> getNameSpaces() {
+    return new ArrayList<>(nameSpace.keySet());
+  }
 
-    @Override
-    public boolean createNameSpace(String nsName) {
-        GelatoDirectoryControllerImpl newDir = new GelatoDirectoryControllerImpl(serverManager);
-        newDir.setDirectoryName(nsName);
-        GelatoFileDescriptor desc = serverManager.getDescriptorManager().generateDescriptor();
-        desc.getQid().setLongFileId(desc.getDescriptorId());
-        newDir.setFileDescriptor(desc);
-        rootNsDir.addDirectory(newDir);
-        nameSpace.put(nsName,newDir);
-        return true;
-    }
+  @Override
+  public boolean createNameSpace(String nsName) {
+    GelatoDirectoryControllerImpl newDir = new GelatoDirectoryControllerImpl(serverManager);
+    newDir.setDirectoryName(nsName);
+    GelatoFileDescriptor desc = serverManager.getDescriptorManager().generateDescriptor();
+    desc.getQid().setLongFileId(desc.getDescriptorId());
+    newDir.setFileDescriptor(desc);
+    rootNsDir.addDirectory(newDir);
+    nameSpace.put(nsName, newDir);
+    return true;
+  }
 
-    @Override
-    public boolean deleteNameSpace(String nsName) {
-        return false;
-    }
+  @Override
+  public boolean deleteNameSpace(String nsName) {
+    return false;
+  }
 }

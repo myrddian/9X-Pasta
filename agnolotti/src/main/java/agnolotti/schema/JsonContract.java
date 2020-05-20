@@ -24,55 +24,52 @@ import java.util.Map;
 
 public class JsonContract {
 
-    private Map<String,Object> jsonMapping;
-    private boolean isReturnMethod = true;
-    private boolean isParameterMethod = true;
-    private Method invocationTarget;
+  private Map<String, Object> jsonMapping;
+  private boolean isReturnMethod = true;
+  private boolean isParameterMethod = true;
+  private Method invocationTarget;
 
+  public Map<String, Object> getJsonMapping() {
+    return jsonMapping;
+  }
 
-    public Map<String, Object> getJsonMapping() {
-        return jsonMapping;
-    }
+  public void setJsonMapping(Map<String, Object> jsonMapping) {
+    this.jsonMapping = jsonMapping;
+  }
 
-    public void setJsonMapping(Map<String, Object> jsonMapping) {
-        this.jsonMapping = jsonMapping;
-    }
+  public boolean isReturnMethod() {
+    return isReturnMethod;
+  }
 
-    public boolean isReturnMethod() {
-        return isReturnMethod;
-    }
+  public void setReturnMethod(boolean returnMethod) {
+    isReturnMethod = returnMethod;
+  }
 
-    public void setReturnMethod(boolean returnMethod) {
-        isReturnMethod = returnMethod;
-    }
+  public boolean isParameterMethod() {
+    return isParameterMethod;
+  }
 
-    public boolean isParameterMethod() {
-        return isParameterMethod;
-    }
+  public void setParameterMethod(boolean parameterMethod) {
+    isParameterMethod = parameterMethod;
+  }
 
-    public void setParameterMethod(boolean parameterMethod) {
-        isParameterMethod = parameterMethod;
-    }
+  public boolean isNoParameters() {
+    return !isParameterMethod;
+  }
 
-    public boolean isNoParameters() {
-        return !isParameterMethod;
-    }
+  public boolean isVoidMethod() {
+    return !isReturnMethod;
+  }
 
-    public boolean isVoidMethod() {
-        return !isReturnMethod;
-    }
+  public Method getInvocationTarget() {
+    return invocationTarget;
+  }
 
-    public Method getInvocationTarget() {
-        return invocationTarget;
-    }
+  public void setInvocationTarget(Method invocationTarget) {
+    this.invocationTarget = invocationTarget;
+  }
 
-    public void setInvocationTarget(Method invocationTarget) {
-        this.invocationTarget = invocationTarget;
-    }
-
-    public List<Object> getArrayList() {
-        return (List) jsonMapping.get(Agnolotti.PARAMETERS);
-    }
-
-
+  public List<Object> getArrayList() {
+    return (List) jsonMapping.get(Agnolotti.PARAMETERS);
+  }
 }

@@ -21,6 +21,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class Gelato {
+  // 256 KB buffer for network io
+  public static final int DEFAULT_NET_IO_MEM_BUFFER = 256 * 1024;
+  public static final String DEFAULT_NAME_SPACE = "";
   final Logger logger = LoggerFactory.getLogger(Gelato.class);
   private GelatoTagManager tagManager = new GelatoTagManager();
   private GelatoDescriptorManager descriptorManager = new GelatoDescriptorManager();
@@ -43,15 +46,8 @@ public class Gelato {
     return connection;
   }
 
-
   public enum MODE {
     SERVER,
     CLIENT
   }
-
-
-
-  //256 KB buffer for network io
-  public final static int DEFAULT_NET_IO_MEM_BUFFER = 256*1024;
-  public final static String DEFAULT_NAME_SPACE = "";
 }

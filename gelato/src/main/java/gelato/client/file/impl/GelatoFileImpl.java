@@ -30,9 +30,9 @@ import protocol.messages.response.OpenResponse;
 import java.io.InputStream;
 import java.io.OutputStream;
 
-public class GelatoFileImpl  extends GelatoResourceImpl implements GelatoFile {
+public class GelatoFileImpl extends GelatoResourceImpl implements GelatoFile {
 
-  private String filePath="";
+  private String filePath = "";
 
   public GelatoFileImpl(GelatoMessaging messaging, GelatoFileDescriptor descriptor) {
     super(messaging, descriptor);
@@ -49,7 +49,11 @@ public class GelatoFileImpl  extends GelatoResourceImpl implements GelatoFile {
     openRequest.getMessage().setFileDescriptor(getFileDescriptor().getRawFileDescriptor());
     openRequest.getMessage().setMode((byte) P9Protocol.OPEN_MODE_OREAD);
     getMessaging().submitAndClose(openRequest);
-    return new GelatoInputStream(getMessaging(),getFileDescriptor(),P9Protocol.MAX_MSG_CONTENT_SIZE,localStruct.getLength());
+    return new GelatoInputStream(
+        getMessaging(),
+        getFileDescriptor(),
+        P9Protocol.MAX_MSG_CONTENT_SIZE,
+        localStruct.getLength());
   }
 
   @Override
@@ -63,7 +67,8 @@ public class GelatoFileImpl  extends GelatoResourceImpl implements GelatoFile {
     openRequest.getMessage().setFileDescriptor(getFileDescriptor().getRawFileDescriptor());
     openRequest.getMessage().setMode((byte) MODE);
     getMessaging().submitAndClose(openRequest);
-    return new GelatoOutputStream(getMessaging(),getFileDescriptor(),P9Protocol.MAX_MSG_CONTENT_SIZE);
+    return new GelatoOutputStream(
+        getMessaging(), getFileDescriptor(), P9Protocol.MAX_MSG_CONTENT_SIZE);
   }
 
   @Override
@@ -75,6 +80,4 @@ public class GelatoFileImpl  extends GelatoResourceImpl implements GelatoFile {
   public String getFullName() {
     return filePath + "/" + getName();
   }
-
-
 }

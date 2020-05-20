@@ -32,45 +32,44 @@ import java.util.concurrent.ConcurrentHashMap;
 
 public class RemoteResource extends GelatoResourceControllerImpl {
 
-    private MountPoint mountPoint;
-    private Map<String, RemoteResource> artefacts = new ConcurrentHashMap<>();
-    private GelatoResource resource;
+  private MountPoint mountPoint;
+  private Map<String, RemoteResource> artefacts = new ConcurrentHashMap<>();
+  private GelatoResource resource;
 
-    public RemoteResource(MountPoint originatingMount, GelatoResource proxy) {
+  public RemoteResource(MountPoint originatingMount, GelatoResource proxy) {
 
-        mountPoint = originatingMount;
-        resource = proxy;
-        resource.refreshSelf();
+    mountPoint = originatingMount;
+    resource = proxy;
+    resource.refreshSelf();
+  }
+
+  @Override
+  public String resourceName() {
+    return resource.getName();
+  }
+
+  public void addArtefact(RemoteResource newArtefact) {
+    artefacts.put(newArtefact.resourceName(), newArtefact);
+  }
+
+  @Override
+  public boolean processRequest(
+      GelatoConnection connection,
+      GelatoFileDescriptor descriptor,
+      GelatoSession session,
+      Message request) {
+
+    RequestConnection requestConnection =
+        createConnection(connection, descriptor, session, request.tag);
+    mountPoint.sendProxyMessage(request, requestConnection);
+
+    if (request.messageType == P9Protocol.TWALK) {
+      WalkRequest walk = Decoder.decodeWalkRequest(request);
+      RemoteResource mappedSource = artefacts.get(walk.getTargetFile());
+      GelatoFileDescriptor clientDescriptor = generateDescriptor(getQID(), walk.getNewDecriptor());
+      session.getManager().mapQID(clientDescriptor, mappedSource.getFileDescriptor());
     }
 
-    @Override
-    public String resourceName() {
-        return resource.getName();
-    }
-
-    public void addArtefact(RemoteResource newArtefact){
-        artefacts.put(newArtefact.resourceName(),newArtefact);
-    }
-
-    @Override
-    public boolean processRequest(
-            GelatoConnection connection,
-            GelatoFileDescriptor descriptor,
-            GelatoSession session,
-            Message request) {
-
-        RequestConnection requestConnection = createConnection(connection,descriptor,session, request.tag);
-        mountPoint.sendProxyMessage(request,requestConnection);
-
-        if (request.messageType == P9Protocol.TWALK) {
-            WalkRequest walk = Decoder.decodeWalkRequest(request);
-            RemoteResource mappedSource = artefacts.get(walk.getTargetFile());
-            GelatoFileDescriptor clientDescriptor =
-                    generateDescriptor(getQID(), walk.getNewDecriptor());
-            session.getManager().mapQID(clientDescriptor, mappedSource.getFileDescriptor());
-        }
-
-        return true;
-    }
-
+    return true;
+  }
 }

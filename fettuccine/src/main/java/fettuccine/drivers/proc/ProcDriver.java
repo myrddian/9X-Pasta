@@ -21,24 +21,17 @@ import gelato.server.GelatoServerManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-
-public class ProcDriver  {
+public class ProcDriver {
 
   private final Logger logger = LoggerFactory.getLogger(ProcDriver.class);
   private ProcDir procDir;
   private GelatoServerManager serveletManager;
-
 
   public ProcDriver(GelatoServerManager gelatoServerManager) {
     serveletManager = gelatoServerManager;
     procDir = new ProcDir(serveletManager);
     Ciotola.getInstance().injectService(procDir);
   }
-
-
-
-
-
 
   public ProcDir getProcDir() {
     return procDir;

@@ -59,7 +59,7 @@ public class DefaultCiotolaContainer implements CiotolaContext {
   private Map<String, Logger> loggerMap = new ConcurrentHashMap<>();
   private List<String> loadedJars = new ArrayList<>();
   private List<String> scanAnnotations = new ArrayList<>();
-  private Map<Integer,PooledServiceRunner> serviceRunners = new ConcurrentHashMap<>();
+  private Map<Integer, PooledServiceRunner> serviceRunners = new ConcurrentHashMap<>();
   private CiotolaKeyPool keyPoolExecutor;
   private CiotolaConnectionPool connectionPool;
   private long connectionTimeOut = 240;
@@ -73,32 +73,31 @@ public class DefaultCiotolaContainer implements CiotolaContext {
     int physicalCores = getNumberOfCPUCores();
 
     /*
-      Default schema for this is 1/4 Connection
-       Min 2
-       3/4 For the remaining key pool
-       min 2
-     */
+     Default schema for this is 1/4 Connection
+      Min 2
+      3/4 For the remaining key pool
+      min 2
+    */
 
-    //Initialise pools - some default allocations
-    int connectionPoolCounter = physicalCores /4;
+    // Initialise pools - some default allocations
+    int connectionPoolCounter = physicalCores / 4;
     int keyPool = connectionPoolCounter * 3;
-    if(connectionPoolCounter <=1 ) {
+    if (connectionPoolCounter <= 1) {
       connectionPoolCounter = 2;
     }
-    if(keyPool <= 1) {
+    if (keyPool <= 1) {
       keyPool = 2;
     }
     connectionPool = new CiotolaConnectionPool(connectionPoolCounter);
     keyPoolExecutor = new CiotolaKeyPool(keyPool);
 
-    //Setup the system
+    // Setup the system
     scanAnnotations.clear();
     scanAnnotations.add(CiotolaAutowire.class.getName());
     scanAnnotations.add(CiotolaService.class.getName());
     scanAnnotations.add(CiotolaBean.class.getName());
     addDependency(CiotolaContext.class, this);
     connectionPool.setIdleTimeout(connectionTimeOut);
-
   }
 
   @Override
@@ -148,15 +147,20 @@ public class DefaultCiotolaContainer implements CiotolaContext {
     int svcCounter = serviceRunners.size() + 1;
     PooledServiceRunner runner = new PooledServiceRunner(newService, svcCounter);
 
-    if(!skipInjection) {
+    if (!skipInjection) {
       serviceInterfaceMap.put(newService.serviceName(), newService);
       processInjection(newService.serviceName());
     } else {
-      logger.debug("No injection for " + newService.serviceName() + " Mapped to ID [ " + Integer.toString(svcCounter) + " ] ");
+      logger.debug(
+          "No injection for "
+              + newService.serviceName()
+              + " Mapped to ID [ "
+              + Integer.toString(svcCounter)
+              + " ] ");
     }
     runner.start();
     executorService.execute(runner);
-    serviceRunners.put(svcCounter,runner);
+    serviceRunners.put(svcCounter, runner);
     return svcCounter;
   }
 
@@ -168,7 +172,7 @@ public class DefaultCiotolaContainer implements CiotolaContext {
 
   @Override
   public int injectService(CiotolaServiceInterface newService) {
-    return injectService(newService,false);
+    return injectService(newService, false);
   }
 
   @Override
@@ -204,15 +208,15 @@ public class DefaultCiotolaContainer implements CiotolaContext {
   @Override
   public int threadCapacity() {
     int capacity = Runtime.getRuntime().availableProcessors() / 2;
-    if(capacity < 1) {
-      return  1;
+    if (capacity < 1) {
+      return 1;
     }
     return capacity;
   }
 
   @Override
   public void execute(Runnable job, long key) {
-    keyPoolExecutor.addJob(job,key);
+    keyPoolExecutor.addJob(job, key);
   }
 
   @Override
@@ -236,8 +240,6 @@ public class DefaultCiotolaContainer implements CiotolaContext {
   public void setConnectionTimeOut(long connectionTimeOut) {
     this.connectionTimeOut = connectionTimeOut;
   }
-
-
 
   @Override
   public boolean startContainer() {
@@ -274,7 +276,7 @@ public class DefaultCiotolaContainer implements CiotolaContext {
       runner.start();
       executorService.execute(runner);
       ++counter;
-      serviceRunners.put(counter,runner);
+      serviceRunners.put(counter, runner);
     }
     return true;
   }
@@ -316,13 +318,13 @@ public class DefaultCiotolaContainer implements CiotolaContext {
             autoWrite = runner.getObject();
           }
           logger.debug(
-                  "Autowiring: "
-                          + wiringComponent.getClass().getName()
-                          + " ( "
-                          + objField.getName()
-                          + " , "
-                          + autoWrite.getClass().getName()
-                          + " )");
+              "Autowiring: "
+                  + wiringComponent.getClass().getName()
+                  + " ( "
+                  + objField.getName()
+                  + " , "
+                  + autoWrite.getClass().getName()
+                  + " )");
           try {
             objField.set(wiringComponent, autoWrite);
           } catch (IllegalAccessException e) {
@@ -356,13 +358,13 @@ public class DefaultCiotolaContainer implements CiotolaContext {
   private int getNumberOfCPUCores() {
     OSValidator osValidator = new OSValidator();
     String command = "";
-    if(osValidator.isMac()){
+    if (osValidator.isMac()) {
       logger.debug("System is running Mac OS");
       command = "sysctl -n machdep.cpu.core_count";
-    }else if(osValidator.isUnix()){
+    } else if (osValidator.isUnix()) {
       logger.debug("System is running a Linux/Unix variant - trying lscpu");
       command = "lscpu";
-    }else if(osValidator.isWindows()){
+    } else if (osValidator.isWindows()) {
       logger.debug("System is running Microsoft Windows");
       command = "cmd /C WMIC CPU Get /Format:List";
     }
@@ -370,30 +372,29 @@ public class DefaultCiotolaContainer implements CiotolaContext {
     int numberOfCores = 0;
     int sockets = 0;
     try {
-      if(osValidator.isMac()){
-        String[] cmd = { "/bin/sh", "-c", command};
+      if (osValidator.isMac()) {
+        String[] cmd = {"/bin/sh", "-c", command};
         process = Runtime.getRuntime().exec(cmd);
-      }else{
+      } else {
         process = Runtime.getRuntime().exec(command);
       }
     } catch (IOException e) {
-      logger.error("Unable to determine physical processor layout - returning default",e);
+      logger.error("Unable to determine physical processor layout - returning default", e);
       return threadCapacity();
     }
 
-    BufferedReader reader = new BufferedReader(
-            new InputStreamReader(process.getInputStream()));
+    BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
     String line;
 
     try {
       while ((line = reader.readLine()) != null) {
-        if(osValidator.isMac()){
+        if (osValidator.isMac()) {
           numberOfCores = line.length() > 0 ? Integer.parseInt(line) : 0;
-        }else if (osValidator.isUnix()) {
+        } else if (osValidator.isUnix()) {
           if (line.contains("Core(s) per socket:")) {
             numberOfCores = Integer.parseInt(line.split("\\s+")[line.split("\\s+").length - 1]);
           }
-          if(line.contains("Socket(s):")){
+          if (line.contains("Socket(s):")) {
             sockets = Integer.parseInt(line.split("\\s+")[line.split("\\s+").length - 1]);
           }
         } else if (osValidator.isWindows()) {
@@ -403,13 +404,12 @@ public class DefaultCiotolaContainer implements CiotolaContext {
         }
       }
     } catch (IOException e) {
-      logger.error("Unable to determine physical processor layout - returning default",e);
+      logger.error("Unable to determine physical processor layout - returning default", e);
       return threadCapacity();
     }
-    if(osValidator.isUnix()){
+    if (osValidator.isUnix()) {
       return numberOfCores * sockets;
     }
     return numberOfCores;
   }
-
 }

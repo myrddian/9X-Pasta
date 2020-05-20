@@ -113,5 +113,4 @@ public class GelatoServerSession implements GelatoSession {
   public void setTags(GelatoTags tags) {
     this.tags = tags;
   }
-
 }

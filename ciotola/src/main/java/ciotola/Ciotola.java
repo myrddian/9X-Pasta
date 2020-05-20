@@ -124,7 +124,7 @@ public class Ciotola implements CiotolaContext {
 
   @Override
   public void addDependency(Class name, Object wire) {
-    serviceContainer.addDependency(name,wire);
+    serviceContainer.addDependency(name, wire);
   }
 
   @Override
@@ -184,7 +184,7 @@ public class Ciotola implements CiotolaContext {
 
   @Override
   public void execute(Runnable job, long key) {
-    serviceContainer.execute(job,key);
+    serviceContainer.execute(job, key);
   }
 
   @Override
@@ -196,5 +196,4 @@ public class Ciotola implements CiotolaContext {
   public void stop() {
     serviceContainer.stop();
   }
-
 }

@@ -54,7 +54,11 @@ public class GelatoFileControllerImpl
   private GelatoResourceController resourceController = new GelatoResourceControllerImpl();
   private InputStream fileInputStream;
 
-  public GelatoFileControllerImpl(String fileName, InputStream inputStream, long resourceSize, GelatoFileDescriptor descriptor){
+  public GelatoFileControllerImpl(
+      String fileName,
+      InputStream inputStream,
+      long resourceSize,
+      GelatoFileDescriptor descriptor) {
     resourceController.setReadRequestHandler(this);
     resourceController.setOpenRequestHandler(this);
     resourceController.setStatRequestHandler(this);
@@ -114,7 +118,7 @@ public class GelatoFileControllerImpl
         ReadResponse readResponse = new ReadResponse();
         readResponse.setData(Arrays.copyOf(buff, copyByte));
         connection.reply(readResponse);
-        ptr+=copyByte;
+        ptr += copyByte;
       }
 
       return true;
@@ -321,12 +325,12 @@ public class GelatoFileControllerImpl
   }
 
   @Override
-  public void setResourceController(GelatoResourceController resourceController) {
-    this.resourceController = resourceController;
+  public GelatoResourceController getResourceController() {
+    return resourceController;
   }
 
   @Override
-  public GelatoResourceController getResourceController() {
-    return resourceController;
+  public void setResourceController(GelatoResourceController resourceController) {
+    this.resourceController = resourceController;
   }
 }

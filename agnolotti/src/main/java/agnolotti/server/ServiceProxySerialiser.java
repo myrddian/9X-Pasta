@@ -23,28 +23,32 @@ import java.util.Map;
 
 public class ServiceProxySerialiser implements InvocationHandler {
 
-    private Object proxyObject;
-    private final Map<String, Method> methods = new HashMap<>();
+  private final Map<String, Method> methods = new HashMap<>();
+  private Object proxyObject;
 
-
-    public ServiceProxySerialiser(Object target) {
-       proxyObject= target;
-        for(Method method: target.getClass().getDeclaredMethods()) {
-            this.methods.put(RemoteServiceFactory.getMethodDecorator(method), method);
-        }
+  public ServiceProxySerialiser(Object target) {
+    proxyObject = target;
+    for (Method method : target.getClass().getDeclaredMethods()) {
+      this.methods.put(RemoteServiceFactory.getMethodDecorator(method), method);
     }
+  }
 
-    @Override
-    public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
-        //Thread safety on non-safe thread objects
-        synchronized (this) {
-            Object result = methods.get(RemoteServiceFactory.getMethodDecorator(method)).invoke(proxyObject, args);
-            return result;
-        }
+  @Override
+  public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
+    // Thread safety on non-safe thread objects
+    synchronized (this) {
+      Object result =
+          methods.get(RemoteServiceFactory.getMethodDecorator(method)).invoke(proxyObject, args);
+      return result;
     }
+  }
 
-    @Override
-    public String toString() {
-        return getClass().getName() + '@' + Integer.toHexString(hashCode()) + "PROXY:"+ proxyObject.toString();
-    }
+  @Override
+  public String toString() {
+    return getClass().getName()
+        + '@'
+        + Integer.toHexString(hashCode())
+        + "PROXY:"
+        + proxyObject.toString();
+  }
 }

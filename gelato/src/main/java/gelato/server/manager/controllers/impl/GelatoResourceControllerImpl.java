@@ -54,6 +54,9 @@ import java.time.Instant;
 
 public class GelatoResourceControllerImpl implements GelatoResourceController {
 
+  public static final String DEFAULT_NAME = "default_resource";
+  public static final String DEFAULT_USER = "default_user";
+  public static final String DEFAULT_GROUP = "default_group";
   private final Logger logger = LoggerFactory.getLogger(GelatoResourceControllerImpl.class);
   private GelatoFileDescriptor fileDescriptor = new GelatoFileDescriptor();
   private StatStruct resourceStat = new StatStruct();
@@ -70,11 +73,6 @@ public class GelatoResourceControllerImpl implements GelatoResourceController {
   private RequestFlushHandler flushHandler = new DefaultFlushHandler();
   private ReadRequestHandler readRequestHandler = new NotSupportedHandler();
 
-  public static final String DEFAULT_NAME = "default_resource";
-  public static final String DEFAULT_USER = "default_user";
-  public static final String DEFAULT_GROUP = "default_group";
-
-
   public GelatoResourceControllerImpl() {
 
     resourceStat.setAccessTime(Instant.now().getEpochSecond());
@@ -89,13 +87,11 @@ public class GelatoResourceControllerImpl implements GelatoResourceController {
     fileDescriptor.setQid(resourceQID);
     resourceStat.setQid(resourceQID);
     resourceStat.updateSize();
-
   }
 
   public void updateSize() {
     resourceStat.updateSize();
   }
-
 
   @Override
   public synchronized QID getQID() {

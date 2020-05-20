@@ -16,10 +16,13 @@
 
 public interface TestBomb {
 
-    void hello();
-    String sayHello(String Name);
-    String sayHello(String Name, int Age);
-    String sayHello(int Age, String Name);
-    void hello(String name);
+  void hello();
 
+  String sayHello(String Name);
+
+  String sayHello(String Name, int Age);
+
+  String sayHello(int Age, String Name);
+
+  void hello(String name);
 }

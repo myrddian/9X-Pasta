@@ -16,7 +16,6 @@
 
 package fettuccine.drivers.sys;
 
-
 import common.api.fettuccine.FettuccineVersion;
 import gelato.GelatoVersion;
 import protocol.P9Protocol;
@@ -27,25 +26,24 @@ public class FettuccineVersionService implements FettuccineVersion {
   public static final String VERSION_NOTES = "(alpha)";
   public static final String COPYRIGHT = "Enzo Reyes";
 
-
   public static String version() {
     String ver =
-            "Fettuccine version: "
-                    + Integer.toString(FettuccineVersionService.VERSION_MAJOR)
-                    + "."
-                    + Integer.toString(FettuccineVersionService.VERSION_MINOR)
-                    + " "
-                    + VERSION_NOTES
-                    + " Copyright: "
-                    + COPYRIGHT;
+        "Fettuccine version: "
+            + Integer.toString(FettuccineVersionService.VERSION_MAJOR)
+            + "."
+            + Integer.toString(FettuccineVersionService.VERSION_MINOR)
+            + " "
+            + VERSION_NOTES
+            + " Copyright: "
+            + COPYRIGHT;
     String gelato = GelatoVersion.getVersion();
     String protocol = P9Protocol.protocolVersion;
-    ver = ver + "\n - Using: "+gelato+"\n - Library: "+protocol;
+    ver = ver + "\n - Using: " + gelato + "\n - Library: " + protocol;
     return ver;
   }
 
   public static String versionValue() {
-    return FettuccineVersionService.VERSION_MAJOR +"." +FettuccineVersionService.VERSION_MINOR;
+    return FettuccineVersionService.VERSION_MAJOR + "." + FettuccineVersionService.VERSION_MINOR;
   }
 
   @Override

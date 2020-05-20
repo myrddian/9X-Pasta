@@ -46,5 +46,4 @@ public interface GelatoSession {
   GelatoTags getTags();
 
   void setTags(GelatoTags tags);
-
 }

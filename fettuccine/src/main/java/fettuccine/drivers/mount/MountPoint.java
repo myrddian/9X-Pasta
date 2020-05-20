@@ -39,125 +39,130 @@ import java.util.concurrent.ConcurrentHashMap;
 
 public class MountPoint implements MessageProxy {
 
-    private GelatoMessaging connection;
-    private Map<Integer, GelatoMessageProxy> proxyMap = new ConcurrentHashMap<>();
+  private final Logger logger = LoggerFactory.getLogger(MountPoint.class);
+  private GelatoMessaging connection;
+  private Map<Integer, GelatoMessageProxy> proxyMap = new ConcurrentHashMap<>();
+  private GelatoFileManager mountPoint;
+  private MountService mountService;
+  private MountDirectory directoryController;
+  private String mountDetail = "";
+  public MountPoint(String host, int port, String userName, String mountpoint, MountService service)
+      throws IOException {
+    mountPoint = new GelatoFileManager(host, port, userName, userName);
+    connection = mountPoint.getConnection();
+    directoryController =
+        new MountDirectory(service.getServerManager(), this, mountPoint.getRoot(), mountpoint);
+    directoryController.setDirectoryName(mountpoint);
+    GelatoFileDescriptor desc =
+        service.getServerManager().getDescriptorManager().generateDescriptor();
+    desc.getQid().setLongFileId(desc.getDescriptorId());
+    directoryController.setFileDescriptor(desc);
+    mountDetail = mountpoint + " -> /" + host + ":" + port;
+    mountService = service;
+    mapMount();
+  }
 
-    public GelatoFileManager getMountPoint() {
-        return mountPoint;
+  public static String generateId(GelatoMessageProxy msg) {
+    return Integer.toString(msg.getOriginalTransactionId())
+        + ":"
+        + Long.toString(msg.getConnectionDescriptor());
+  }
+
+  public GelatoFileManager getMountPoint() {
+    return mountPoint;
+  }
+
+  public String getMountDetail() {
+    return mountDetail;
+  }
+
+  private void mapArtefact(RemoteResource remoteResource) {
+    GelatoFileDescriptor descriptor =
+        mountService.getServerManager().getDescriptorManager().generateDescriptor();
+    descriptor.getQid().setLongFileId(descriptor.getDescriptorId());
+    remoteResource.setFileDescriptor(descriptor);
+    mountService.getServerManager().addResource(remoteResource);
+  }
+
+  private void mapMount() {
+    logger.info("Mounting to " + directoryController.getDirectoryName());
+    GelatoDirectory rootOfMount = mountPoint.getRoot();
+    logger.debug("Starting file system tree scan");
+
+    for (GelatoDirectory dir : rootOfMount.getDirectories()) {
+      RemoteResource newResource = new RemoteResource(this, dir);
+      directoryController.addArtefact(newResource);
+      mapArtefact(newResource);
+      mapDirectory(dir, newResource);
     }
 
-    private GelatoFileManager mountPoint;
-    private MountService mountService;
-    private MountDirectory directoryController;
-    private final Logger logger = LoggerFactory.getLogger(MountPoint.class);
-    private String mountDetail = "";
+    for (GelatoFile file : rootOfMount.getFiles()) {
+      RemoteResource newResource = new RemoteResource(this, file);
+      directoryController.addArtefact(newResource);
+      mapArtefact(newResource);
+    }
+  }
 
-    public MountPoint(String host, int port, String userName, String mountpoint, MountService service) throws IOException {
-        mountPoint = new GelatoFileManager(host,port,userName,userName);
-        connection = mountPoint.getConnection();
-        directoryController = new MountDirectory(service.getServerManager(), this, mountPoint.getRoot(), mountpoint);
-        directoryController.setDirectoryName(mountpoint);
-        GelatoFileDescriptor desc = service.getServerManager().getDescriptorManager().generateDescriptor();
-        desc.getQid().setLongFileId(desc.getDescriptorId());
-        directoryController.setFileDescriptor(desc);
-        mountDetail = mountpoint+" -> /"+host+":"+port;
-        mountService = service;
-        mapMount();
+  private void mapDirectory(GelatoDirectory directory, RemoteResource parent) {
+    logger.debug("Scanning directory " + directory.getName());
+    for (GelatoDirectory directoryEntries : directory.getDirectories()) {
+      RemoteResource newResource = new RemoteResource(this, directoryEntries);
+      parent.addArtefact(newResource);
+      mapArtefact(newResource);
+      mapDirectory(directoryEntries, newResource);
     }
 
-    public String getMountDetail() {
-        return mountDetail;
+    for (GelatoFile file : directory.getFiles()) {
+      RemoteResource newResource = new RemoteResource(this, file);
+      parent.addArtefact(newResource);
+      mapArtefact(newResource);
     }
+  }
 
-    private void mapArtefact(RemoteResource remoteResource) {
-        GelatoFileDescriptor descriptor = mountService.getServerManager().getDescriptorManager().generateDescriptor();
-        descriptor.getQid().setLongFileId(descriptor.getDescriptorId());
-        remoteResource.setFileDescriptor(descriptor);
-        mountService.getServerManager().addResource(remoteResource);
+  public GelatoDirectoryController getDirectory() {
+    return directoryController;
+  }
+
+  @Override
+  public void processMessage(
+      GelatoMessage gelatoMessage, Message message, GelatoMessaging connection) {
+    GelatoMessageProxy backToSource = proxyMap.get(gelatoMessage.getProxyId());
+    message.tag = gelatoMessage.getProxyId();
+    backToSource.getRequestConnection().reply(message);
+    int counter = backToSource.getQueueSize();
+    if (counter <= 0) {
+      proxyMap.remove(gelatoMessage.getProxyId());
+      connection.close(gelatoMessage);
+    } else {
+      --counter;
+      backToSource.setQueueSize(counter);
     }
+  }
 
-    private void mapMount() {
-        logger.info("Mounting to " + directoryController.getDirectoryName());
-        GelatoDirectory rootOfMount = mountPoint.getRoot();
-        logger.debug("Starting file system tree scan");
-
-        for(GelatoDirectory dir: rootOfMount.getDirectories()) {
-            RemoteResource newResource = new RemoteResource(this, dir);
-            directoryController.addArtefact(newResource);
-            mapArtefact(newResource);
-            mapDirectory(dir, newResource);
-        }
-
-        for(GelatoFile file: rootOfMount.getFiles()) {
-            RemoteResource newResource = new RemoteResource(this, file);
-            directoryController.addArtefact(newResource);
-            mapArtefact(newResource);
-        }
+  public void sendProxyMessage(Message message, RequestConnection connection) {
+    GelatoMessage newFuture = new GelatoMessage(message);
+    newFuture.setProxy(this);
+    GelatoMessageProxy proxiedMesg = new GelatoMessageProxy();
+    proxiedMesg.setForwardedMessage(newFuture);
+    proxiedMesg.setOriginalTransactionId(message.getTag());
+    proxiedMesg.setRequestConnection(connection);
+    proxiedMesg.setQueueSize(1);
+    newFuture.setProxyId(message.tag);
+    // Estimate blocks
+    if (message.messageType == P9Protocol.TREAD) {
+      ReadRequest readRequest = Decoder.decodeReadRequest(message);
+      double numBlocks = readRequest.getBytesToRead() / this.connection.getIoSize();
+      proxiedMesg.setQueueSize((int) Math.ceil(numBlocks));
     }
+    proxyMap.put(message.tag, proxiedMesg);
+    this.connection.submitMessage(newFuture);
+  }
 
-    private void mapDirectory(GelatoDirectory directory, RemoteResource parent) {
-        logger.debug("Scanning directory " + directory.getName());
-        for(GelatoDirectory directoryEntries: directory.getDirectories()) {
-            RemoteResource newResource = new RemoteResource(this , directoryEntries);
-            parent.addArtefact(newResource);
-            mapArtefact(newResource);
-            mapDirectory(directoryEntries, newResource);
-        }
+  public GelatoMessaging getConnection() {
+    return connection;
+  }
 
-        for(GelatoFile file: directory.getFiles()) {
-            RemoteResource newResource = new RemoteResource(this, file);
-            parent.addArtefact(newResource);
-            mapArtefact(newResource);
-        }
-    }
-
-    public GelatoDirectoryController getDirectory() {
-        return directoryController;
-    }
-
-    @Override
-    public void processMessage(GelatoMessage gelatoMessage, Message message, GelatoMessaging connection) {
-        GelatoMessageProxy backToSource = proxyMap.get(gelatoMessage.getProxyId());
-        message.tag = gelatoMessage.getProxyId();
-        backToSource.getRequestConnection().reply(message);
-        int counter = backToSource.getQueueSize();
-        if(counter <= 0 ) {
-            proxyMap.remove(gelatoMessage.getProxyId());
-            connection.close(gelatoMessage);
-        } else {
-            --counter;
-            backToSource.setQueueSize(counter);
-        }
-    }
-
-    public void sendProxyMessage(Message message, RequestConnection connection) {
-        GelatoMessage newFuture = new GelatoMessage(message);
-        newFuture.setProxy(this);
-        GelatoMessageProxy proxiedMesg = new GelatoMessageProxy();
-        proxiedMesg.setForwardedMessage(newFuture);
-        proxiedMesg.setOriginalTransactionId(message.getTag());
-        proxiedMesg.setRequestConnection(connection);
-        proxiedMesg.setQueueSize(1);
-        newFuture.setProxyId(message.tag);
-        //Estimate blocks
-        if(message.messageType == P9Protocol.TREAD) {
-            ReadRequest readRequest = Decoder.decodeReadRequest(message);
-            double numBlocks =  readRequest.getBytesToRead() / this.connection.getIoSize();
-            proxiedMesg.setQueueSize((int)Math.ceil(numBlocks));
-        }
-        proxyMap.put(message.tag, proxiedMesg);
-        this.connection.submitMessage(newFuture);
-    }
-
-    public GelatoMessaging getConnection() {
-        return connection;
-    }
-
-    public void setConnection(GelatoMessaging connection) {
-        this.connection = connection;
-    }
-
-    public static String generateId(GelatoMessageProxy msg) {
-        return Integer.toString(msg.getOriginalTransactionId())+":"+Long.toString(msg.getConnectionDescriptor());
-    }
+  public void setConnection(GelatoMessaging connection) {
+    this.connection = connection;
+  }
 }

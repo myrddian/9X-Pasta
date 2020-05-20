@@ -25,13 +25,13 @@ import org.slf4j.LoggerFactory;
 import protocol.messages.Message;
 import protocol.messages.response.ErrorMessage;
 
-public class ParallelRequest implements  Runnable{
+public class ParallelRequest implements Runnable {
+  private final Logger logger = LoggerFactory.getLogger(ParallelRequest.class);
   private Message message;
   private GelatoResourceController handler;
   private GelatoSession session;
   private GelatoConnection connection;
   private GelatoFileDescriptor descriptor;
-  private final Logger logger = LoggerFactory.getLogger(ParallelRequest.class);
 
   public GelatoConnection getConnection() {
     return connection;
@@ -75,13 +75,16 @@ public class ParallelRequest implements  Runnable{
 
   @Override
   public void run() {
-    if(!handler.processRequest(connection,descriptor,session,message)) {
+    if (!handler.processRequest(connection, descriptor, session, message)) {
       ErrorMessage msg = new ErrorMessage();
       msg.setTag(message.tag);
       msg.setErrorMessage("General Failure - Handling Operation ");
       connection.sendMessage(descriptor, msg.toMessage());
-      logger.error("Unable to process Message : " + Integer.toString(message.messageType) + " Resource " +
-              handler.getStat().getName());
+      logger.error(
+          "Unable to process Message : "
+              + Integer.toString(message.messageType)
+              + " Resource "
+              + handler.getStat().getName());
     }
   }
 }

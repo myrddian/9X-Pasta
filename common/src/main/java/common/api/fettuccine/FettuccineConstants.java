@@ -17,12 +17,11 @@
 package common.api.fettuccine;
 
 public class FettuccineConstants {
-    public static final String MOUNT_DIR = "mnt";
-    public static final String PROC_DIR = "proc";
-    public static final String SYS_DIR = "sys";
-    public static final String NS_DIR = "ns";
-    public static final String FETTUCCINE_RPC_VERSION = "1.0";
-    public static final String FETTUCCINE_SVC_NAME = "fettuccine_svc";
-    public static final String FETTUCCINE_SVC_GRP = "fettuccine_svc";
-
+  public static final String MOUNT_DIR = "mnt";
+  public static final String PROC_DIR = "proc";
+  public static final String SYS_DIR = "sys";
+  public static final String NS_DIR = "ns";
+  public static final String FETTUCCINE_RPC_VERSION = "1.0";
+  public static final String FETTUCCINE_SVC_NAME = "fettuccine_svc";
+  public static final String FETTUCCINE_SVC_GRP = "fettuccine_svc";
 }

@@ -37,7 +37,6 @@ public class V2TCPTransport implements GelatoTransport, CiotolaConnectionService
 
   final Logger logger = LoggerFactory.getLogger(V2TCPTransport.class);
 
-
   private BlockingQueue<Message> readMessageQueue = new LinkedBlockingQueue<>();
   private BlockingQueue<Message> writeMessageQueue = new LinkedBlockingQueue<>();
   private boolean closeConnction = false;
@@ -51,7 +50,10 @@ public class V2TCPTransport implements GelatoTransport, CiotolaConnectionService
   private V2ClientDescriptorHandler nextHandler;
   private int svcProxy = CiotolaConnectionService.NO_PROXY_TERMINATION;
 
-  public V2TCPTransport(Socket cliSocket, GelatoFileDescriptor connectionDescriptor, V2ClientDescriptorHandler clientDescriptorHandler) {
+  public V2TCPTransport(
+      Socket cliSocket,
+      GelatoFileDescriptor connectionDescriptor,
+      V2ClientDescriptorHandler clientDescriptorHandler) {
     descriptor = connectionDescriptor;
     clientSocket = cliSocket;
     nextHandler = clientDescriptorHandler;
@@ -105,14 +107,12 @@ public class V2TCPTransport implements GelatoTransport, CiotolaConnectionService
     return readMessageQueue.size();
   }
 
-
   private void processOutbound(OutputStream os) throws InterruptedException, IOException {
 
     Message outbound = writeMessageQueue.take();
     MessageRaw raw = outbound.toRaw();
     byte[] outBytes = Encoder.messageToBytes(raw);
     os.write(outBytes);
-
   }
 
   private void processInbound(InputStream is) throws InterruptedException, IOException {
@@ -152,10 +152,9 @@ public class V2TCPTransport implements GelatoTransport, CiotolaConnectionService
     newMessage.setClientConnection(proxy);
     nextHandler.addMessage(newMessage);
 
-    if(nextHandler.isShutdown()) {
+    if (nextHandler.isShutdown()) {
       notifyClose();
     }
-
   }
 
   public InputStream getSocketInputStream() {
@@ -176,7 +175,6 @@ public class V2TCPTransport implements GelatoTransport, CiotolaConnectionService
     return null;
   }
 
-
   public void closeStream() {
     try {
       clientSocket.close();
@@ -184,7 +182,6 @@ public class V2TCPTransport implements GelatoTransport, CiotolaConnectionService
       logger.error("Unable to close socket", e);
     }
   }
-
 
   @Override
   public int bytesToProcessInbound() throws IOException {
@@ -224,13 +221,13 @@ public class V2TCPTransport implements GelatoTransport, CiotolaConnectionService
   }
 
   @Override
-  public void setProcessedTime(long time) {
-    processTime = time;
+  public long getProcessedTime() {
+    return processTime;
   }
 
   @Override
-  public long getProcessedTime() {
-    return processTime;
+  public void setProcessedTime(long time) {
+    processTime = time;
   }
 
   @Override
@@ -242,7 +239,6 @@ public class V2TCPTransport implements GelatoTransport, CiotolaConnectionService
   public int getProxyId() {
     return svcProxy;
   }
-
 
   public int getSvcProxy() {
     return svcProxy;

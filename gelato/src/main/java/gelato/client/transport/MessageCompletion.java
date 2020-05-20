@@ -20,23 +20,22 @@ import gelato.client.GelatoMessage;
 import protocol.messages.Message;
 
 public class MessageCompletion {
-    public GelatoMessage getFuture() {
-        return future;
-    }
+  private GelatoMessage future;
+  private Message message;
 
-    public void setFuture(GelatoMessage future) {
-        this.future = future;
-    }
+  public GelatoMessage getFuture() {
+    return future;
+  }
 
-    public Message getMessage() {
-        return message;
-    }
+  public void setFuture(GelatoMessage future) {
+    this.future = future;
+  }
 
-    public void setMessage(Message message) {
-        this.message = message;
-    }
+  public Message getMessage() {
+    return message;
+  }
 
-    private GelatoMessage future;
-    private Message message;
-
+  public void setMessage(Message message) {
+    this.message = message;
+  }
 }

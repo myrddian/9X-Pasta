@@ -25,19 +25,17 @@ import gelato.server.GelatoServerManager;
 
 public class SysDriver {
 
+  private ServiceManager remoteServices;
 
-    private ServiceManager remoteServices;
-
-
-    public SysDriver(GelatoServerManager manager) {
-        remoteServices = new ServiceManager(manager, FettuccineConstants.SYS_DIR,
-                FettuccineConstants.FETTUCCINE_SVC_GRP,FettuccineVersionService.versionValue());
-        remoteServices.addRemoteService(FettuccineVersion.class, new FettuccineVersionService());
-        remoteServices.addRemoteService(Mount.class, new MountService(manager));
-        remoteServices.addRemoteService(FettuccineNameSpace.class, new NameSpace(manager));
-    }
-
-
-
-
+  public SysDriver(GelatoServerManager manager) {
+    remoteServices =
+        new ServiceManager(
+            manager,
+            FettuccineConstants.SYS_DIR,
+            FettuccineConstants.FETTUCCINE_SVC_GRP,
+            FettuccineVersionService.versionValue());
+    remoteServices.addRemoteService(FettuccineVersion.class, new FettuccineVersionService());
+    remoteServices.addRemoteService(Mount.class, new MountService(manager));
+    remoteServices.addRemoteService(FettuccineNameSpace.class, new NameSpace(manager));
+  }
 }
