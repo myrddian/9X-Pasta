@@ -16,7 +16,6 @@
 
 package gelato;
 
-import gelato.client.ClientConnection;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -39,11 +38,6 @@ public class Gelato {
 
   public GelatoDescriptorManager getDescriptorManager() {
     return descriptorManager;
-  }
-
-  public ClientConnection createClientConnection(GelatoConfigImpl connectionConfig) {
-    ClientConnection connection = new ClientConnection(connectionConfig, this);
-    return connection;
   }
 
   public enum MODE {

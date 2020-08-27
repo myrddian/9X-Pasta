@@ -42,7 +42,7 @@ public class ClientSideOutTcpWrite {
   private GelatoMessaging messaging;
 
   public ClientSideOutTcpWrite(OutputStream networkStream, GelatoMessaging messaging) {
-    logger.debug("Client side ouput steamer starting");
+    logger.debug("Client side output steamer starting");
     socketOutputStream = networkStream;
     this.messaging = messaging;
   }
