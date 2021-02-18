@@ -16,7 +16,7 @@
 
 package protocol;
 
-public interface P9Protocol {
+public class P9Protocol {
   public static final String protocolVersion = "9P/X";
   public static final String currentPath = ".";
   public static final String parentPath = "..";

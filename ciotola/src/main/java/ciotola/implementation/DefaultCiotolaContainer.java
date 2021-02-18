@@ -20,6 +20,7 @@ import ciotola.Ciotola;
 import ciotola.CiotolaConnectionService;
 import ciotola.CiotolaContext;
 import ciotola.CiotolaServiceInterface;
+import ciotola.actor.CiotolaDirector;
 import ciotola.annotations.CiotolaAutowire;
 import ciotola.annotations.CiotolaBean;
 import ciotola.annotations.CiotolaService;
@@ -63,6 +64,7 @@ public class DefaultCiotolaContainer implements CiotolaContext {
   private CiotolaKeyPool keyPoolExecutor;
   private CiotolaConnectionPool connectionPool;
   private long connectionTimeOut = 240;
+  private CiotolaDirector ciotolaDirector;
 
   public DefaultCiotolaContainer() {
     resetDefaults();
@@ -90,6 +92,7 @@ public class DefaultCiotolaContainer implements CiotolaContext {
     }
     connectionPool = new CiotolaConnectionPool(connectionPoolCounter);
     keyPoolExecutor = new CiotolaKeyPool(keyPool);
+    ciotolaDirector = new CiotolaDirector(physicalCores);
 
     // Setup the system
     scanAnnotations.clear();

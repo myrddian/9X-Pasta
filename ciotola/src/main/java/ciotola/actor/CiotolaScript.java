@@ -16,6 +16,10 @@
 
 package ciotola.actor;
 
+import java.lang.reflect.InvocationTargetException;
+
 public interface CiotolaScript<T, R> {
-    R process(T message);
+    R process(T message) throws InvocationTargetException, IllegalAccessException;
+    boolean hasReturn();
+    boolean hasValues();
 }

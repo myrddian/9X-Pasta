@@ -18,6 +18,7 @@ package ciotola.implementation;
 
 import ciotola.Ciotola;
 import ciotola.CiotolaServiceInterface;
+import ciotola.annotations.CiotolaScriptMethod;
 import ciotola.annotations.CiotolaServiceRun;
 import ciotola.annotations.CiotolaServiceStart;
 import ciotola.annotations.CiotolaServiceStop;
@@ -104,6 +105,7 @@ public class AnnotatedJavaServiceRunner implements CiotolaServiceInterface {
   }
 
   @Override
+  @CiotolaScriptMethod
   public boolean run() {
     try {
       runMethod.invoke(javaServiceObject);

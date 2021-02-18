@@ -54,14 +54,63 @@ public final class CiotolaActor extends Thread{
 
 
     private void processRole() throws InterruptedException {
+        if(mappedRoles.size() == 0 ){
+            Thread.sleep(10);
+        }
         for(Map.Entry<Long, CiotolaRoleImpl> entry: mappedRoles.entrySet()) {
             CiotolaRoleImpl role = entry.getValue();
+            if(role.getScript().hasValues() == false &&
+               role.getScript().hasReturn() == false) {
+                if(role.requests() == 0) {
+                    executeAction(role.getScript(),role);
+                }
+            }
             if(role.requests()!=0) {
                 ActorAction newAction = role.takeAction();
-                executeAction(newAction.getMessage(), role.getScript(), newAction.getFuture(), role);
+                if(role.getScript().hasReturn() && role.getScript().hasValues()) {
+                    executeAction(newAction.getMessage(), role.getScript(), newAction.getFuture(), role);
+                } else {
+                    if(role.getScript().hasReturn()) {
+                        executeActionRetNoCall(role.getScript(),newAction.getFuture(),role);
+                    }
+                    else if(role.getScript().hasValues()) {
+                        executeActionNoRetCall(newAction.getMessage(),role.getScript(), newAction.getFuture(), role);
+                    }
+                }
             }
         }
     }
+
+
+    private void executeActionNoRetCall(Object message,CiotolaScript script, CiotolaFutureImpl future, CiotolaRoleImpl role) {
+        try {
+            script.process(message);
+            future.setResult(null);
+        } catch (Throwable ex) {
+            logger.error("Exception thrown by role: " + role.getRoleId() + "processed by Actor: " + runnerId, ex);
+            future.setError(true);
+            future.setException(new ActorException(ex));
+        }
+    }
+
+    private void executeActionRetNoCall(CiotolaScript script, CiotolaFutureImpl future, CiotolaRoleImpl role) {
+        try {
+            future.setResult(script.process(null));
+        } catch (Throwable ex) {
+            logger.error("Exception thrown by role: " + role.getRoleId() + "processed by Actor: " + runnerId, ex);
+            future.setError(true);
+            future.setException(new ActorException(ex));
+        }
+    }
+
+    private void executeAction(CiotolaScript script,  CiotolaRoleImpl role) {
+        try {
+            script.process(null);
+        } catch (Throwable ex) {
+            logger.error("Exception thrown by role: " + role.getRoleId() + "processed by Actor: " + runnerId, ex);
+        }
+    }
+
 
     private void executeAction(Object message, CiotolaScript script, CiotolaFutureImpl future, CiotolaRoleImpl role) {
         try {

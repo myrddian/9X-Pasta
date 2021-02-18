@@ -25,6 +25,7 @@ final class CiotolaFutureImpl<R> implements CiotolaFuture<R> {
     private BlockingQueue<R> resultList = new LinkedBlockingQueue<>();
     private ActorException exception = null;
 
+    private R value = null;
 
     public void setResult(R result) {
         resultList.add(result);
@@ -44,7 +45,10 @@ final class CiotolaFutureImpl<R> implements CiotolaFuture<R> {
             throw exception;
         }
         try {
-            return resultList.take();
+            if(value == null) {
+                value = resultList.take();
+            }
+            return value;
         } catch (InterruptedException e) {
             throw new ActorException(CiotolaDirector.ACTOR_INTERRUPTED_RESULT);
         }
