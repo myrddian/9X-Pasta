@@ -16,6 +16,8 @@
 
 package ciotola;
 
+import ciotola.actor.CiotolaDirector;
+
 import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
@@ -69,4 +71,5 @@ public interface CiotolaContext {
   void execute(CiotolaConnectionService connectionService);
 
   void stop();
+  CiotolaDirector getDirector();
 }

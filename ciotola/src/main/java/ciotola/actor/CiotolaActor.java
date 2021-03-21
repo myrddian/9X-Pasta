@@ -125,7 +125,7 @@ public final class CiotolaActor extends Thread{
 
     @Override
     public void run() {
-        logger.trace("Actor [" + Integer.toString(runnerId) + "] Running");
+        logger.debug("Actor [" + Integer.toString(runnerId) + "] Running");
         while (isRunning()) {
             try{
                 processRole();

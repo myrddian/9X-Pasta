@@ -234,7 +234,12 @@ public class DefaultCiotolaContainer implements CiotolaContext {
     executorService.shutdownNow();
   }
 
-  @Override
+    @Override
+    public CiotolaDirector getDirector() {
+        return ciotolaDirector;
+    }
+
+    @Override
   public long getConnectionTimeOut() {
     return connectionTimeOut;
   }

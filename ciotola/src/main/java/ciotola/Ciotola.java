@@ -16,6 +16,7 @@
 
 package ciotola;
 
+import ciotola.actor.CiotolaDirector;
 import ciotola.implementation.DefaultCiotolaContainer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -196,4 +197,9 @@ public class Ciotola implements CiotolaContext {
   public void stop() {
     serviceContainer.stop();
   }
+
+    @Override
+    public CiotolaDirector getDirector() {
+        return serviceContainer.getDirector();
+    }
 }
