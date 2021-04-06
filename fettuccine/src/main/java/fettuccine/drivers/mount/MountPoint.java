@@ -1,17 +1,12 @@
 /*
- *   Copyright (c) 2020. Enzo Reyes
+ * Copyright (c) 2021.  Enzo Reyes Licensed under the Apache License, Version 2.0 (the "License");   you may
+ * not use this file except in compliance with the License.   You may obtain a copy of the License at
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
- *    Licensed under the Apache License, Version 2.0 (the "License");
- *    you may not use this file except in compliance with the License.
- *    You may obtain a copy of the License at
+ *  Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and limitations under the License.
  *
- *        http://www.apache.org/licenses/LICENSE-2.0
- *
- *    Unless required by applicable law or agreed to in writing, software
- *    distributed under the License is distributed on an "AS IS" BASIS,
- *    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *    See the License for the specific language governing permissions and
- *    limitations under the License.
  */
 
 package fettuccine.drivers.mount;
@@ -26,16 +21,15 @@ import gelato.client.file.GelatoFileManager;
 import gelato.client.transport.MessageProxy;
 import gelato.server.manager.RequestConnection;
 import gelato.server.manager.controllers.GelatoDirectoryController;
+import java.io.IOException;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import protocol.Decoder;
 import protocol.P9Protocol;
 import protocol.messages.Message;
 import protocol.messages.request.ReadRequest;
-
-import java.io.IOException;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 
 public class MountPoint implements MessageProxy {
 
@@ -46,6 +40,7 @@ public class MountPoint implements MessageProxy {
   private MountService mountService;
   private MountDirectory directoryController;
   private String mountDetail = "";
+
   public MountPoint(String host, int port, String userName, String mountpoint, MountService service)
       throws IOException {
     mountPoint = new GelatoFileManager(host, port, userName, userName);

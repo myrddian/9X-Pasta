@@ -1,17 +1,12 @@
 /*
- *   Copyright (c) 2020. Enzo Reyes
+ * Copyright (c) 2021.  Enzo Reyes Licensed under the Apache License, Version 2.0 (the "License");   you may
+ * not use this file except in compliance with the License.   You may obtain a copy of the License at
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
- *    Licensed under the Apache License, Version 2.0 (the "License");
- *    you may not use this file except in compliance with the License.
- *    You may obtain a copy of the License at
+ *  Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and limitations under the License.
  *
- *        http://www.apache.org/licenses/LICENSE-2.0
- *
- *    Unless required by applicable law or agreed to in writing, software
- *    distributed under the License is distributed on an "AS IS" BASIS,
- *    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *    See the License for the specific language governing permissions and
- *    limitations under the License.
  */
 
 package agnolotti.server;
@@ -34,17 +29,6 @@ import gelato.server.manager.processchain.OpenRequestHandler;
 import gelato.server.manager.processchain.ReadRequestHandler;
 import gelato.server.manager.processchain.StatRequestHandler;
 import gelato.server.manager.processchain.WriteRequestHandler;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import protocol.P9Protocol;
-import protocol.QID;
-import protocol.StatStruct;
-import protocol.messages.response.CloseResponse;
-import protocol.messages.response.OpenResponse;
-import protocol.messages.response.ReadResponse;
-import protocol.messages.response.StatResponse;
-import protocol.messages.response.WriteResponse;
-
 import java.io.ByteArrayInputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
@@ -56,6 +40,16 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import protocol.P9Protocol;
+import protocol.QID;
+import protocol.StatStruct;
+import protocol.messages.response.CloseResponse;
+import protocol.messages.response.OpenResponse;
+import protocol.messages.response.ReadResponse;
+import protocol.messages.response.StatResponse;
+import protocol.messages.response.WriteResponse;
 
 public class RemoteMethodStrategy extends GelatoResourceControllerImpl
     implements GelatoFileController,

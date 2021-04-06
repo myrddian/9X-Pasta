@@ -1,21 +1,17 @@
 /*
- *   Copyright (c) 2020. Enzo Reyes
+ * Copyright (c) 2021.  Enzo Reyes Licensed under the Apache License, Version 2.0 (the "License");   you may
+ * not use this file except in compliance with the License.   You may obtain a copy of the License at
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
- *    Licensed under the Apache License, Version 2.0 (the "License");
- *    you may not use this file except in compliance with the License.
- *    You may obtain a copy of the License at
+ *  Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and limitations under the License.
  *
- *        http://www.apache.org/licenses/LICENSE-2.0
- *
- *    Unless required by applicable law or agreed to in writing, software
- *    distributed under the License is distributed on an "AS IS" BASIS,
- *    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *    See the License for the specific language governing permissions and
- *    limitations under the License.
  */
 
 package protocol;
 
+import java.util.Arrays;
 import protocol.messages.Message;
 import protocol.messages.MessageRaw;
 import protocol.messages.VersionRequest;
@@ -44,8 +40,6 @@ import protocol.messages.response.StatResponse;
 import protocol.messages.response.WalkResponse;
 import protocol.messages.response.WriteResponse;
 import protocol.messages.response.WriteStatResponse;
-
-import java.util.Arrays;
 
 public class Decoder {
 
@@ -295,8 +289,8 @@ public class Decoder {
     ptr += P9Protocol.MSG_LONG_SIZE;
     request.setByteCount(ByteEncoder.decodeInt(msg.messageContent, ptr));
     ptr += P9Protocol.MSG_INT_SIZE;
-    byte [] contentBuff = new byte[request.getByteCount()];
-    ByteEncoder.copyBytesFrom(msg.messageContent,contentBuff,ptr,contentBuff.length);
+    byte[] contentBuff = new byte[request.getByteCount()];
+    ByteEncoder.copyBytesFrom(msg.messageContent, contentBuff, ptr, contentBuff.length);
     request.setWriteData(contentBuff);
 
     return request;

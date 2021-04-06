@@ -1,17 +1,12 @@
 /*
- *   Copyright (c) 2020. Enzo Reyes
+ * Copyright (c) 2021.  Enzo Reyes Licensed under the Apache License, Version 2.0 (the "License");   you may
+ * not use this file except in compliance with the License.   You may obtain a copy of the License at
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
- *    Licensed under the Apache License, Version 2.0 (the "License");
- *    you may not use this file except in compliance with the License.
- *    You may obtain a copy of the License at
+ *  Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and limitations under the License.
  *
- *        http://www.apache.org/licenses/LICENSE-2.0
- *
- *    Unless required by applicable law or agreed to in writing, software
- *    distributed under the License is distributed on an "AS IS" BASIS,
- *    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *    See the License for the specific language governing permissions and
- *    limitations under the License.
  */
 
 package ciotola.implementation;
@@ -30,9 +25,6 @@ import io.github.classgraph.ClassGraph;
 import io.github.classgraph.ClassInfo;
 import io.github.classgraph.ClassInfoList;
 import io.github.classgraph.ScanResult;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -47,6 +39,8 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class DefaultCiotolaContainer implements CiotolaContext {
 
@@ -234,12 +228,12 @@ public class DefaultCiotolaContainer implements CiotolaContext {
     executorService.shutdownNow();
   }
 
-    @Override
-    public CiotolaDirector getDirector() {
-        return ciotolaDirector;
-    }
+  @Override
+  public CiotolaDirector getDirector() {
+    return ciotolaDirector;
+  }
 
-    @Override
+  @Override
   public long getConnectionTimeOut() {
     return connectionTimeOut;
   }

@@ -1,29 +1,23 @@
 /*
- *   Copyright (c) 2020. Enzo Reyes
+ * Copyright (c) 2021.  Enzo Reyes Licensed under the Apache License, Version 2.0 (the "License");   you may
+ * not use this file except in compliance with the License.   You may obtain a copy of the License at
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
- *    Licensed under the Apache License, Version 2.0 (the "License");
- *    you may not use this file except in compliance with the License.
- *    You may obtain a copy of the License at
+ *  Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and limitations under the License.
  *
- *        http://www.apache.org/licenses/LICENSE-2.0
- *
- *    Unless required by applicable law or agreed to in writing, software
- *    distributed under the License is distributed on an "AS IS" BASIS,
- *    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *    See the License for the specific language governing permissions and
- *    limitations under the License.
  */
 
 package ciotola;
 
 import ciotola.actor.CiotolaDirector;
 import ciotola.implementation.DefaultCiotolaContainer;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class Ciotola implements CiotolaContext {
 
@@ -49,6 +43,11 @@ public class Ciotola implements CiotolaContext {
   public static final String INVALID_CLASS_LOADER =
       "No class loader specified while starting container";
   public static final String CLASS_SCANNER_MISSING = "No JavaClassScanner specified - aborting";
+  public static final int DEFAULT_INT_SIZE = 4;
+  public static final int VARIABLE_LENGTH = 0;
+  public static final int SHORT_LENGTH = 2;
+  public static final int LONG_LENGTH = 8;
+  public static final int INITIAL_POSITION = 0;
   private static Ciotola SINGLE_INSTANCE = null;
   private final Logger logger = LoggerFactory.getLogger(Ciotola.class);
   private CiotolaContext serviceContainer = new DefaultCiotolaContainer();
@@ -198,8 +197,21 @@ public class Ciotola implements CiotolaContext {
     serviceContainer.stop();
   }
 
-    @Override
-    public CiotolaDirector getDirector() {
-        return serviceContainer.getDirector();
-    }
+  @Override
+  public CiotolaDirector getDirector() {
+    return serviceContainer.getDirector();
+  }
+
+  public enum ParseType {
+    UNSIGNED_SHORT_TO_INT,
+    UNSIGNED_INT_TO_LONG,
+    SIGNED_SHORT,
+    SIGNED_INT,
+    SIGNED_LONG
+  }
+
+  public enum ByteOrder {
+    LITTLE_ENDIAN,
+    BIG_ENDIAN
+  }
 }
