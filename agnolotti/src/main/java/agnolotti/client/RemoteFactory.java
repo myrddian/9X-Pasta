@@ -66,7 +66,7 @@ public class RemoteFactory {
 
     Object proxyInstance =
         Proxy.newProxyInstance(
-            RemoteFactory.class.getClassLoader(), new Class[] {remoteInterface}, serviceProxy);
+            RemoteFactory.class.getClassLoader(), new Class[]{remoteInterface}, serviceProxy);
 
     return proxyInstance;
   }

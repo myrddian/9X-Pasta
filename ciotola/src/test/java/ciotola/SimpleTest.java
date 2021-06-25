@@ -11,8 +11,18 @@
 
 package ciotola;
 
+import ciotola.actor.AgentPort;
+import ciotola.actor.CiotolaDirector;
+import ciotola.actor.CiotolaFuture;
+import ciotola.actor.Role;
+import ciotola.actor.Script;
+import ciotola.actor.SinkAgent;
+import ciotola.actor.SourceAgent;
+import ciotola.actor.SourceProducer;
+import ciotola.actor.SourceRecord;
 import ciotola.connection.TLVParserFactory;
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
 import org.junit.jupiter.api.Test;
 
 public class SimpleTest {
@@ -28,5 +38,87 @@ public class SimpleTest {
 
     TLVParserFactory<TestTLVMesg> testFactory = new TLVParserFactory<>();
     testFactory.handle(TestTLVMesg.class);
+    CiotolaDirector director = Ciotola.getInstance().getDirector();
+    Role<String, String> newRole = director.createRole(new Script<String, String>() {
+      @Override
+      public String process(String message)
+          throws InvocationTargetException, IllegalAccessException {
+        System.out.println((String) message);
+        return "hello there: " + message;
+      }
+
+      @Override
+      public boolean hasReturn() {
+        return true;
+      }
+
+      @Override
+      public boolean hasValues() {
+        return true;
+      }
+    });
+
+    AgentPort<String> port = director.getBus().createPort("test",true);
+    SourceAgent<String> helloSource = port.createSource(new SourceProducer<String>() {
+      @Override
+      public void execute(AgentPort<String> target) {
+        try {
+          Thread.sleep(500);
+          target.write("HELLO THERE");
+        } catch (InterruptedException e) {
+          e.printStackTrace();
+        }
+      }
+
+      @Override
+      public boolean isReady() {
+        return true;
+      }
+    }, false);
+    port.register(new SinkAgent<String>() {
+      @Override
+      public void onRecord(SourceRecord<String> record) {
+        System.out.println(record.getValue()+" One");
+        System.out.println(record.getPort());
+      }
+    });
+
+    port.register(new SinkAgent<String>() {
+      @Override
+      public void onRecord(SourceRecord<String> record) {
+        System.out.println(record.getValue()+" Two");
+        System.out.println(record.getPort());
+      }
+    });
+
+    SourceAgent<String> welcomeSource = port.createSource(new SourceProducer<String>() {
+      @Override
+      public void execute(AgentPort<String> target) {
+        try {
+          Thread.sleep(500);
+          target.write("WELCOME");
+        } catch (InterruptedException e) {
+          e.printStackTrace();
+        }
+      }
+
+      @Override
+      public boolean isReady() {
+        return true;
+      }
+    }, true);
+
+    int counter = 0;
+    while (true) {
+      CiotolaFuture<String> result = newRole.send("Test: "+ counter);
+      ++counter;
+        System.out.println(result.get());
+      try {
+        Thread.sleep(500);
+      } catch (InterruptedException e) {
+        e.printStackTrace();
+      }
+    }
+
   }
 }

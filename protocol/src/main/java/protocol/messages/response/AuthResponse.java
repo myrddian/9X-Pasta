@@ -18,6 +18,7 @@ import protocol.messages.Message;
 import protocol.messages.TransactionMessage;
 
 public class AuthResponse implements TransactionMessage {
+
   private QID qid;
   private int tag;
 

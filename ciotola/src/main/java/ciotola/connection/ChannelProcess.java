@@ -14,6 +14,7 @@ package ciotola.connection;
 import java.nio.ByteBuffer;
 
 public interface ChannelProcess {
+
   void process(ByteBuffer dataIn);
 
   void setTriggerLevel(int level);

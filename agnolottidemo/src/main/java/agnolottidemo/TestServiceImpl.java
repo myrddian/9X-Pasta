@@ -12,8 +12,10 @@
 package agnolottidemo;
 
 public class TestServiceImpl implements TestService {
+
   @Override
-  public void nullCall() {}
+  public void nullCall() {
+  }
 
   @Override
   public String echo(String msg) {

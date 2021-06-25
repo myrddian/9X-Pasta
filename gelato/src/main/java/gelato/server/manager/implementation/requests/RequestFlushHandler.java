@@ -17,6 +17,7 @@ import gelato.GelatoSession;
 import protocol.messages.request.FlushRequest;
 
 public interface RequestFlushHandler {
+
   boolean processRequest(
       GelatoConnection connection,
       GelatoFileDescriptor descriptor,

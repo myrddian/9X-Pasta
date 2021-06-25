@@ -16,22 +16,24 @@ import java.util.concurrent.ConcurrentHashMap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public final class CiotolaActor extends Thread {
+final class CiotolaActor extends Thread {
+
   private final Logger logger = LoggerFactory.getLogger(CiotolaActor.class);
-  private Map<Long, CiotolaRoleImpl> mappedRoles = new ConcurrentHashMap<>();
+  private Map<Long, RoleImpl> mappedRoles = new ConcurrentHashMap<>();
 
   private boolean isRunning = true;
   private int runnerId = 0;
 
   public void setRunnerId(int runnerId) {
     this.runnerId = runnerId;
+    this.setName("Actor [" + Integer.toString(runnerId) + "]");
   }
 
-  public void addRole(CiotolaRoleImpl newRole) {
+  public void addRole(RoleImpl newRole) {
     mappedRoles.put(newRole.getRoleId(), newRole);
   }
 
-  public void removeRole(CiotolaRoleImpl removeRole) {
+  public void removeRole(RoleImpl removeRole) {
     mappedRoles.remove(removeRole.getRoleId());
   }
 
@@ -47,12 +49,13 @@ public final class CiotolaActor extends Thread {
     isRunning = false;
   }
 
+
   private void processRole() throws InterruptedException {
     if (mappedRoles.size() == 0) {
       Thread.sleep(10);
     }
-    for (Map.Entry<Long, CiotolaRoleImpl> entry : mappedRoles.entrySet()) {
-      CiotolaRoleImpl role = entry.getValue();
+    for (Map.Entry<Long, RoleImpl> entry : mappedRoles.entrySet()) {
+      RoleImpl role = entry.getValue();
       if (role.getScript().hasValues() == false && role.getScript().hasReturn() == false) {
         if (role.requests() == 0) {
           executeAction(role.getScript(), role);
@@ -75,10 +78,9 @@ public final class CiotolaActor extends Thread {
   }
 
   private void executeActionNoRetCall(
-      Object message, CiotolaScript script, CiotolaFutureImpl future, CiotolaRoleImpl role) {
+      Object message, Script script, CiotolaFutureImpl future, RoleImpl role) {
     try {
       script.process(message);
-      future.setResult(null);
     } catch (Throwable ex) {
       logger.error(
           "Exception thrown by role: " + role.getRoleId() + "processed by Actor: " + runnerId, ex);
@@ -88,7 +90,7 @@ public final class CiotolaActor extends Thread {
   }
 
   private void executeActionRetNoCall(
-      CiotolaScript script, CiotolaFutureImpl future, CiotolaRoleImpl role) {
+      Script script, CiotolaFutureImpl future, RoleImpl role) {
     try {
       future.setResult(script.process(null));
     } catch (Throwable ex) {
@@ -99,7 +101,7 @@ public final class CiotolaActor extends Thread {
     }
   }
 
-  private void executeAction(CiotolaScript script, CiotolaRoleImpl role) {
+  private void executeAction(Script script, RoleImpl role) {
     try {
       script.process(null);
     } catch (Throwable ex) {
@@ -109,7 +111,7 @@ public final class CiotolaActor extends Thread {
   }
 
   private void executeAction(
-      Object message, CiotolaScript script, CiotolaFutureImpl future, CiotolaRoleImpl role) {
+      Object message, Script script, CiotolaFutureImpl future, RoleImpl role) {
     try {
       Object ret = script.process(message);
       future.setResult(ret);
@@ -121,15 +123,19 @@ public final class CiotolaActor extends Thread {
     }
   }
 
+  private void guardProcess() {
+    try {
+      processRole();
+    } catch (Throwable ex) {
+      logger.error("Actor caught exception", ex);
+    }
+  }
+
   @Override
   public void run() {
     logger.debug("Actor [" + Integer.toString(runnerId) + "] Running");
     while (isRunning()) {
-      try {
-        processRole();
-      } catch (InterruptedException e) {
-        logger.error("Actor interrupted", e);
-      }
+      guardProcess();
     }
   }
 }

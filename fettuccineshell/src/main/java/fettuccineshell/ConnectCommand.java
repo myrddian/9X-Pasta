@@ -18,9 +18,12 @@ import org.springframework.shell.standard.ShellOption;
 
 @ShellComponent
 public class ConnectCommand {
-  @Autowired ShellConnection shellConnection;
 
-  @Autowired FettuccineShellHelper shellHelper;
+  @Autowired
+  ShellConnection shellConnection;
+
+  @Autowired
+  FettuccineShellHelper shellHelper;
 
   @ShellMethod("Connect to a target Service")
   public void connect(

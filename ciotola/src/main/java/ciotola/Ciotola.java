@@ -52,7 +52,8 @@ public class Ciotola implements CiotolaContext {
   private final Logger logger = LoggerFactory.getLogger(Ciotola.class);
   private CiotolaContext serviceContainer = new DefaultCiotolaContainer();
 
-  private Ciotola() {}
+  private Ciotola() {
+  }
 
   public static Ciotola getInstance() {
     if (SINGLE_INSTANCE == null) {

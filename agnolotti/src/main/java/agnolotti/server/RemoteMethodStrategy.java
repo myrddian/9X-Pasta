@@ -53,11 +53,11 @@ import protocol.messages.response.WriteResponse;
 
 public class RemoteMethodStrategy extends GelatoResourceControllerImpl
     implements GelatoFileController,
-        WriteRequestHandler,
-        ReadRequestHandler,
-        StatRequestHandler,
-        OpenRequestHandler,
-        CloseRequestHandler {
+    WriteRequestHandler,
+    ReadRequestHandler,
+    StatRequestHandler,
+    OpenRequestHandler,
+    CloseRequestHandler {
 
   public static final String WRITE_BYTES = "writes";
   public static final String RESOURCE = "resource";
@@ -208,7 +208,8 @@ public class RemoteMethodStrategy extends GelatoResourceControllerImpl
   }
 
   @Override
-  public void setResourceController(GelatoResourceController resourceController) {}
+  public void setResourceController(GelatoResourceController resourceController) {
+  }
 
   @Override
   public boolean readRequest(

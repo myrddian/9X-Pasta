@@ -10,6 +10,7 @@
  */
 
 public class TestServiceProxy implements TestBomb {
+
   @Override
   public void hello() {
     System.out.println("hello");

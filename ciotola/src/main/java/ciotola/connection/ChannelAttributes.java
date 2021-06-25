@@ -15,6 +15,7 @@ import java.nio.channels.SelectionKey;
 import java.nio.channels.SocketChannel;
 
 public interface ChannelAttributes {
+
   SocketChannel getChannel();
 
   SelectionKey getSelectionKey();

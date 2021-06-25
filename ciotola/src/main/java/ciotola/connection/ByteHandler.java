@@ -17,6 +17,8 @@ import java.nio.ByteOrder;
 public final class ByteHandler {
 
   public static final int MSG_INT_SIZE = 4;
+  public static final int MSG_LONG_SIZE = 8;
+  public static final int MSG_SHORT_SIZE = 2;
 
   public static void copyBytesTo(byte[] input, byte[] out, int start, int size) {
     for (int counter = 0; counter < size; ++counter) {
@@ -38,6 +40,19 @@ public final class ByteHandler {
     bytesBuffer.put(numBuffer);
     bytesBuffer.flip();
     return bytesBuffer.getInt();
+  }
+
+  public static long decodeUnsignedInt(byte[] buffer, int position) {
+    return getUnsigned(decodeInt(buffer, position));
+  }
+
+  public static long getUnsigned(int signed) {
+    return signed >= 0 ? signed : 2 * (long) Integer.MAX_VALUE + 2 + signed;
+  }
+
+  public static int toUnsigned(long value) {
+    String lngString = Long.toString(value);
+    return Integer.parseUnsignedInt(lngString);
   }
 
 }

@@ -18,6 +18,7 @@ import protocol.messages.Message;
 import protocol.messages.TransactionMessage;
 
 public class WriteStatRequest implements TransactionMessage {
+
   private int tag;
   private int fileDescriptor;
   private StatStruct statStruct;

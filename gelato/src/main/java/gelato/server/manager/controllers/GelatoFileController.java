@@ -12,6 +12,7 @@
 package gelato.server.manager.controllers;
 
 public interface GelatoFileController extends GelatoResourceController {
+
   GelatoResourceController getResourceController();
 
   void setResourceController(GelatoResourceController resourceController);

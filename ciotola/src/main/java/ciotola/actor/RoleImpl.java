@@ -16,12 +16,13 @@ import java.util.concurrent.LinkedBlockingQueue;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-final class CiotolaRoleImpl<T, R> implements CiotolaRole<T, R> {
+final class RoleImpl<T, R> implements Role<T, R> {
 
-  private final Logger logger = LoggerFactory.getLogger(CiotolaRoleImpl.class);
+  private final Logger logger = LoggerFactory.getLogger(RoleImpl.class);
   private long roleId;
+  private int roleKey;
   private BlockingQueue<ActorAction<T>> readMessageQueue = new LinkedBlockingQueue<>();
-  private CiotolaScript<T, R> executeTask = null;
+  private Script<T, R> executeTask = null;
 
   public int requests() {
     return readMessageQueue.size();
@@ -47,11 +48,11 @@ final class CiotolaRoleImpl<T, R> implements CiotolaRole<T, R> {
     return resp;
   }
 
-  public CiotolaScript<T, R> getScript() {
+  public Script<T, R> getScript() {
     return executeTask;
   }
 
-  public void setScript(CiotolaScript script) {
+  public void setScript(Script script) {
     executeTask = script;
   }
 
@@ -62,5 +63,13 @@ final class CiotolaRoleImpl<T, R> implements CiotolaRole<T, R> {
 
   public void setRoleId(long newId) {
     roleId = newId;
+  }
+
+  public int getRoleKey() {
+    return roleKey;
+  }
+
+  public void setRoleKey(int roleKey) {
+    this.roleKey = roleKey;
   }
 }

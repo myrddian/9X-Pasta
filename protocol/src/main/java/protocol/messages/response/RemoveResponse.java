@@ -16,6 +16,7 @@ import protocol.messages.Message;
 import protocol.messages.TransactionMessage;
 
 public class RemoveResponse implements TransactionMessage {
+
   private int tag;
 
   @Override

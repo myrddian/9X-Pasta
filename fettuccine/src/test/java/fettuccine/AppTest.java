@@ -11,4 +11,6 @@
 
 package fettuccine;
 
-class AppTest {}
+class AppTest {
+
+}

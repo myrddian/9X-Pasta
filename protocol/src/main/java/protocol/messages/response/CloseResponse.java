@@ -16,6 +16,7 @@ import protocol.messages.Message;
 import protocol.messages.TransactionMessage;
 
 public class CloseResponse implements TransactionMessage {
+
   private int tag;
 
   @Override

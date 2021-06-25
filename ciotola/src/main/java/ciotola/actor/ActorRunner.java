@@ -15,7 +15,7 @@ import ciotola.annotations.CiotolaScriptMethod;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
-public class ActorRunner implements CiotolaScript {
+final class ActorRunner implements Script {
 
   private boolean hasParams = false;
   private boolean hasRet = false;

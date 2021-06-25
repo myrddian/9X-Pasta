@@ -14,5 +14,6 @@ package gelato.server.manager.processchain;
 import gelato.server.manager.RequestConnection;
 
 public interface CreateRequestHandler {
+
   boolean createRequest(RequestConnection connection, String fileName, int permission, byte mode);
 }

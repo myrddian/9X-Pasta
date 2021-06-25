@@ -9,6 +9,13 @@
  *
  */
 
-package ciotola.logger;
+package ciotola.actor;
 
-public class LoggerProxy {}
+public interface SourceRecord<T> {
+
+  T getValue();
+
+  Long getKey();
+
+  String getPort();
+}

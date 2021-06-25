@@ -17,6 +17,7 @@ import gelato.server.manager.processchain.CloseRequestHandler;
 import protocol.messages.response.CloseResponse;
 
 public class DefaultCloseRequestHandler implements CloseRequestHandler {
+
   @Override
   public boolean closeRequest(
       RequestConnection connection, GelatoFileDescriptor clientFileDescriptor) {

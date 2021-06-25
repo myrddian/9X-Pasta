@@ -15,6 +15,7 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class SorbetResourceSession {
+
   private Map<String, Object> mappings = new ConcurrentHashMap<>();
 
   public boolean contains(String key) {

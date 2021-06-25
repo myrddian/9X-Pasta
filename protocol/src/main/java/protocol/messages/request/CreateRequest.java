@@ -18,6 +18,7 @@ import protocol.messages.MessageRaw;
 import protocol.messages.TransactionMessage;
 
 public class CreateRequest implements TransactionMessage {
+
   private int tag;
   private int permission;
   private byte mode;

@@ -15,6 +15,7 @@ import gelato.GelatoFileDescriptor;
 import gelato.server.manager.RequestConnection;
 
 public interface WriteRequestHandler {
+
   boolean writeRequest(
       RequestConnection connection,
       GelatoFileDescriptor clientFileDescriptor,

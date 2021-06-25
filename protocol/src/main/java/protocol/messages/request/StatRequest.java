@@ -17,6 +17,7 @@ import protocol.messages.Message;
 import protocol.messages.TransactionMessage;
 
 public class StatRequest implements TransactionMessage {
+
   private int tag;
   private int fileDescriptor;
 

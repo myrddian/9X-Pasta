@@ -16,6 +16,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class FettuccineConfig {
+
   public static String LOCALHOST = "localhost";
   final Logger logger = LoggerFactory.getLogger(FettuccineConfig.class);
   private int port = 9090;
@@ -29,7 +30,9 @@ public class FettuccineConfig {
     logger.info("Listening at port: " + Integer.toString(port));
   }
 
-  public void loadConfigAtPath(String path) {}
+  public void loadConfigAtPath(String path) {
+  }
+
   ;
 
   public GelatoConfigImpl generateConfig() {

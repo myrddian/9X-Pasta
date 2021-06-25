@@ -14,6 +14,7 @@ package gelato.client.file;
 import java.util.List;
 
 public interface GelatoDirectory extends GelatoFile {
+
   List<GelatoDirectory> getDirectories();
 
   List<GelatoFile> getFiles();

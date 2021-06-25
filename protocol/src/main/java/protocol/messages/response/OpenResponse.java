@@ -19,6 +19,7 @@ import protocol.messages.MessageRaw;
 import protocol.messages.TransactionMessage;
 
 public class OpenResponse implements TransactionMessage {
+
   private int tag;
   private QID fileQID;
   private int sizeIO = P9Protocol.MAX_MSG_CONTENT_SIZE;

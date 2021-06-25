@@ -12,6 +12,7 @@
 package gelato;
 
 public interface GelatoSession {
+
   void setSessionVar(String varName, Object varValue);
 
   Object getSessionVar(String varName);

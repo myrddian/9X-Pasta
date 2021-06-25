@@ -107,7 +107,7 @@ public class FettuccineShellHelper {
    * Generic Print to the console method.
    *
    * @param message message to print
-   * @param color (optional) prompt color
+   * @param color   (optional) prompt color
    */
   public void print(String message, PromptColor color) {
     String toPrint = message;

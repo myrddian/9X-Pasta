@@ -12,5 +12,6 @@
 package ciotola.annotations;
 
 public interface AnnotatorHandler {
+
   void handle(Class typeFound);
 }

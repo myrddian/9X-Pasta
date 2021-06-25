@@ -12,5 +12,6 @@
 package ciotola.connection;
 
 public interface CiotolaConnectionHandler {
+
   void process(ChannelAttributes activeChannel);
 }

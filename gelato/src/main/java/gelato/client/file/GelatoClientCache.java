@@ -27,7 +27,8 @@ public class GelatoClientCache {
   private boolean shutdown = false;
   private Map<Integer, GelatoResource> cachedResources = new ConcurrentHashMap<>();
 
-  private GelatoClientCache() {}
+  private GelatoClientCache() {
+  }
 
   public static GelatoClientCache getInstance() {
     if (SINGLE_INSTANCE == null) {

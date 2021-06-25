@@ -15,5 +15,6 @@ import gelato.server.manager.RequestConnection;
 import protocol.messages.request.AttachRequest;
 
 public interface AttachRequestHandler {
+
   boolean attachRequest(RequestConnection connection, AttachRequest request);
 }

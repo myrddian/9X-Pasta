@@ -16,6 +16,7 @@ import gelato.GelatoFileDescriptor;
 import protocol.messages.VersionRequest;
 
 public interface RequestVersionHandler {
+
   boolean processRequest(
       GelatoConnection connection, GelatoFileDescriptor descriptor, VersionRequest request);
 }

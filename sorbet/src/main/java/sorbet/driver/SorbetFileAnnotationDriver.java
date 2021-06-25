@@ -11,4 +11,6 @@
 
 package sorbet.driver;
 
-public class SorbetFileAnnotationDriver {}
+public class SorbetFileAnnotationDriver {
+
+}

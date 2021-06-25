@@ -44,7 +44,8 @@ public class GelatoServerConnection implements GelatoConnection, GelatoConnectio
   private boolean shutdown = false;
   private boolean started = false;
   private GelatoConnectionNotifier notifier = this;
-  @CiotolaAutowire private CiotolaContext context;
+  @CiotolaAutowire
+  private CiotolaContext context;
 
   public GelatoServerConnection(GelatoDescriptorManager descriptorManager, int portNumber) {
     this.descriptorManager = descriptorManager;

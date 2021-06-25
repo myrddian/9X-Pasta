@@ -11,12 +11,7 @@
 
 package ciotola.actor;
 
-import java.lang.reflect.InvocationTargetException;
+public interface SourceAgent<T> {
 
-public interface CiotolaScript<T, R> {
-  R process(T message) throws InvocationTargetException, IllegalAccessException;
-
-  boolean hasReturn();
-
-  boolean hasValues();
+  void register(AgentPort<T> targetPort);
 }

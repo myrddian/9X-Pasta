@@ -15,5 +15,6 @@ import gelato.GelatoFileDescriptor;
 import gelato.server.manager.RequestConnection;
 
 public interface RemoveRequestHandler {
+
   boolean removeRequest(RequestConnection connection, GelatoFileDescriptor clientFileDescriptor);
 }

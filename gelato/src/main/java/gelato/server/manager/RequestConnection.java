@@ -19,6 +19,7 @@ import protocol.messages.Message;
 import protocol.messages.TransactionMessage;
 
 public class RequestConnection {
+
   private GelatoSession session;
   private GelatoConnection connection;
   private GelatoFileDescriptor descriptor;

@@ -12,5 +12,6 @@
 package ciotola.connection;
 
 public interface BufferHandler<TYPE> {
+
   void read(ChannelBuffer<TYPE> channelBuffer);
 }

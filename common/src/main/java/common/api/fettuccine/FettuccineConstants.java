@@ -12,6 +12,7 @@
 package common.api.fettuccine;
 
 public class FettuccineConstants {
+
   public static final String MOUNT_DIR = "mnt";
   public static final String PROC_DIR = "proc";
   public static final String SYS_DIR = "sys";

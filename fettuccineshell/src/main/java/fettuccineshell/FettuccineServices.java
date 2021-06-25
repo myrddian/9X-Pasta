@@ -25,8 +25,11 @@ import protocol.P9Protocol;
 
 @ShellComponent
 public class FettuccineServices {
-  @Autowired ShellConnection shellConnection;
-  @Autowired FettuccineShellHelper shellHelper;
+
+  @Autowired
+  ShellConnection shellConnection;
+  @Autowired
+  FettuccineShellHelper shellHelper;
 
   private boolean initComplete = false;
   private RemoteClient remoteClient;

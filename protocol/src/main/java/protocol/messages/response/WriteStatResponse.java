@@ -16,6 +16,7 @@ import protocol.messages.Message;
 import protocol.messages.TransactionMessage;
 
 public class WriteStatResponse implements TransactionMessage {
+
   private int tag;
 
   @Override

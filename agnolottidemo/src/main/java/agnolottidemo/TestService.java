@@ -12,6 +12,7 @@
 package agnolottidemo;
 
 public interface TestService {
+
   void nullCall();
 
   String echo(String msg);

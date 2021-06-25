@@ -23,6 +23,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class AnnotatedJavaServiceRunner implements CiotolaServiceInterface {
+
   private final Logger logger = LoggerFactory.getLogger(AnnotatedJavaServiceRunner.class);
   private Object javaServiceObject;
   private Method startMethod;

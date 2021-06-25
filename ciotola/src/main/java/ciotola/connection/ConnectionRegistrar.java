@@ -12,6 +12,7 @@
 package ciotola.connection;
 
 public interface ConnectionRegistrar {
+
   CiotolaConnectionHandler registerConnection(ChannelAttributes newConnection);
 
   void connectionClosed(ChannelAttributes closedConnection);

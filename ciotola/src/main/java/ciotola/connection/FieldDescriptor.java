@@ -15,6 +15,7 @@ import ciotola.Ciotola;
 import java.lang.reflect.Field;
 
 class FieldDescriptor {
+
   private int position;
   private int size;
   private Ciotola.ParseType parseType;

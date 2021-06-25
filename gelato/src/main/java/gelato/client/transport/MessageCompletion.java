@@ -15,6 +15,7 @@ import gelato.client.GelatoMessage;
 import protocol.messages.Message;
 
 public class MessageCompletion {
+
   private GelatoMessage future;
   private Message message;
 

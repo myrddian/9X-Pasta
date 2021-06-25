@@ -18,6 +18,7 @@ import protocol.StatStruct;
 import protocol.messages.response.StatResponse;
 
 public class DefaultStatHandler implements StatRequestHandler {
+
   @Override
   public boolean statRequest(
       RequestConnection connection, GelatoFileDescriptor clientFileDescriptor) {

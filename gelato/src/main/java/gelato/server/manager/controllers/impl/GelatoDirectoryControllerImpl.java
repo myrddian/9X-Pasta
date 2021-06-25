@@ -46,10 +46,10 @@ import protocol.messages.response.WalkResponse;
 
 public class GelatoDirectoryControllerImpl
     implements GelatoDirectoryController,
-        WalkRequestHandler,
-        ReadRequestHandler,
-        OpenRequestHandler,
-        StatRequestHandler {
+    WalkRequestHandler,
+    ReadRequestHandler,
+    OpenRequestHandler,
+    StatRequestHandler {
 
   private final Logger logger = LoggerFactory.getLogger(GelatoDirectoryControllerImpl.class);
   private Map<String, GelatoDirectoryController> directories = new ConcurrentHashMap<>();

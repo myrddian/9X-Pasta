@@ -27,9 +27,12 @@ import protocol.StatStruct;
 
 @ShellComponent
 public class NagivationCommands {
-  @Autowired ShellConnection shellConnection;
 
-  @Autowired FettuccineShellHelper shellHelper;
+  @Autowired
+  ShellConnection shellConnection;
+
+  @Autowired
+  FettuccineShellHelper shellHelper;
   private GelatoDirectory currentDirectory;
   private boolean isInitialised = false;
   private GelatoFileManager fileManager;

@@ -12,6 +12,7 @@
 package ciotola.actor;
 
 public interface CiotolaFuture<T> {
+
   T get();
 
   boolean isError();

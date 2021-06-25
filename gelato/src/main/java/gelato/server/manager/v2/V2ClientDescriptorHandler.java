@@ -47,9 +47,9 @@ import protocol.messages.response.AttachResponse;
 
 public class V2ClientDescriptorHandler extends GelatoAbstractGenericRequestHandler
     implements VersionRequestHandler,
-        AttachRequestHandler,
-        AuthRequestHandler,
-        UnknownRequestHandler {
+    AttachRequestHandler,
+    AuthRequestHandler,
+    UnknownRequestHandler {
 
   public static final String INVALID_FID = "Only NO_FID supported";
   public static final String NO_SESSION = "No Session started - TVERSION Expected not found";
@@ -66,7 +66,8 @@ public class V2ClientDescriptorHandler extends GelatoAbstractGenericRequestHandl
   private GelatoDirectoryController rootAttach;
   private boolean shutdown = false;
 
-  @CiotolaAutowire private GelatoServerManager manager;
+  @CiotolaAutowire
+  private GelatoServerManager manager;
 
   // Client connection state
   private GelatoSession clientSession = null;

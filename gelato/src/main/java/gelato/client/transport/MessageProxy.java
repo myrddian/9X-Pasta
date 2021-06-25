@@ -16,5 +16,6 @@ import gelato.client.GelatoMessaging;
 import protocol.messages.Message;
 
 public interface MessageProxy {
+
   void processMessage(GelatoMessage gelatoMessage, Message message, GelatoMessaging connection);
 }

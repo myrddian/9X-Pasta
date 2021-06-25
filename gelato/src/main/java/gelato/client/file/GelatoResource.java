@@ -15,6 +15,7 @@ import gelato.GelatoFileDescriptor;
 import protocol.StatStruct;
 
 public interface GelatoResource {
+
   String getName();
 
   long getSize();

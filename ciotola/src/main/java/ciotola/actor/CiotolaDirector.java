@@ -15,11 +15,13 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 public final class CiotolaDirector {
+
   public static final String ACTOR_INTERRUPTED_RESULT =
       "Interrupted exception - while fetching result";
   private Map<Integer, CiotolaActor> actorPool = new ConcurrentHashMap<>();
-  private Map<Long, CiotolaRoleImpl> rolePool = new ConcurrentHashMap<>();
+  private Map<Long, RoleImpl> rolePool = new ConcurrentHashMap<>();
   private long scheduleId = 0;
+  private BusImpl agentBus = new BusImpl(this);
 
   public CiotolaDirector(int poolSize) {
     for (int counter = 0; counter < poolSize; ++counter) {
@@ -30,41 +32,51 @@ public final class CiotolaDirector {
     }
   }
 
-  public CiotolaRole createRole(Object javaObject) {
+  public Role createRole(Object javaObject) {
     return createRole(new ActorRunner(javaObject));
   }
 
-  public CiotolaRole createRole(Object javaObject, int key) {
+  public Role createRole(Object javaObject, int key) {
     return createRole(new ActorRunner(javaObject), key);
   }
 
-  public CiotolaRole createRole(CiotolaScript script) {
-    CiotolaRoleImpl newRole = new CiotolaRoleImpl();
+  public Bus getBus() {
+    return this.agentBus;
+  }
+
+  public Role createRole(Script script) {
+    RoleImpl newRole = new RoleImpl();
     newRole.setRoleId(getIncrement());
     newRole.setScript(script);
 
     int targetId = (int) newRole.getRoleId() % actorPool.size();
     actorPool.get(targetId).addRole(newRole);
     rolePool.put(newRole.getRoleId(), newRole);
+    newRole.setRoleKey(targetId);
     return newRole;
   }
 
-  public CiotolaRole createRole(CiotolaScript script, int key) {
-    CiotolaRoleImpl newRole = new CiotolaRoleImpl();
+  public Role createRole(Script script, int key) {
+    RoleImpl newRole = new RoleImpl();
     newRole.setRoleId(getIncrement());
     newRole.setScript(script);
 
     int targetId = key % actorPool.size();
     actorPool.get(targetId).addRole(newRole);
     rolePool.put(newRole.getRoleId(), newRole);
+    newRole.setRoleKey(targetId);
     return newRole;
   }
 
-  public CiotolaRole getRole(Long roleId) {
+  public Role getRole(Long roleId) {
     return rolePool.get(roleId);
   }
 
-  public void removeRole(CiotolaRole role) {}
+  public void removeRole(Role role) {
+    RoleImpl targetRole = rolePool.get(role.getRoleId());
+    actorPool.get(targetRole.getRoleKey()).removeRole(targetRole);
+    rolePool.remove(targetRole.getRoleId());
+  }
 
   private synchronized long getIncrement() {
     return ++scheduleId;

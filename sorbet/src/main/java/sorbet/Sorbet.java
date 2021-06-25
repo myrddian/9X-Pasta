@@ -17,6 +17,7 @@ import gelato.server.GelatoServerManager;
 import sorbet.annotations.SorbetFileController;
 
 public class Sorbet {
+
   public static final String WRITE_BYTES = "writes";
   public static final String RESOURCE = "resource";
   public static final String MODE = "mode";

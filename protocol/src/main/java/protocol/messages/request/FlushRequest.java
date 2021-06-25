@@ -18,6 +18,7 @@ import protocol.messages.MessageRaw;
 import protocol.messages.TransactionMessage;
 
 public class FlushRequest implements TransactionMessage {
+
   private int tag;
   private int oldtag;
 

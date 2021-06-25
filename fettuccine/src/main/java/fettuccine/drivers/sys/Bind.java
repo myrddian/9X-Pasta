@@ -11,4 +11,6 @@
 
 package fettuccine.drivers.sys;
 
-public class Bind {}
+public class Bind {
+
+}

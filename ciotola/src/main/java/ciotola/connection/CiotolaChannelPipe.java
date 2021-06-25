@@ -11,4 +11,6 @@
 
 package ciotola.connection;
 
-public class CiotolaChannelPipe {}
+public class CiotolaChannelPipe {
+
+}

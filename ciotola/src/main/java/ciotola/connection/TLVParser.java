@@ -46,15 +46,19 @@ public final class TLVParser<TYPE> implements BufferHandler<byte[]> {
     ByteHandler.copyBytesTo(data, allocBuffer, 0, data.length);
     int numFields = propertyMap.size();
     int decorderPosition = 0;
-    for(int index=0; index < numFields; ++index) {
+    for (int index = 0; index < numFields; ++index) {
       FieldDescriptor descriptor = propertyMap.get(index);
       switch (descriptor.getParseType()) {
         case SIGNED_INT:
           int value = ByteHandler.decodeInt(allocBuffer, decorderPosition);
           decorderPosition += ByteHandler.MSG_INT_SIZE;
-          fieldValues.put(index,value);
+          fieldValues.put(index, value);
           break;
-
+        case UNSIGNED_INT_TO_LONG:
+          long unsignedInt = ByteHandler.decodeUnsignedInt(allocBuffer, decorderPosition);
+          decorderPosition += ByteHandler.MSG_INT_SIZE;
+          fieldValues.put(index, unsignedInt);
+          break;
       }
     }
   }

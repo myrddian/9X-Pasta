@@ -15,6 +15,7 @@ import gelato.server.GelatoServerManager;
 import org.junit.jupiter.api.Test;
 
 class LibraryTest {
+
   @Test
   void testSomeLibraryMethod() throws InterruptedException {
 

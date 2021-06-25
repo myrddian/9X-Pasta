@@ -19,6 +19,7 @@ import protocol.messages.MessageRaw;
 import protocol.messages.TransactionMessage;
 
 public class AttachResponse implements TransactionMessage {
+
   private QID serverID;
   private int tag;
 

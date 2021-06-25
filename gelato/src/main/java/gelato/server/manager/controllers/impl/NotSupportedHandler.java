@@ -26,14 +26,14 @@ import protocol.StatStruct;
 
 public class NotSupportedHandler
     implements CloseRequestHandler,
-        CreateRequestHandler,
-        OpenRequestHandler,
-        ReadRequestHandler,
-        RemoveRequestHandler,
-        StatRequestHandler,
-        WalkRequestHandler,
-        WriteRequestHandler,
-        WriteStatRequestHandler {
+    CreateRequestHandler,
+    OpenRequestHandler,
+    ReadRequestHandler,
+    RemoveRequestHandler,
+    StatRequestHandler,
+    WalkRequestHandler,
+    WriteRequestHandler,
+    WriteStatRequestHandler {
 
   private void sendError(RequestConnection connection) {
     connection

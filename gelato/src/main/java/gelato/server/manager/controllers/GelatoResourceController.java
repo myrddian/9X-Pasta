@@ -31,6 +31,7 @@ import protocol.QID;
 import protocol.StatStruct;
 
 public interface GelatoResourceController extends GenericRequestHandler {
+
   QID getQID();
 
   void setQID(QID value);

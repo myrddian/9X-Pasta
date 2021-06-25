@@ -72,10 +72,9 @@ public class InputReader {
 
   /**
    * Loops until one of the `options` is provided. Pressing return is equivalent to returning
-   * `defaultValue`. <br>
-   * Passing null for defaultValue signifies that there is no default value.<br>
-   * Passing "" or null among optionsAsList means that empty answer is allowed, in these cases this
-   * method returns empty String "" as the result of its execution.
+   * `defaultValue`. <br> Passing null for defaultValue signifies that there is no default
+   * value.<br> Passing "" or null among optionsAsList means that empty answer is allowed, in these
+   * cases this method returns empty String "" as the result of its execution.
    */
   public String promptWithOptions(String prompt, String defaultValue, List<String> optionsAsList) {
     String answer;
@@ -158,7 +157,9 @@ public class InputReader {
     }
     Iterator<String> it = l.iterator();
     while (it.hasNext()) {
-      if (it.next().equalsIgnoreCase(s)) return true;
+      if (it.next().equalsIgnoreCase(s)) {
+        return true;
+      }
     }
     return false;
   }

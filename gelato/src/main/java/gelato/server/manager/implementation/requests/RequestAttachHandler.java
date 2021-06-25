@@ -17,6 +17,7 @@ import gelato.GelatoSession;
 import protocol.messages.request.AttachRequest;
 
 public interface RequestAttachHandler {
+
   boolean processRequest(
       GelatoConnection connection,
       GelatoFileDescriptor descriptor,

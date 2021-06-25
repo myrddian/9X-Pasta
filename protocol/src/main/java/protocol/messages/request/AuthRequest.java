@@ -17,6 +17,7 @@ import protocol.messages.Message;
 import protocol.messages.TransactionMessage;
 
 public class AuthRequest implements TransactionMessage {
+
   private String userName;
   private String userAuth;
   private int AuthFileID;

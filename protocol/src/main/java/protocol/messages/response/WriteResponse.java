@@ -17,6 +17,7 @@ import protocol.messages.Message;
 import protocol.messages.TransactionMessage;
 
 public class WriteResponse implements TransactionMessage {
+
   private int tag;
   private int bytesWritten;
 

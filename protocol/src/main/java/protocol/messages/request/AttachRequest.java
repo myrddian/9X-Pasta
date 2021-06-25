@@ -18,6 +18,7 @@ import protocol.messages.MessageRaw;
 import protocol.messages.TransactionMessage;
 
 public class AttachRequest implements TransactionMessage {
+
   private int fid;
   private int afid;
   private String username;

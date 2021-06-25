@@ -16,6 +16,7 @@ import gelato.client.GelatoMessage;
 import gelato.server.manager.RequestConnection;
 
 public class GelatoMessageProxy {
+
   private GelatoMessage forwardedMessage;
   private long timeSent = 0;
   private int queueSize = 0;

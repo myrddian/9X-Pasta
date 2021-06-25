@@ -40,7 +40,8 @@ public class AgnelottiSchema {
   private Gson gson = new Gson();
   private SystemMapper mapper = new SystemMapper();
 
-  private AgnelottiSchema() {}
+  private AgnelottiSchema() {
+  }
 
   public static AgnelottiSchema getInstance() {
     if (SINGLE_INSTANCE == null) {

@@ -18,6 +18,7 @@ import java.util.List;
 import protocol.messages.Message;
 
 public class V2TransportProxy implements GelatoConnection {
+
   private V2TCPTransport transport;
 
   public V2TransportProxy(V2TCPTransport tcpTransport) {
@@ -73,10 +74,12 @@ public class V2TransportProxy implements GelatoConnection {
   }
 
   @Override
-  public void sendMessage(Message msg) {}
+  public void sendMessage(Message msg) {
+  }
 
   @Override
-  public void shutdown() {}
+  public void shutdown() {
+  }
 
   @Override
   public boolean isStarted() {
@@ -84,8 +87,10 @@ public class V2TransportProxy implements GelatoConnection {
   }
 
   @Override
-  public void begin() {}
+  public void begin() {
+  }
 
   @Override
-  public void closeConnection(GelatoFileDescriptor descriptor) {}
+  public void closeConnection(GelatoFileDescriptor descriptor) {
+  }
 }

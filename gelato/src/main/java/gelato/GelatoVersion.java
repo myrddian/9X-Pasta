@@ -12,6 +12,7 @@
 package gelato;
 
 public class GelatoVersion {
+
   public static final int VERSION_MAJOR = 1;
   public static final int VERSION_MINOR = 0;
   public static final String VERSION_NOTES = "(alpha)";

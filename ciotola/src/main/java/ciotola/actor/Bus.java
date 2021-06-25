@@ -11,8 +11,14 @@
 
 package ciotola.actor;
 
-public interface CiotolaRole<T, R> {
-  CiotolaFuture<R> send(T message);
+public interface Bus {
 
-  long getRoleId();
+  AgentPort getPort(String name);
+
+  AgentPort createPort(String name);
+  AgentPort createPort(String name, boolean broadcast);
+  void removePort(String name);
+  void write(String portName, SourceRecord record);
+
+  void register(SinkAgent agent, String portName);
 }

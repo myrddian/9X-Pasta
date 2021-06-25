@@ -19,6 +19,7 @@ import protocol.messages.request.AuthRequest;
 import protocol.messages.response.AuthResponse;
 
 class LibraryTest {
+
   @Test
   void testSomeLibraryMethod() {
     VersionRequest versionRequest = new VersionRequest();

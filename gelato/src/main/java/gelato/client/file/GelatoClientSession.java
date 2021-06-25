@@ -98,7 +98,8 @@ public class GelatoClientSession implements GelatoSession {
   }
 
   @Override
-  public void setConnection(GelatoConnection connection) {}
+  public void setConnection(GelatoConnection connection) {
+  }
 
   @Override
   public GelatoDescriptorManager getManager() {

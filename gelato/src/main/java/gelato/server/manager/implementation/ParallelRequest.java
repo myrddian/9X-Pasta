@@ -21,6 +21,7 @@ import protocol.messages.Message;
 import protocol.messages.response.ErrorMessage;
 
 public class ParallelRequest implements Runnable {
+
   private final Logger logger = LoggerFactory.getLogger(ParallelRequest.class);
   private Message message;
   private GelatoResourceController handler;

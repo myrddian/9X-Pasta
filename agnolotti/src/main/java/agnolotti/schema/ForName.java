@@ -16,33 +16,37 @@ import java.util.HashMap;
 import java.util.Map;
 
 final class ForName {
+
   private static final Map<String, Class<?>> PRIM =
       (Collections.unmodifiableMap(
           new HashMap<String, Class<?>>(16) {
             {
               for (Class<?> cls :
-                  new Class<?>[] {
-                    void.class,
-                    boolean.class,
-                    char.class,
-                    byte.class,
-                    short.class,
-                    int.class,
-                    long.class,
-                    float.class,
-                    double.class
+                  new Class<?>[]{
+                      void.class,
+                      boolean.class,
+                      char.class,
+                      byte.class,
+                      short.class,
+                      int.class,
+                      long.class,
+                      float.class,
+                      double.class
                   }) {
                 put(cls.getName(), cls);
               }
             }
           }));
 
-  private ForName() {}
+  private ForName() {
+  }
 
   public static Class<?> forName(final String name) throws ClassNotFoundException {
     final Class<?> prim = PRIM.get(name);
 
-    if (prim != null) return prim;
+    if (prim != null) {
+      return prim;
+    }
 
     return Class.forName(name);
   }

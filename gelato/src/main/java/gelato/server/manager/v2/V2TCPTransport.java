@@ -112,7 +112,9 @@ public class V2TCPTransport implements GelatoTransport, CiotolaConnectionService
   private void processInbound(InputStream is) throws InterruptedException, IOException {
     // peek if there are bytes available otherwise just skip
     readSize = is.available();
-    if (readSize == 0) return;
+    if (readSize == 0) {
+      return;
+    }
 
     MessageRaw minMessage;
     int rsize = 0;

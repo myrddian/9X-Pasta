@@ -18,6 +18,7 @@ import protocol.messages.MessageRaw;
 import protocol.messages.TransactionMessage;
 
 public class OpenRequest implements TransactionMessage {
+
   private int tag;
   private int fileDescriptor;
   private byte mode;

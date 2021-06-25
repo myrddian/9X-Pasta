@@ -19,6 +19,7 @@ import protocol.messages.request.FlushRequest;
 import protocol.messages.response.FlushResponse;
 
 public class DefaultFlushHandler implements RequestFlushHandler {
+
   @Override
   public boolean processRequest(
       GelatoConnection connection,
