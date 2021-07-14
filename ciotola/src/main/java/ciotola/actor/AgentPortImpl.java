@@ -20,6 +20,7 @@ final class AgentPortImpl<T> implements AgentPort<T>, Script<SourceRecord<T>, Ob
   private String portName;
   private Role<SourceRecord<T>, Object> agentRole;
   private Map<Long, SinkAgentRunner<T>> agentMap = new ConcurrentHashMap<>();
+  private Map<Long, Role> sourceRoles = new ConcurrentHashMap<>();
   private CiotolaDirector director;
   private boolean duplicate;
 
@@ -68,6 +69,7 @@ final class AgentPortImpl<T> implements AgentPort<T>, Script<SourceRecord<T>, Ob
     SourceProducerRunner runner = new SourceProducerRunner(producer, forkJoin);
     runner.register(this);
     Role sourceRole = director.createRole(runner);
+    sourceRoles.put(sourceRole.getRoleId(),sourceRole);
     return runner;
   }
 
