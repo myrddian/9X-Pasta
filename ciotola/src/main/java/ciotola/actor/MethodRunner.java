@@ -11,57 +11,38 @@
 
 package ciotola.actor;
 
-import ciotola.annotations.CiotolaScriptMethod;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
-final class ActorRunner implements Script {
+public class MethodRunner implements Script {
 
   private boolean hasParams = false;
   private boolean hasRet = false;
   private Method target;
   private Object host;
 
-  public ActorRunner(Object runner) {
 
-    boolean foundMethod = false;
-    Method targetMethod;
-    host = runner;
-    for (Method method : runner.getClass().getMethods()) {
-      CiotolaScriptMethod startAnnotation = method.getAnnotation(CiotolaScriptMethod.class);
-      if (startAnnotation != null) {
-        targetMethod = method;
-        targetMethod.setAccessible(true);
-        foundMethod = true;
-        processMethod(targetMethod);
-      }
-    }
-
-    if (!foundMethod) {
-      throw new RuntimeException("INVALID - NEEDS ANNOTATION");
-    }
-  }
-
-  private void processMethod(Method targetMethod) {
-
+  public MethodRunner(Object host, Method targetMethod) {
+    this.target = targetMethod;
+    this.host = host;
     if (targetMethod.getParameterCount() != 0) {
       hasParams = true;
     }
-
     if (!targetMethod.getReturnType().getName().equals("void")) {
       hasRet = true;
     }
-
     target = targetMethod;
   }
+
 
   @Override
   public Object process(Object message) {
     try {
+      Object [] messages = ((MethodParamStack)message).methods;
       if (hasParams && hasRet) {
-        return target.invoke(host, message);
+        return target.invoke(host, messages);
       } else if (hasParams) {
-        target.invoke(host, message);
+        target.invoke(host, messages);
       } else if (hasRet) {
         return target.invoke(host);
       } else {

@@ -11,6 +11,7 @@
 
 package ciotola;
 
+import ciotola.actor.ActorCall;
 import ciotola.actor.AgentPort;
 import ciotola.actor.CiotolaDirector;
 import ciotola.actor.CiotolaFuture;
@@ -27,6 +28,14 @@ import org.junit.jupiter.api.Test;
 
 public class SimpleTest {
 
+
+  class MethodTester {
+    public String testMethod(String test) {
+      System.out.println(test);
+      return test+"---NEW";
+    }
+  }
+
   @Test
   public void simpleTest() throws IOException {
     /*Ciotola ciotola = Ciotola.getInstance();
@@ -39,6 +48,13 @@ public class SimpleTest {
     TLVParserFactory<TestTLVMesg> testFactory = new TLVParserFactory<>();
     testFactory.handle(TestTLVMesg.class);
     CiotolaDirector director = Ciotola.getInstance().getDirector();
+
+    MethodTester testing = new MethodTester();
+    ActorCall<String> asyncCall = director.createCall(testing,"testMethod");
+    CiotolaFuture<String> ret = asyncCall.call("test-bob");
+    System.out.println(ret.get());
+
+
     Role<String, String> newRole = director.createRole(new Script<String, String>() {
       @Override
       public String process(String message)

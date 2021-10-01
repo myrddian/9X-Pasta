@@ -11,6 +11,7 @@
 
 package ciotola.actor;
 
+import java.lang.reflect.Method;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -38,6 +39,33 @@ public final class CiotolaDirector {
 
   public Role createRole(Object javaObject, int key) {
     return createRole(new ActorRunner(javaObject), key);
+  }
+
+  public ActorCall createCall(Object host, String methodName) {
+    int count = 0;
+    Method methodFound = null;
+    for(Method method: host.getClass().getDeclaredMethods()) {
+      if(method.getName().equals(methodName)) {
+        methodFound = method;
+        ++count;
+      }
+    }
+    if(count ==0 || count > 1) {
+      throw  new ActorException("Cannot resolve method");
+    }
+    return createCall(host,methodFound);
+  }
+
+  public ActorCall createCall(Object host, Method method) {
+    RoleImpl newRole = new RoleImpl();
+    method.setAccessible(true);
+    newRole.setRoleId(getIncrement());
+    newRole.setScript(new MethodRunner(host,method));
+    int targetId = (int) newRole.getRoleId() % actorPool.size();
+    actorPool.get(targetId).addRole(newRole);
+    rolePool.put(newRole.getRoleId(), newRole);
+    newRole.setRoleKey(targetId);
+    return new ActorCallProxy(newRole);
   }
 
   public Bus getBus() {
