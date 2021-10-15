@@ -16,9 +16,11 @@ import java.util.ArrayList;
 class ActorCallProxy implements ActorCall{
 
   private RoleImpl role;
+  private String methodName;
 
-  public ActorCallProxy(RoleImpl role) {
+  public ActorCallProxy(RoleImpl role, String methodName) {
     this.role = role;
+    this.methodName = methodName;
   }
 
   @Override
@@ -29,7 +31,8 @@ class ActorCallProxy implements ActorCall{
       varArg.add(val);
     }
     MethodParamStack val = new MethodParamStack();
-    val.methods = varArg.toArray();
+    val.parameters = varArg.toArray();
+    val.methodName = methodName;
     return role.send(val);
   }
 }

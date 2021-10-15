@@ -13,41 +13,62 @@ package ciotola.actor;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
-public class MethodRunner implements Script {
+final class MethodRunner implements Script {
 
-  private boolean hasParams = false;
-  private boolean hasRet = false;
-  private Method target;
-  private Object host;
+  class MethodStat {
+    public Method callingMethod;
+    public boolean hasRet;
+    public boolean hasParam;
 
-
-  public MethodRunner(Object host, Method targetMethod) {
-    this.target = targetMethod;
-    this.host = host;
-    if (targetMethod.getParameterCount() != 0) {
-      hasParams = true;
+    public MethodStat(Method method) {
+      callingMethod = method;
+      if (method.getParameterCount() != 0) {
+        hasParam = true;
+      }
+      if (!method.getReturnType().getName().equals("void")) {
+        hasRet = true;
+      }
+      callingMethod = method;
     }
-    if (!targetMethod.getReturnType().getName().equals("void")) {
-      hasRet = true;
-    }
-    target = targetMethod;
+
   }
 
+  private RoleImpl role;
+  private Object host;
+  private Map<String, MethodStat> methodMap = new ConcurrentHashMap<>();
+
+
+  public MethodRunner(Object host, Method targetMethod, RoleImpl role) {
+    this.host = host;
+    this.role = role;
+    methodMap.put(targetMethod.getName(),new MethodStat(targetMethod));
+  }
+
+
+  public void addMethod(String methodName, Method method) {
+    methodMap.put(methodName,new MethodStat(method));
+  }
+
+  public RoleImpl getRole() {
+    return role;
+  }
 
   @Override
   public Object process(Object message) {
     try {
-      Object [] messages = ((MethodParamStack)message).methods;
-      if (hasParams && hasRet) {
-        return target.invoke(host, messages);
-      } else if (hasParams) {
-        target.invoke(host, messages);
-      } else if (hasRet) {
-        return target.invoke(host);
+      Object [] messages = ((MethodParamStack)message).parameters;
+      String methodName = ((MethodParamStack)message).methodName;
+      MethodStat methodStat = methodMap.get(methodName);
+      Object retVal;
+      if(methodStat.hasParam) {
+         retVal = methodStat.callingMethod.invoke(host,messages);
       } else {
-        target.invoke(host);
+        retVal = methodStat.callingMethod.invoke(host);
       }
+      return retVal;
     } catch (IllegalAccessException e) {
       e.printStackTrace();
     } catch (InvocationTargetException e) {
@@ -58,11 +79,11 @@ public class MethodRunner implements Script {
 
   @Override
   public boolean hasReturn() {
-    return hasRet;
+    return true;
   }
 
   @Override
   public boolean hasValues() {
-    return hasParams;
+    return true;
   }
 }

@@ -23,6 +23,7 @@ public final class CiotolaDirector {
   private Map<Long, RoleImpl> rolePool = new ConcurrentHashMap<>();
   private long scheduleId = 0;
   private BusImpl agentBus = new BusImpl(this);
+  private Map<Object,MethodRunner> concurrentObjects = new ConcurrentHashMap<>();
 
   public CiotolaDirector(int poolSize) {
     for (int counter = 0; counter < poolSize; ++counter) {
@@ -56,16 +57,30 @@ public final class CiotolaDirector {
     return createCall(host,methodFound);
   }
 
-  public ActorCall createCall(Object host, Method method) {
+  private ActorCall createNewMethodProxy(Object host, Method method) {
     RoleImpl newRole = new RoleImpl();
+    MethodRunner runner = new MethodRunner(host,method,newRole);
     method.setAccessible(true);
     newRole.setRoleId(getIncrement());
-    newRole.setScript(new MethodRunner(host,method));
+    newRole.setScript(runner);
     int targetId = (int) newRole.getRoleId() % actorPool.size();
     actorPool.get(targetId).addRole(newRole);
     rolePool.put(newRole.getRoleId(), newRole);
     newRole.setRoleKey(targetId);
-    return new ActorCallProxy(newRole);
+    concurrentObjects.put(host,runner);
+    return new ActorCallProxy(newRole,method.getName());
+  }
+
+  public ActorCall createCall(Object host, Method method) {
+    if(concurrentObjects.containsKey(host)) {
+      method.setAccessible(true);
+      MethodRunner runner = concurrentObjects.get(host);
+      runner.addMethod(method.getName(),method);
+      return new ActorCallProxy(runner.getRole(),method.getName());
+    } else
+    {
+      return createNewMethodProxy(host,method);
+    }
   }
 
   public Bus getBus() {

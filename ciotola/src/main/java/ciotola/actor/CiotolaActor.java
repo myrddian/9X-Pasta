@@ -63,36 +63,24 @@ final class CiotolaActor extends Thread {
       }
       if (role.requests() != 0) {
         ActorAction newAction = role.takeAction();
-        if (role.getScript().hasReturn() && role.getScript().hasValues()) {
-          executeAction(newAction.getMessage(), role.getScript(), newAction.getFuture(), role);
-        } else {
-          if (role.getScript().hasReturn()) {
-            executeActionRetNoCall(role.getScript(), newAction.getFuture(), role);
-          } else if (role.getScript().hasValues()) {
-            executeActionNoRetCall(
-                newAction.getMessage(), role.getScript(), newAction.getFuture(), role);
-          }
-        }
+        execute(newAction,role.getScript(),newAction.getFuture(),role);
       }
     }
   }
 
-  private void executeActionNoRetCall(
-      Object message, Script script, CiotolaFutureImpl future, RoleImpl role) {
+  private void execute(ActorAction action, Script script, CiotolaFutureImpl future, RoleImpl role) {
     try {
-      script.process(message);
-    } catch (Throwable ex) {
-      logger.error(
-          "Exception thrown by role: " + role.getRoleId() + "processed by Actor: " + runnerId, ex);
-      future.setError(true);
-      future.setException(new ActorException(ex));
-    }
-  }
+      Object retVal;
+      if(role.getScript().hasValues()) {
+        retVal = script.process(action.getMessage());
+      } else {
+        retVal  = script.process(null);
+      }
 
-  private void executeActionRetNoCall(
-      Script script, CiotolaFutureImpl future, RoleImpl role) {
-    try {
-      future.setResult(script.process(null));
+      if(retVal!=null) {
+        future.setResult(retVal);
+      }
+
     } catch (Throwable ex) {
       logger.error(
           "Exception thrown by role: " + role.getRoleId() + "processed by Actor: " + runnerId, ex);
@@ -110,18 +98,6 @@ final class CiotolaActor extends Thread {
     }
   }
 
-  private void executeAction(
-      Object message, Script script, CiotolaFutureImpl future, RoleImpl role) {
-    try {
-      Object ret = script.process(message);
-      future.setResult(ret);
-    } catch (Throwable ex) {
-      logger.error(
-          "Exception thrown by role: " + role.getRoleId() + "processed by Actor: " + runnerId, ex);
-      future.setError(true);
-      future.setException(new ActorException(ex));
-    }
-  }
 
   private void guardProcess() {
     try {

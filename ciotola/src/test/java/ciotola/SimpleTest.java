@@ -34,6 +34,10 @@ public class SimpleTest {
       System.out.println(test);
       return test+"---NEW";
     }
+
+    public String testTwo(int inNumber) {
+      return "Hello: " + inNumber;
+    }
   }
 
   @Test
@@ -51,8 +55,11 @@ public class SimpleTest {
 
     MethodTester testing = new MethodTester();
     ActorCall<String> asyncCall = director.createCall(testing,"testMethod");
+    ActorCall<String> testMethodTwo = director.createCall(testing,"testTwo");
     CiotolaFuture<String> ret = asyncCall.call("test-bob");
+    CiotolaFuture<String> retValues = testMethodTwo.call(1);
     System.out.println(ret.get());
+    System.out.println(retValues.get());
 
 
     Role<String, String> newRole = director.createRole(new Script<String, String>() {
