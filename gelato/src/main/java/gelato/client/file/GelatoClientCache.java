@@ -12,6 +12,7 @@
 package gelato.client.file;
 
 import ciotola.Ciotola;
+import ciotola.actor.AbstractBackgroundAgent;
 import ciotola.annotations.CiotolaServiceRun;
 import ciotola.annotations.CiotolaServiceStart;
 import ciotola.annotations.CiotolaServiceStop;
@@ -20,7 +21,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class GelatoClientCache {
+public class GelatoClientCache extends AbstractBackgroundAgent {
 
   private static GelatoClientCache SINGLE_INSTANCE = null;
   private final Logger logger = LoggerFactory.getLogger(GelatoClientCache.class);
@@ -28,6 +29,7 @@ public class GelatoClientCache {
   private Map<Integer, GelatoResource> cachedResources = new ConcurrentHashMap<>();
 
   private GelatoClientCache() {
+    this.setDelay(25);
   }
 
   public static GelatoClientCache getInstance() {
@@ -42,21 +44,9 @@ public class GelatoClientCache {
   }
 
   public void addResource(GelatoResource newResource) {
-    newResource.cacheValidate();
     cachedResources.put(newResource.getFileDescriptor().getRawFileDescriptor(), newResource);
   }
 
-  private void processMessages() {
-    for (GelatoResource resource : cachedResources.values()) {
-      resource.cacheValidate();
-    }
-    try {
-      Thread.sleep(250);
-    } catch (InterruptedException e) {
-      logger.error("Thread killed - ", e);
-      shutdown();
-    }
-  }
 
   @CiotolaServiceStop
   public synchronized void shutdown() {
@@ -68,10 +58,10 @@ public class GelatoClientCache {
     shutdown = false;
   }
 
-  @CiotolaServiceRun
+
   public void process() {
-    while (!isShutdown()) {
-      processMessages();
+    for (GelatoResource resource : cachedResources.values()) {
+      resource.cacheValidate();
     }
   }
 

@@ -13,7 +13,7 @@ package ciotola.actor;
 
 import java.util.ArrayList;
 
-class ActorCallProxy implements ActorCall{
+final class ActorCallProxy implements ActorCall{
 
   private RoleImpl role;
   private String methodName;

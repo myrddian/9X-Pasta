@@ -12,8 +12,6 @@
 package ciotola.actor;
 
 public interface Role<T, R> {
-
   CiotolaFuture<R> send(T message);
-
   long getRoleId();
 }

@@ -12,6 +12,5 @@
 package ciotola.actor;
 
 public interface SourceAgent<T> {
-
   void register(AgentPort<T> targetPort);
 }

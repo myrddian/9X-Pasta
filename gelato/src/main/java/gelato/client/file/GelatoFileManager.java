@@ -12,6 +12,7 @@
 package gelato.client.file;
 
 import ciotola.Ciotola;
+import ciotola.actor.Role;
 import gelato.Gelato;
 import gelato.GelatoFileDescriptor;
 import gelato.GelatoTagManager;
@@ -31,6 +32,7 @@ public class GelatoFileManager {
   private GelatoFileDescriptor authDescriptor;
   private GelatoDirectoryImpl root;
   private GelatoMessaging messaging;
+  private Role gelatoCacheRole;
 
   public GelatoFileManager(String hostName, int portNumber, String userName) throws IOException {
     this(hostName, portNumber, userName, Gelato.DEFAULT_NAME_SPACE);
@@ -56,7 +58,7 @@ public class GelatoFileManager {
       logger.error("Unable to establish session");
       throw new RuntimeException("Unable to establish session");
     }
-    Ciotola.getInstance().injectService(GelatoClientCache.getInstance());
+    gelatoCacheRole = Ciotola.getInstance().getDirector().createRole(GelatoClientCache.getInstance());
     root = new GelatoDirectoryImpl(clientSession, messaging, clientSession.getFileServiceRoot());
     GelatoClientCache.getInstance().addResource(root);
   }

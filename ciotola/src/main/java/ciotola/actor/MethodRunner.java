@@ -16,7 +16,7 @@ import java.lang.reflect.Method;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-final class MethodRunner implements Script {
+final class MethodRunner implements RunnableScript {
 
   class MethodStat {
     public Method callingMethod;
@@ -69,12 +69,9 @@ final class MethodRunner implements Script {
         retVal = methodStat.callingMethod.invoke(host);
       }
       return retVal;
-    } catch (IllegalAccessException e) {
-      e.printStackTrace();
-    } catch (InvocationTargetException e) {
-      e.printStackTrace();
+    } catch (IllegalAccessException | InvocationTargetException e) {
+      throw new ActorException(e);
     }
-    return null;
   }
 
   @Override

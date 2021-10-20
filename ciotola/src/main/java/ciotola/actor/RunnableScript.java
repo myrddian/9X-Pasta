@@ -11,8 +11,7 @@
 
 package ciotola.actor;
 
-public interface Script<T, R> {
-
-  R process(T message);
-
+interface RunnableScript<T, R> extends Script<T, R>{
+  boolean hasReturn();
+  boolean hasValues();
 }

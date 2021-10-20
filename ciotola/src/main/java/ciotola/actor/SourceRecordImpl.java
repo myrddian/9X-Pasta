@@ -11,7 +11,7 @@
 
 package ciotola.actor;
 
-class SourceRecordImpl<T> implements SourceRecord {
+final class SourceRecordImpl<T> implements SourceRecord {
 
   private T recordValue;
   private long itemKey;

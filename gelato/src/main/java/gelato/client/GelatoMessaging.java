@@ -12,6 +12,10 @@
 package gelato.client;
 
 import ciotola.Ciotola;
+import ciotola.actor.ActorException;
+import ciotola.actor.AgentPort;
+import ciotola.actor.SinkAgent;
+import ciotola.actor.SourceRecord;
 import ciotola.annotations.CiotolaServiceRun;
 import ciotola.annotations.CiotolaServiceStart;
 import ciotola.annotations.CiotolaServiceStop;
@@ -21,6 +25,7 @@ import gelato.client.transport.MessageCompletion;
 import java.io.IOException;
 import java.net.Socket;
 import java.util.Map;
+import java.util.Random;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.LinkedBlockingQueue;
@@ -56,7 +61,7 @@ import protocol.messages.response.WalkResponse;
 import protocol.messages.response.WriteResponse;
 import protocol.messages.response.WriteStatResponse;
 
-public class GelatoMessaging {
+public class GelatoMessaging implements SinkAgent<Message> {
 
   private final Logger logger = LoggerFactory.getLogger(GelatoMessaging.class);
   private boolean shutdown = false;
@@ -67,15 +72,25 @@ public class GelatoMessaging {
   private Socket clientSocket;
   private Map<Integer, GelatoMessage> replyBucket = new ConcurrentHashMap<>();
 
-  private BlockingQueue<Message> incomingMessages = new LinkedBlockingQueue<>();
+  ///private BlockingQueue<Message> incomingMessages = new LinkedBlockingQueue<>();
+  private final String outPortName = "client_tcp_out:"+System.currentTimeMillis()+ new Random().nextInt();
+  private final String inPortName = "client_tcp_in:"+System.currentTimeMillis()+ new Random().nextInt();
+  private AgentPort<GelatoMessage> outPort;
+  private AgentPort<Message> inPort;
 
   public GelatoMessaging(String hostName, int portNumber) throws IOException {
     clientSocket = new Socket(hostName, portNumber);
+    clientSocket.setTcpNoDelay(true);
+
     inputReader = new ClientSideTcpInputReader(clientSocket.getInputStream(), this);
     outputWriter = new ClientSideOutTcpWrite(clientSocket.getOutputStream(), this);
-    Ciotola.getInstance().injectService(inputReader);
-    Ciotola.getInstance().injectService(outputWriter);
-    Ciotola.getInstance().injectService(this);
+
+    outPort = Ciotola.getInstance().getDirector().getBus().createPort(outPortName);
+    logger.debug("Registering ports: " +inPortName +" "+ outPortName);
+    inPort = Ciotola.getInstance().getDirector().getBus().createPort(inPortName);
+    outPort.register(outputWriter);
+    inPort.createSource(inputReader,true);
+    inPort.register(this);
   }
 
   private boolean isErrorAndHandle(MessageCompletion newMessage) {
@@ -196,17 +211,20 @@ public class GelatoMessaging {
     }
   }
 
+  @Override
+  public void onRecord(SourceRecord<Message> record) {
+    try {
+      messageCompletion(record.getValue());
+    } catch (InterruptedException e) {
+      logger.error("Interrupted",e);
+      flushAndClose();
+    }
+  }
+
   private void flushAndClose() {
     logger.error("An error has occurred in the connection");
     logger.error("Unable to complete transactions - Connection reset all T-id's are invalid");
     replyBucket.clear();
-  }
-
-  private void processMessages() throws InterruptedException {
-    if (inputReader.isShutdown() || outputWriter.isShutdown()) {
-      flushAndClose();
-    }
-    messageCompletion(incomingMessages.take());
   }
 
   public void addFuture(GelatoMessage future) {
@@ -215,10 +233,6 @@ public class GelatoMessaging {
 
   public void closeFuture(GelatoMessage future) {
     replyBucket.remove(future.getTag());
-  }
-
-  public void addMessageToProcess(Message newMessage) {
-    incomingMessages.add(newMessage);
   }
 
   public void close(GelatoMessage message) {
@@ -236,7 +250,7 @@ public class GelatoMessaging {
       long total = (long) Math.ceil(readRequest.getBytesToRead() / P9Protocol.MAX_MSG_CONTENT_SIZE);
       message.setExpectedPackets(total);
     }
-    outputWriter.sendMessage(message);
+    outPort.write(message);
   }
 
   public void submitAndClose(GelatoMessage message) {
@@ -244,7 +258,7 @@ public class GelatoMessaging {
       throw new RuntimeException("Sockets Closed");
     }
     message.setCompleted();
-    outputWriter.sendMessage(message);
+    outPort.write(message);
   }
 
   public int getIoSize() {
@@ -303,24 +317,9 @@ public class GelatoMessaging {
     return new GelatoMessage<>(new VersionRequest());
   }
 
-  @CiotolaServiceStop
-  public synchronized void shutdown() {
-    shutdown = true;
-  }
-
-  @CiotolaServiceStart
-  public synchronized void start() {
-    shutdown = false;
-  }
-
-  @CiotolaServiceRun
-  public void process() throws InterruptedException {
-    while (!isShutdown()) {
-      processMessages();
-    }
-  }
-
   public synchronized boolean isShutdown() {
     return shutdown;
   }
+
+
 }

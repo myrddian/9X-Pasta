@@ -11,6 +11,8 @@
 
 package gelato.client.transport;
 
+import ciotola.actor.SinkAgent;
+import ciotola.actor.SourceRecord;
 import ciotola.annotations.CiotolaServiceRun;
 import ciotola.annotations.CiotolaServiceStart;
 import ciotola.annotations.CiotolaServiceStop;
@@ -26,12 +28,11 @@ import protocol.Encoder;
 import protocol.P9Protocol;
 import protocol.messages.MessageRaw;
 
-public class ClientSideOutTcpWrite {
+public class ClientSideOutTcpWrite implements SinkAgent<GelatoMessage> {
 
   private final Logger logger = LoggerFactory.getLogger(ClientSideOutTcpWrite.class);
   private OutputStream socketOutputStream;
   private boolean shutdown = false;
-  private BlockingQueue<GelatoMessage> writeMessageQueue = new LinkedBlockingQueue<>();
   private int currentTagClient = 0;
   private GelatoMessaging messaging;
 
@@ -41,7 +42,7 @@ public class ClientSideOutTcpWrite {
     this.messaging = messaging;
   }
 
-  public synchronized int generateTag() {
+  public  int generateTag() {
     if (currentTagClient > 65000) {
       currentTagClient = 1;
     } else {
@@ -50,9 +51,17 @@ public class ClientSideOutTcpWrite {
     return currentTagClient;
   }
 
-  private void processMessages() throws InterruptedException, IOException {
+  public boolean isShutdown() {
+    return shutdown;
+  }
+  public void shutdown() {
+    shutdown = true;
+  }
+
+  @Override
+  public void onRecord(SourceRecord<GelatoMessage> record) {
     int msgTag = generateTag();
-    GelatoMessage outbound = writeMessageQueue.take();
+    GelatoMessage outbound = record.getValue();
     if (outbound.messageType() == P9Protocol.TVERSION) {
       outbound.setTag(P9Protocol.NO_TAG);
       currentTagClient = 0;
@@ -65,31 +74,11 @@ public class ClientSideOutTcpWrite {
     messaging.addFuture(outbound);
     MessageRaw raw = outbound.toMessage().toRaw();
     byte[] outBytes = Encoder.messageToBytes(raw);
-    socketOutputStream.write(outBytes);
-  }
-
-  public void sendMessage(GelatoMessage outbound) {
-    writeMessageQueue.add(outbound);
-  }
-
-  public synchronized boolean isShutdown() {
-    return shutdown;
-  }
-
-  @CiotolaServiceStop
-  public synchronized void shutdown() {
-    shutdown = true;
-  }
-
-  @CiotolaServiceStart
-  public synchronized void start() {
-    shutdown = false;
-  }
-
-  @CiotolaServiceRun
-  public void process() throws IOException, InterruptedException {
-    while (!isShutdown()) {
-      processMessages();
+    try {
+      socketOutputStream.write(outBytes);
+    } catch (IOException e) {
+      logger.error("Error",e);
     }
   }
+
 }

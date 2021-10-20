@@ -11,6 +11,8 @@
 
 package gelato.client.transport;
 
+import ciotola.actor.AgentPort;
+import ciotola.actor.SourceProducer;
 import ciotola.annotations.CiotolaServiceRun;
 import ciotola.annotations.CiotolaServiceStart;
 import ciotola.annotations.CiotolaServiceStop;
@@ -23,7 +25,7 @@ import protocol.Decoder;
 import protocol.messages.Message;
 import protocol.messages.MessageRaw;
 
-public class ClientSideTcpInputReader {
+public class ClientSideTcpInputReader implements SourceProducer<Message> {
 
   public static final String INCORRECT_HEADER = "Incorrect header";
   public static final String INVALID_BYTE_COUNT =
@@ -32,6 +34,7 @@ public class ClientSideTcpInputReader {
   private InputStream netWorkInputStream;
   private byte[] minHeaderBuffer = new byte[MessageRaw.minSize];
   private boolean shutdown = false;
+  private boolean isReady = true;
   private GelatoMessaging messaging;
 
   public ClientSideTcpInputReader(InputStream inputStream, GelatoMessaging broker) {
@@ -39,13 +42,8 @@ public class ClientSideTcpInputReader {
     messaging = broker;
   }
 
-  public void processMessages() throws IOException {
-    Message message = getMessage();
-    messaging.addMessageToProcess(message);
-  }
-
   public Message getMessage() throws IOException {
-
+    isReady = false;
     for (int byteCount = 0; byteCount < MessageRaw.minSize; ++byteCount) {
       int val = netWorkInputStream.read();
       if (val != -1) {
@@ -67,27 +65,32 @@ public class ClientSideTcpInputReader {
       throw new IOException(INVALID_BYTE_COUNT);
     }
     msg.messageContent = content;
+    isReady = true;
     return msg;
   }
 
-  @CiotolaServiceStop
-  public synchronized void shutdown() {
+  @Override
+  public void execute(AgentPort<Message> target) {
+    try {
+      target.write(getMessage());
+    } catch (IOException e) {
+      logger.error("Client side input error", e);
+      shutdown();
+    }
+  }
+
+  @Override
+  public boolean isReady() {
+    return !shutdown;
+  }
+
+  public void shutdown() {
     shutdown = true;
   }
 
-  @CiotolaServiceStart
-  public synchronized void start() {
-    shutdown = false;
-  }
-
-  public synchronized boolean isShutdown() {
+  public boolean isShutdown() {
     return shutdown;
   }
 
-  @CiotolaServiceRun
-  public void process() throws IOException {
-    while (!isShutdown()) {
-      processMessages();
-    }
-  }
+
 }

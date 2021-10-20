@@ -46,7 +46,7 @@ final class BusImpl implements Bus {
   @Override
   public void removePort(String name) {
     AgentPortImpl target = portMap.get(name);
-
+    //director.removeRole(target.);
     portMap.remove(name);
   }
 

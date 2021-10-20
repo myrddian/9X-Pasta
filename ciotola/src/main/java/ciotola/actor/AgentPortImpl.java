@@ -11,11 +11,10 @@
 
 package ciotola.actor;
 
-import java.lang.reflect.InvocationTargetException;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-final class AgentPortImpl<T> implements AgentPort<T>, Script<SourceRecord<T>, Object> {
+final class AgentPortImpl<T> implements AgentPort<T>, RunnableScript<SourceRecord<T>, Object> {
 
   private String portName;
   private Role<SourceRecord<T>, Object> agentRole;
@@ -96,8 +95,7 @@ final class AgentPortImpl<T> implements AgentPort<T>, Script<SourceRecord<T>, Ob
   }
 
   @Override
-  public Object process(SourceRecord<T> message)
-      throws InvocationTargetException, IllegalAccessException {
+  public Object process(SourceRecord<T> message){
     scheduleType(message);
     return null;
   }

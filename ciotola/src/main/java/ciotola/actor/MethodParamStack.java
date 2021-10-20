@@ -11,7 +11,7 @@
 
 package ciotola.actor;
 
-class MethodParamStack {
+final class MethodParamStack {
 
   public Object [] parameters;
   public String methodName;

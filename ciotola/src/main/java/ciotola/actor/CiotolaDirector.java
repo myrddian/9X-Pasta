@@ -77,8 +77,7 @@ public final class CiotolaDirector {
       MethodRunner runner = concurrentObjects.get(host);
       runner.addMethod(method.getName(),method);
       return new ActorCallProxy(runner.getRole(),method.getName());
-    } else
-    {
+    } else {
       return createNewMethodProxy(host,method);
     }
   }
@@ -87,28 +86,31 @@ public final class CiotolaDirector {
     return this.agentBus;
   }
 
-  public Role createRole(Script script) {
+  private Role createRoleCommon(Script script, int targetId, long increment) {
     RoleImpl newRole = new RoleImpl();
-    newRole.setRoleId(getIncrement());
-    newRole.setScript(script);
+    newRole.setRoleId(increment);
 
-    int targetId = (int) newRole.getRoleId() % actorPool.size();
+    if(RunnableScript.class.isInstance(script)) {
+      newRole.setScript((RunnableScript)script);
+    } else {
+      newRole.setScript(new RunnableScriptWrapper(script));
+    }
     actorPool.get(targetId).addRole(newRole);
     rolePool.put(newRole.getRoleId(), newRole);
     newRole.setRoleKey(targetId);
     return newRole;
   }
 
-  public Role createRole(Script script, int key) {
-    RoleImpl newRole = new RoleImpl();
-    newRole.setRoleId(getIncrement());
-    newRole.setScript(script);
+  public Role createRole(Script script) {
+    long increment = getIncrement();
+    int targetId = (int) increment % actorPool.size();
+    return createRoleCommon(script,targetId,increment);
+  }
 
+  public Role createRole(Script script, int key) {
     int targetId = key % actorPool.size();
-    actorPool.get(targetId).addRole(newRole);
-    rolePool.put(newRole.getRoleId(), newRole);
-    newRole.setRoleKey(targetId);
-    return newRole;
+    long increment = getIncrement();
+    return createRoleCommon(script,targetId,increment);
   }
 
   public Role getRole(Long roleId) {

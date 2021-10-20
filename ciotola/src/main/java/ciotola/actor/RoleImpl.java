@@ -22,7 +22,7 @@ final class RoleImpl<T, R> implements Role<T, R> {
   private long roleId;
   private int roleKey;
   private BlockingQueue<ActorAction<T>> readMessageQueue = new LinkedBlockingQueue<>();
-  private Script<T, R> executeTask = null;
+  private RunnableScript<T, R> executeTask = null;
 
   public int requests() {
     return readMessageQueue.size();
@@ -48,11 +48,11 @@ final class RoleImpl<T, R> implements Role<T, R> {
     return resp;
   }
 
-  public Script<T, R> getScript() {
+  public RunnableScript<T, R> getScript() {
     return executeTask;
   }
 
-  public void setScript(Script script) {
+  public void setScript(RunnableScript script) {
     executeTask = script;
   }
 

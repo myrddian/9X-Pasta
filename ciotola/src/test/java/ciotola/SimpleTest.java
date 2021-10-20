@@ -62,22 +62,11 @@ public class SimpleTest {
     System.out.println(retValues.get());
 
 
-    Role<String, String> newRole = director.createRole(new Script<String, String>() {
+   /* Role<String, String> newRole = director.createRole(new Script<String, String>() {
       @Override
-      public String process(String message)
-          throws InvocationTargetException, IllegalAccessException {
+      public String process(String message) {
         System.out.println((String) message);
         return "hello there: " + message;
-      }
-
-      @Override
-      public boolean hasReturn() {
-        return true;
-      }
-
-      @Override
-      public boolean hasValues() {
-        return true;
       }
     });
 
@@ -141,7 +130,7 @@ public class SimpleTest {
       } catch (InterruptedException e) {
         e.printStackTrace();
       }
-    }
+    }*/
 
   }
 }

@@ -21,9 +21,9 @@ import java.util.concurrent.Executors;
 public class Demo {
 
   public static final String serviceName = "demo";
-  public static final int LOOP_COUNT = 10000;
+  public static final int LOOP_COUNT = 1000;
   public static final int MOD_FACTOR = (int) (LOOP_COUNT * 0.1);
-  public static final int RUNNERS = 12;
+  public static final int RUNNERS = 8;
 
   public static void main(String[] args) {
     System.out.println("Agnolotti Demo");

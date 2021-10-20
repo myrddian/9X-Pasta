@@ -13,20 +13,20 @@ package ciotola.actor;
 
 import ciotola.Ciotola;
 
-public final class SourceProducerRunner<T> extends AbstractSourceAgent<T> implements Runnable {
+public abstract class AbstractBackgroundAgent implements RunnableScript, Runnable{
 
-  private SourceProducer<T> producer;
+  private long delay = 250;
+  private long lastRun = 0;
   private boolean processing = false;
 
-  public SourceProducerRunner(SourceProducer<T> producer, boolean forkJoin) {
-    this.producer = producer;
-    this.setForkJoinTask(forkJoin);
+  public long getDelay() {
+    return delay;
+  }
+  public void setDelay(long newDelay) {
+    this.delay = newDelay;
   }
 
-  public SourceProducerRunner(SourceProducer<T> producer) {
-    this.producer = producer;
-    this.setForkJoinTask(true);
-  }
+  public abstract void process();
 
   private void forkJoin() {
     synchronized (this) {
@@ -37,30 +37,29 @@ public final class SourceProducerRunner<T> extends AbstractSourceAgent<T> implem
     }
   }
 
-  private void executeTask() {
-    if(producer.isReady()) {
-      producer.execute(this);
-    }
-  }
-
-
-  private void execReadyTask() {
-    if (this.isForkJoinTask()) {
+  @Override
+  public Object process(Object message) {
+    long diffTime =  System.currentTimeMillis() - lastRun;
+    if(diffTime > delay) {
       forkJoin();
-    } else {
-      executeTask();
+      lastRun =  System.currentTimeMillis();
     }
+    return null;
   }
 
   @Override
-  public void process() {
-    execReadyTask();
+  public boolean hasReturn() {
+    return false;
   }
 
+  @Override
+  public boolean hasValues() {
+    return false;
+  }
 
   @Override
   public void run() {
-    executeTask();
+    process();
     synchronized (this) {
       processing = false;
     }

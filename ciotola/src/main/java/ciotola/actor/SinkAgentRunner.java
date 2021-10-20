@@ -11,9 +11,8 @@
 
 package ciotola.actor;
 
-import java.lang.reflect.InvocationTargetException;
 
-final class SinkAgentRunner<T> implements Script<SourceRecord<T>, Object> {
+final class SinkAgentRunner<T> implements RunnableScript<SourceRecord<T>, Object> {
 
   private SinkAgent<T> sinkAgent;
   private Role agentRole;
@@ -31,8 +30,7 @@ final class SinkAgentRunner<T> implements Script<SourceRecord<T>, Object> {
   }
 
   @Override
-  public Object process(SourceRecord<T> message)
-      throws InvocationTargetException, IllegalAccessException {
+  public Object process(SourceRecord<T> message){
     sinkAgent.onRecord(message);
     return null;
   }

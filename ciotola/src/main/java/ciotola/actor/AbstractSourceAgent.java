@@ -11,11 +11,10 @@
 
 package ciotola.actor;
 
-import java.lang.reflect.InvocationTargetException;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 
-public abstract class AbstractSourceAgent<T> implements SourceAgent<T>, Script, AgentPort<T> {
+public abstract class AbstractSourceAgent<T> implements SourceAgent<T>, RunnableScript, AgentPort<T> {
 
   private long defaultKey;
   private boolean forkJoinTask = false;
@@ -44,7 +43,7 @@ public abstract class AbstractSourceAgent<T> implements SourceAgent<T>, Script, 
   }
 
   @Override
-  public Object process(Object message) throws InvocationTargetException, IllegalAccessException {
+  public Object process(Object message) {
     process();
     return null;
   }
